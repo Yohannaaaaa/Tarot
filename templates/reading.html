@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ t.reading_title }} · {{ t.site_title }}{% endblock %}
+{% block content %}
+<section class="reading-page">
+    <h1>{{ t.reading_title }}</h1>
+    <p class="reading-subtitle">{{ t.reading_subtitle }}</p>
+
+    <input id="questionInput" type="text" placeholder="{{ t.question_placeholder }}">
+
+    <div class="spread-buttons">
+        <button class="spread-btn" data-spread="3-card">🎴 {{ t.spread_3 }}</button>
+        <button class="spread-btn" data-spread="7-card">🎴 {{ t.spread_7 }}</button>
+        <button class="spread-btn" data-spread="yes-no">✨ {{ t.spread_yesno }}</button>
+        <button class="spread-btn" data-spread="love">💕 {{ t.spread_love }}</button>
+        <button class="spread-btn" data-spread="work">💼 {{ t.spread_work }}</button>
+        <button class="spread-btn" data-spread="general">🌟 {{ t.spread_general }}</button>
+    </div>
+
+    <div id="loading" class="loading" hidden>
+        <div class="spinner"></div>
+        <p>{{ t.loading }}</p>
+    </div>
+
+    <div id="resultArea" class="result-area"></div>
+</section>
+<script>
+    window.TAROT_I18N = {
+        upright: {{ t.upright|tojson }},
+        reversed: {{ t.reversed|tojson }},
+        drawAgain: {{ t.draw_again|tojson }},
+        sections: {
+            love: {{ t.section_love|tojson }},
+            career: {{ t.section_career|tojson }},
+            money: {{ t.section_money|tojson }},
+            health: {{ t.section_health|tojson }},
+            family: {{ t.section_family|tojson }},
+            symbols: {{ t.section_symbols|tojson }},
+            questions: {{ t.section_questions|tojson }},
+            weekly: {{ t.section_weekly|tojson }},
+            hidden: {{ t.section_hidden|tojson }}
+        }
+    };
+</script>
+<script src="{{ url_for('static', filename='js/reading.js') }}"></script>
+{% endblock %}
