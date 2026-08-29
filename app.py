@@ -2,9 +2,12 @@
 # -*- coding: utf-8 -*-
 import json
 import random
+from datetime import datetime
 from pathlib import Path
 
 from flask import Flask, jsonify, redirect, render_template, request, url_for
+
+import jeton_store
 
 app = Flask(__name__)
 
@@ -67,6 +70,48 @@ UI = {
         "draw_again": "Tirer à nouveau",
         "loading": "Les cartes se mélangent...",
         "footer_note": "Le tarot est un outil de réflexion et d'inspiration, pas une prédiction scientifique.",
+        "tab_services": "🔮 Consultations Tarot",
+        "tab_rituals": "✨ Rituels",
+        "tab_instant": "🤖 Tirage Instantané",
+        "tab_packs": "🪙 Packs de Jetons",
+        "trust_title": "Système de confiance :",
+        "trust_desc": "ta demande est enregistrée et sera étudiée personnellement. Une réponse te sera envoyée par le moyen que tu choisis.",
+        "th_service": "Service",
+        "th_duration": "Durée",
+        "th_price": "Prix",
+        "th_ritual": "Rituel",
+        "select_send": "Choisir & Envoyer",
+        "instant_title": "🔮 Carte du moment",
+        "instant_free": "Gratuit",
+        "instant_button": "🃏 Tirer une carte",
+        "spread_section_title": "🎴 Choisis un tirage",
+        "packs_note": "Achat de jetons bientôt disponible. En attendant, profite du bonus quotidien gratuit ci-dessous.",
+        "form_title": "✍️ Écris ta question",
+        "field_name": "Prénom",
+        "field_mother": "Prénom de la mère",
+        "field_birthdate": "Date de naissance",
+        "field_email": "E-mail",
+        "field_response_type": "Comment veux-tu la réponse ?",
+        "opt_mail": "Par e-mail",
+        "opt_voice": "Rendez-vous vocal",
+        "opt_pdf": "Réponse en PDF",
+        "field_appointment_date": "Date de rendez-vous souhaitée",
+        "field_question": "Écris ta question",
+        "form_submit": "Envoyer la demande",
+        "form_sending": "Envoi en cours...",
+        "form_success": "Merci, ta demande a bien été enregistrée !",
+        "form_error": "Erreur lors de l'envoi, réessaie.",
+        "form_need_name_email": "Renseigne au moins ton prénom, ton e-mail et ta question.",
+        "username_label": "Ton pseudo (pour tes jetons)",
+        "username_placeholder": "Choisis un pseudo...",
+        "jeton_balance": "Solde",
+        "jeton_unit": "jetons",
+        "jeton_bonus_button": "🎁 Bonus quotidien",
+        "jeton_bonus_claimed": "Bonus déjà réclamé aujourd'hui",
+        "jeton_bonus_success": "Bonus reçu !",
+        "jeton_insufficient": "Jetons insuffisants",
+        "jeton_cost_label": "jetons",
+        "username_required": "Choisis d'abord un pseudo pour utiliser tes jetons.",
     },
     "tr": {
         "site_title": "Rituams Tarot",
@@ -117,8 +162,84 @@ UI = {
         "draw_again": "Tekrar çek",
         "loading": "Kartlar karılıyor...",
         "footer_note": "Tarot bir yansıma ve ilham aracıdır, bilimsel bir kehanet değildir.",
+        "tab_services": "🔮 Tarot Bakımları",
+        "tab_rituals": "✨ Ritüeller",
+        "tab_instant": "🤖 Anında Açılım",
+        "tab_packs": "🪙 Jeton Paketleri",
+        "trust_title": "Güven sistemi:",
+        "trust_desc": "talebin kaydedilir ve kişisel olarak incelenir. Seçtiğin yöntemle sana geri dönüş yapılır.",
+        "th_service": "Hizmet",
+        "th_duration": "Süre",
+        "th_price": "Fiyat",
+        "th_ritual": "Ritüel",
+        "select_send": "Seç & Gönder",
+        "instant_title": "🔮 Anlık Kart",
+        "instant_free": "Ücretsiz",
+        "instant_button": "🃏 Kart Çek",
+        "spread_section_title": "🎴 Açılım Seç",
+        "packs_note": "Jeton satın alma yakında aktif olacak. O zamana kadar aşağıdaki ücretsiz günlük bonustan faydalanabilirsin.",
+        "form_title": "✍️ Sorunu Yaz",
+        "field_name": "İsim",
+        "field_mother": "Anne adı",
+        "field_birthdate": "Doğum tarihi",
+        "field_email": "E-posta",
+        "field_response_type": "Cevabı nasıl istersin?",
+        "opt_mail": "Mail ile",
+        "opt_voice": "Sesli randevu",
+        "opt_pdf": "PDF cevap",
+        "field_appointment_date": "İstenen randevu tarihi",
+        "field_question": "Sorunu yaz",
+        "form_submit": "Talebi Gönder",
+        "form_sending": "Gönderiliyor...",
+        "form_success": "Teşekkürler, talebin kaydedildi!",
+        "form_error": "Gönderim hatası, tekrar dene.",
+        "form_need_name_email": "En azından isim, e-posta ve sorunu doldur.",
+        "username_label": "Rumuzun (jetonların için)",
+        "username_placeholder": "Bir rumuz seç...",
+        "jeton_balance": "Bakiye",
+        "jeton_unit": "jeton",
+        "jeton_bonus_button": "🎁 Günlük bonus",
+        "jeton_bonus_claimed": "Bugünkü bonus zaten alındı",
+        "jeton_bonus_success": "Bonus alındı!",
+        "jeton_insufficient": "Yetersiz jeton",
+        "jeton_cost_label": "jeton",
+        "username_required": "Jetonlarını kullanmak için önce bir rumuz seç.",
     },
 }
+
+SERVICES = [
+    {"id": "single", "duration": {"fr": "5 min", "tr": "5 dk"}, "cost": 300,
+     "name": {"fr": "Consultation à question unique", "tr": "Tek Soru Bakımı"}},
+    {"id": "triple", "duration": {"fr": "10 min", "tr": "10 dk"}, "cost": 700,
+     "name": {"fr": "Consultation à 3 questions", "tr": "3 Soru Bakımı"}},
+    {"id": "love", "duration": {"fr": "20 min", "tr": "20 dk"}, "cost": 1000,
+     "name": {"fr": "Consultation Amour", "tr": "Aşk Açılımı"}},
+    {"id": "general", "duration": {"fr": "30 min", "tr": "30 dk"}, "cost": 1500,
+     "name": {"fr": "Consultation Générale", "tr": "Genel Bakım"}},
+]
+
+RITUALS = [
+    {"id": "love", "emoji": "❤️", "cost": 800,
+     "name": {"fr": "Amour et Relation", "tr": "Aşk ve İlişki"}},
+    {"id": "confidence", "emoji": "💖", "cost": 800,
+     "name": {"fr": "Confiance en soi et Attraction", "tr": "Öz Güven ve Çekim Gücü"}},
+    {"id": "luck", "emoji": "🍀", "cost": 800,
+     "name": {"fr": "Chance et Abondance", "tr": "Şans ve Bolluk"}},
+    {"id": "career", "emoji": "💼", "cost": 800,
+     "name": {"fr": "Carrière et Réussite", "tr": "Kariyer ve Başarı"}},
+    {"id": "cleanse", "emoji": "🕊️", "cost": 800,
+     "name": {"fr": "Purification des Énergies Négatives", "tr": "Negatif Enerjiden Arınma"}},
+    {"id": "intention", "emoji": "🌙", "cost": 1500,
+     "name": {"fr": "Rituel d'Intention Personnelle", "tr": "Kişisel Niyet Ritüeli"}},
+]
+
+JETON_PACKS = [
+    {"amount": 200, "price": "£4.99"},
+    {"amount": 500, "price": "£9.99"},
+    {"amount": 1200, "price": "£19.99"},
+    {"amount": 3000, "price": "£39.99"},
+    {"amount": 8000, "price": "£89.99"},
+]
 
 SPREADS = {
     "3-card": {
@@ -299,9 +420,30 @@ def card_detail(card_id):
     )
 
 
+MAJOR_CARDS = [c for c in CARDS if c["arcana"] == "major"]
+MESSAGES_PATH = Path(__file__).resolve().parent / "data" / "messages.json"
+
+
 @app.route("/tirage")
 def reading_page():
-    return render_template("reading.html", spreads=SPREADS)
+    lang = get_lang()
+    services = [
+        {"id": s["id"], "name": s["name"][lang], "duration": s["duration"][lang], "cost": s["cost"]}
+        for s in SERVICES
+    ]
+    rituals = [
+        {"id": r["id"], "name": r["name"][lang], "emoji": r["emoji"], "cost": r["cost"]}
+        for r in RITUALS
+    ]
+    return render_template(
+        "reading.html",
+        spreads=SPREADS,
+        services=services,
+        rituals=rituals,
+        packs=JETON_PACKS,
+        spread_cost=jeton_store.SPREAD_COST,
+        daily_bonus=jeton_store.DAILY_BONUS,
+    )
 
 
 @app.route("/api/tirage/<spread_key>", methods=["POST"])
@@ -311,10 +453,88 @@ def api_reading(spread_key):
     lang = get_lang()
     data = request.get_json(silent=True) or {}
     question = (data.get("question") or "").strip()
+    username = (data.get("username") or "").strip()
+
+    if not username:
+        return jsonify({"ok": False, "error": "username_required"}), 400
+
+    ok, balance = jeton_store.deduct(username, jeton_store.SPREAD_COST)
+    if not ok:
+        return jsonify({"ok": False, "error": "insufficient_funds", "balance": balance, "cost": jeton_store.SPREAD_COST}), 402
+
     result = draw_spread(spread_key, lang)
     result["ok"] = True
     result["question"] = question
+    result["remaining_jeton"] = balance
     return jsonify(result)
+
+
+@app.route("/api/anlik")
+def api_instant_card():
+    lang = get_lang()
+    card = random.choice(MAJOR_CARDS)
+    return jsonify({"ok": True, "card": card_side(card, "upright", lang)})
+
+
+@app.route("/api/jeton")
+def api_jeton_balance():
+    username = (request.args.get("username") or "").strip()
+    if not username:
+        return jsonify({"ok": False, "error": "username_required"}), 400
+    return jsonify({
+        "ok": True,
+        "balance": jeton_store.get_balance(username),
+        "bonus_available": jeton_store.bonus_available(username),
+    })
+
+
+@app.route("/api/jeton/bonus", methods=["POST"])
+def api_jeton_bonus():
+    data = request.get_json(silent=True) or {}
+    username = (data.get("username") or "").strip()
+    if not username:
+        return jsonify({"ok": False, "error": "username_required"}), 400
+    ok, balance = jeton_store.claim_bonus(username)
+    if not ok:
+        return jsonify({"ok": False, "error": "already_claimed", "balance": balance}), 400
+    return jsonify({"ok": True, "balance": balance})
+
+
+@app.route("/api/mesaj", methods=["POST"])
+def api_message():
+    data = request.get_json(silent=True) or {}
+    name = (data.get("name") or "").strip()
+    email = (data.get("email") or "").strip()
+    question = (data.get("question") or "").strip()
+    if not name or not email or not question:
+        return jsonify({"ok": False, "error": "missing_fields"}), 400
+
+    entry = {
+        "name": name,
+        "motherName": (data.get("motherName") or "").strip(),
+        "birthDate": (data.get("birthDate") or "").strip(),
+        "email": email,
+        "responseType": (data.get("responseType") or "mail").strip(),
+        "appointmentDate": (data.get("appointmentDate") or "").strip(),
+        "question": question,
+        "category": (data.get("category") or "").strip(),
+        "service": (data.get("service") or "").strip(),
+        "cost": data.get("cost"),
+        "lang": get_lang(),
+        "createdAt": datetime.utcnow().isoformat(),
+    }
+
+    MESSAGES_PATH.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        with open(MESSAGES_PATH, encoding="utf-8") as f:
+            messages = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        messages = []
+    messages.append(entry)
+    with open(MESSAGES_PATH, "w", encoding="utf-8") as f:
+        json.dump(messages, f, ensure_ascii=False, indent=2)
+
+    return jsonify({"ok": True})
 
 
 if __name__ == "__main__":
