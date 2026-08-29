@@ -82,8 +82,24 @@ main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; widt
     border-top: 1px solid var(--border);
 }
 
+/* Hero banner image */
+.hero-banner {
+    height: min(46vw, 420px);
+    min-height: 220px;
+    margin: -32px -20px 0;
+    background: url('/static/img/tarot_home.jpg') top center/cover no-repeat, var(--bg);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+}
+.hero-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(16,12,30,0) 60%, var(--bg) 100%);
+}
+
 /* Hero */
-.hero { text-align: center; padding: 60px 10px 30px; }
+.hero { text-align: center; padding: 40px 10px 30px; }
 .hero h1 {
     font-size: 3em;
     margin: 0 0 10px;
@@ -95,6 +111,11 @@ main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; widt
 .hero-subtitle { font-size: 1.2em; color: var(--gold-soft); margin: 0 0 16px; }
 .hero-lead { max-width: 640px; margin: 0 auto 30px; color: var(--text-dim); line-height: 1.6; }
 .hero-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+@media (max-width: 640px) {
+    .hero-banner { height: 260px; }
+    .hero { padding: 30px 16px 20px; }
+}
 
 .btn {
     display: inline-block;
