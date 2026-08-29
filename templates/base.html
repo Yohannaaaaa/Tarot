@@ -6,7 +6,7 @@
     <title>{% block title %}{{ t.site_title }}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <header class="topbar">
         <a class="brand" href="{{ url_for('index') }}">🔮 {{ t.site_title }}</a>
         <nav class="nav">
