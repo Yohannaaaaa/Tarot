@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ t.home_title }}{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="hero-inner">
+        <h1>{{ t.home_title }}</h1>
+        <p class="hero-subtitle">{{ t.home_subtitle }}</p>
+        <p class="hero-lead">{{ t.home_lead }}</p>
+        <div class="hero-actions">
+            <a class="btn btn-primary" href="{{ url_for('reading_page') }}">✨ {{ t.cta_reading }}</a>
+            <a class="btn btn-secondary" href="{{ url_for('cards_page') }}">🃏 {{ t.cta_cards }}</a>
+        </div>
+    </div>
+</section>
+
+<section class="features">
+    <div class="feature-card">
+        <div class="feature-icon">🎴</div>
+        <h3>{{ t.feature_1_title }}</h3>
+        <p>{{ t.feature_1_text }}</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">🌙</div>
+        <h3>{{ t.feature_2_title }}</h3>
+        <p>{{ t.feature_2_text }}</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">🌐</div>
+        <h3>{{ t.feature_3_title }}</h3>
+        <p>{{ t.feature_3_text }}</p>
+    </div>
+</section>
+{% endblock %}

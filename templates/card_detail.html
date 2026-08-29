@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ upright.name }} · {{ t.site_title }}{% endblock %}
+{% block content %}
+<section class="card-detail">
+    <a class="back-link" href="{{ url_for('cards_page') }}">{{ t.back_to_cards }}</a>
+    <div class="detail-header">
+        <img class="detail-image" src="{{ upright.image }}" alt="{{ upright.name }}">
+        <div>
+            <h1>{{ upright.name }}</h1>
+            <div class="orientation-toggle" id="orientationToggle">
+                <button class="toggle-btn active" data-orientation="upright">{{ t.upright }}</button>
+                <button class="toggle-btn" data-orientation="reversed">{{ t.reversed }}</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="detail-body">
+        <div class="orientation-panel" data-panel="upright">
+            {% set c = upright %}
+            {% include "_card_fields.html" %}
+        </div>
+        <div class="orientation-panel" data-panel="reversed" hidden>
+            {% set c = reversed %}
+            {% include "_card_fields.html" %}
+        </div>
+    </div>
+</section>
+<script src="{{ url_for('static', filename='js/card_detail.js') }}"></script>
+{% endblock %}

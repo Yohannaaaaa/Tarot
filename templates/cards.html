@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ t.cards_title }} · {{ t.site_title }}{% endblock %}
+{% block content %}
+<section class="cards-page">
+    <h1>{{ t.cards_title }}</h1>
+    <div class="cards-controls">
+        <input id="cardSearch" class="search-box" type="text" placeholder="{{ t.search_placeholder }}">
+        <div class="filter-chips" id="filterChips">
+            <button class="chip active" data-filter="all">{{ t.filter_all }}</button>
+            <button class="chip" data-filter="major">{{ t.filter_major }}</button>
+            <button class="chip" data-filter="cups">{{ t.filter_cups }}</button>
+            <button class="chip" data-filter="wands">{{ t.filter_wands }}</button>
+            <button class="chip" data-filter="swords">{{ t.filter_swords }}</button>
+            <button class="chip" data-filter="pentacles">{{ t.filter_pentacles }}</button>
+        </div>
+    </div>
+    <div class="card-grid" id="cardGrid">
+        {% for c in cards %}
+        <a class="card-tile" href="{{ url_for('card_detail', card_id=c.id) }}"
+           data-name="{{ c.name|lower }}" data-arcana="{{ c.arcana }}" data-suit="{{ c.suit or '' }}">
+            <img loading="lazy" src="{{ c.image }}" alt="{{ c.name }}">
+            <span>{{ c.name }}</span>
+        </a>
+        {% endfor %}
+    </div>
+    <p id="noResults" class="no-results" hidden></p>
+</section>
+<script src="{{ url_for('static', filename='js/cards.js') }}"></script>
+{% endblock %}
