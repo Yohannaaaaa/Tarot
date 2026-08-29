@@ -19,11 +19,11 @@ DEFAULT_LANG = "fr"
 
 UI = {
     "fr": {
-        "site_title": "Tarot Mystique",
+        "site_title": "Rituams Tarot",
         "nav_home": "Accueil",
         "nav_cards": "Les Cartes",
         "nav_reading": "Tirage",
-        "home_title": "Tarot Mystique",
+        "home_title": "Rituams Tarot",
         "home_subtitle": "Un tirage gratuit, un langage des cartes en français et en turc",
         "home_lead": "Découvrez la sagesse du tarot à travers les 78 cartes du Rider-Waite. Explorez la bibliothèque des arcanes ou laissez les cartes répondre à votre question.",
         "cta_reading": "Faire un tirage",
@@ -69,11 +69,11 @@ UI = {
         "footer_note": "Le tarot est un outil de réflexion et d'inspiration, pas une prédiction scientifique.",
     },
     "tr": {
-        "site_title": "Mistik Tarot",
+        "site_title": "Rituams Tarot",
         "nav_home": "Ana Sayfa",
         "nav_cards": "Kartlar",
         "nav_reading": "Açılım",
-        "home_title": "Mistik Tarot",
+        "home_title": "Rituams Tarot",
         "home_subtitle": "Ücretsiz açılım, Fransızca ve Türkçe kart yorumları",
         "home_lead": "Rider-Waite tarot destesinin 78 kartıyla tarotun bilgeliğini keşfedin. Kart kütüphanesine göz atın ya da kartların sorunuza cevap vermesine izin verin.",
         "cta_reading": "Açılım yap",
