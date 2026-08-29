@@ -85,7 +85,11 @@
         <table class="price-table">
             <tr><th>{{ t.th_price }}</th><th></th></tr>
             {% for p in packs %}
-            <tr><td>🪙 {{ p.amount }} {{ t.jeton_cost_label }}</td><td>{{ p.price }}</td></tr>
+            <tr>
+                <td>🪙 {{ p.amount }} {{ t.jeton_cost_label }}</td>
+                <td>{{ p.price }}</td>
+                <td><button class="btn-select btn-buy-pack" data-amount="{{ p.amount }}">{{ t.buy_pack }}</button></td>
+            </tr>
             {% endfor %}
         </table>
         <p class="packs-note">{{ t.packs_note }}</p>
@@ -130,6 +134,7 @@
         formError: {{ t.form_error|tojson }},
         formNeedFields: {{ t.form_need_name_email|tojson }},
         selectSend: {{ t.select_send|tojson }},
+        buyPackError: {{ t.buy_pack_error|tojson }},
         sections: {
             love: {{ t.section_love|tojson }},
             career: {{ t.section_career|tojson }},
