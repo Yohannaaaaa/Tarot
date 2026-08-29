@@ -199,13 +199,45 @@
     const contactForm = document.getElementById('contactForm');
     const formStatus = document.getElementById('formStatus');
 
-    document.querySelectorAll('.btn-select').forEach((btn) => {
+    document.querySelectorAll('.btn-select:not(.btn-buy-pack)').forEach((btn) => {
         btn.addEventListener('click', () => {
             document.getElementById('fCategory').value = btn.dataset.category;
             document.getElementById('fService').value = btn.dataset.name;
             document.getElementById('fCost').value = btn.dataset.cost;
             contactForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
             formStatus.textContent = `${btn.dataset.name} — 🪙 ${btn.dataset.cost}`;
+        });
+    });
+
+    // ---------- Jeton pack purchase (Stripe Checkout) ----------
+    document.querySelectorAll('.btn-buy-pack').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const username = getUsername();
+            if (!username) {
+                alert(i18n.usernameRequired);
+                return;
+            }
+            localStorage.setItem(USERNAME_KEY, username);
+            const amount = parseInt(btn.dataset.amount, 10);
+            btn.disabled = true;
+            fetch('/api/jeton/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, amount }),
+            })
+                .then((r) => r.json())
+                .then((d) => {
+                    if (d.ok && d.url) {
+                        window.location.href = d.url;
+                    } else {
+                        alert(i18n.buyPackError);
+                        btn.disabled = false;
+                    }
+                })
+                .catch(() => {
+                    alert(i18n.buyPackError);
+                    btn.disabled = false;
+                });
         });
     });
 

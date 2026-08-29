@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import json
+import os
 import random
 from datetime import datetime
 from pathlib import Path
 
+import stripe
 from flask import Flask, jsonify, redirect, render_template, request, url_for
 
 import jeton_store
+
+stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 
 app = Flask(__name__)
 
@@ -85,7 +90,9 @@ UI = {
         "instant_free": "Gratuit",
         "instant_button": "🃏 Tirer une carte",
         "spread_section_title": "🎴 Choisis un tirage",
-        "packs_note": "Achat de jetons bientôt disponible. En attendant, profite du bonus quotidien gratuit ci-dessous.",
+        "packs_note": "Paiement sécurisé par Stripe.",
+        "buy_pack": "Acheter",
+        "buy_pack_error": "Erreur lors de la création du paiement, réessaie.",
         "form_title": "✍️ Écris ta question",
         "field_name": "Prénom",
         "field_mother": "Prénom de la mère",
@@ -177,7 +184,9 @@ UI = {
         "instant_free": "Ücretsiz",
         "instant_button": "🃏 Kart Çek",
         "spread_section_title": "🎴 Açılım Seç",
-        "packs_note": "Jeton satın alma yakında aktif olacak. O zamana kadar aşağıdaki ücretsiz günlük bonustan faydalanabilirsin.",
+        "packs_note": "Ödemeler Stripe ile güvenli şekilde yapılır.",
+        "buy_pack": "Satın Al",
+        "buy_pack_error": "Ödeme oluşturulurken hata oluştu, tekrar dene.",
         "form_title": "✍️ Sorunu Yaz",
         "field_name": "İsim",
         "field_mother": "Anne adı",
@@ -234,12 +243,13 @@ RITUALS = [
 ]
 
 JETON_PACKS = [
-    {"amount": 200, "price": "£4.99"},
-    {"amount": 500, "price": "£9.99"},
-    {"amount": 1200, "price": "£19.99"},
-    {"amount": 3000, "price": "£39.99"},
-    {"amount": 8000, "price": "£89.99"},
+    {"amount": 200, "price": "£4.99", "stripe_price_id": "price_1U9od2LYpYxtFvCYCu69apgZ"},
+    {"amount": 500, "price": "£9.99", "stripe_price_id": "price_1U9odELYpYxtFvCYeOxxxDac"},
+    {"amount": 1200, "price": "£19.99", "stripe_price_id": "price_1U9odGLYpYxtFvCYK1tnGZup"},
+    {"amount": 3000, "price": "£39.99", "stripe_price_id": "price_1U9odJLYpYxtFvCY1Qlbgtoo"},
+    {"amount": 8000, "price": "£89.99", "stripe_price_id": "price_1U9odLLYpYxtFvCY4YjrF4VE"},
 ]
+JETON_PACKS_BY_AMOUNT = {p["amount"]: p for p in JETON_PACKS}
 
 SPREADS = {
     "3-card": {
@@ -533,6 +543,54 @@ def api_message():
     messages.append(entry)
     with open(MESSAGES_PATH, "w", encoding="utf-8") as f:
         json.dump(messages, f, ensure_ascii=False, indent=2)
+
+    return jsonify({"ok": True})
+
+
+@app.route("/api/jeton/checkout", methods=["POST"])
+def api_jeton_checkout():
+    data = request.get_json(silent=True) or {}
+    username = (data.get("username") or "").strip()
+    amount = data.get("amount")
+
+    if not username:
+        return jsonify({"ok": False, "error": "username_required"}), 400
+
+    pack = JETON_PACKS_BY_AMOUNT.get(amount)
+    if not pack:
+        return jsonify({"ok": False, "error": "unknown_pack"}), 404
+
+    if not stripe.api_key:
+        return jsonify({"ok": False, "error": "stripe_not_configured"}), 503
+
+    base_url = request.url_root.rstrip("/")
+    session = stripe.checkout.Session.create(
+        mode="payment",
+        line_items=[{"price": pack["stripe_price_id"], "quantity": 1}],
+        client_reference_id=username,
+        metadata={"username": username, "jeton_amount": str(pack["amount"])},
+        success_url=f"{base_url}/tirage?checkout=success",
+        cancel_url=f"{base_url}/tirage?checkout=cancel",
+    )
+    return jsonify({"ok": True, "url": session.url})
+
+
+@app.route("/api/stripe/webhook", methods=["POST"])
+def api_stripe_webhook():
+    payload = request.get_data()
+    sig_header = request.headers.get("Stripe-Signature", "")
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
+    except (ValueError, stripe.error.SignatureVerificationError):
+        return jsonify({"ok": False, "error": "invalid_signature"}), 400
+
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
+        username = (session.get("client_reference_id") or session.get("metadata", {}).get("username") or "").strip()
+        jeton_amount = session.get("metadata", {}).get("jeton_amount")
+        if username and jeton_amount:
+            jeton_store.credit(username, int(jeton_amount))
 
     return jsonify({"ok": True})
 

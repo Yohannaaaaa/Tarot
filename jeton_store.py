@@ -66,6 +66,19 @@ def deduct(username, amount=SPREAD_COST):
         return True, user["balance"]
 
 
+def credit(username, amount):
+    """Ajoute des jetons (achat Stripe). Retourne le nouveau solde."""
+    with _lock:
+        users = _load()
+        key = _key(username)
+        user = users.setdefault(key, {"display": username, "balance": STARTING_BALANCE, "last_bonus": None})
+        user["balance"] += amount
+        user["display"] = username
+        user["updated_at"] = datetime.utcnow().isoformat()
+        _save(users)
+        return user["balance"]
+
+
 def claim_bonus(username, amount=DAILY_BONUS):
     """Retourne (ok, nouveau_solde). ok=False si le bonus du jour a deja ete pris."""
     with _lock:
