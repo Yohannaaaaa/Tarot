@@ -1,15 +1,110 @@
 (function () {
-    const buttons = document.querySelectorAll('.spread-btn');
-    const loading = document.getElementById('loading');
-    const resultArea = document.getElementById('resultArea');
-    const questionInput = document.getElementById('questionInput');
     const i18n = window.TAROT_I18N;
+    const USERNAME_KEY = "rituams_username";
 
     function escapeHtml(str) {
         const div = document.createElement('div');
         div.textContent = str;
         return div.innerHTML;
     }
+
+    // ---------- Username / jeton balance ----------
+    const usernameInput = document.getElementById('usernameInput');
+    const jetonBalanceEl = document.getElementById('jetonBalance');
+    const bonusBtn = document.getElementById('bonusBtn');
+
+    function getUsername() {
+        return (usernameInput.value || '').trim();
+    }
+
+    usernameInput.value = localStorage.getItem(USERNAME_KEY) || '';
+
+    function refreshBalance() {
+        const username = getUsername();
+        if (!username) {
+            jetonBalanceEl.textContent = '—';
+            return;
+        }
+        fetch(`/api/jeton?username=${encodeURIComponent(username)}`)
+            .then((r) => r.json())
+            .then((d) => {
+                if (d.ok) jetonBalanceEl.textContent = d.balance;
+            })
+            .catch(() => {});
+    }
+
+    usernameInput.addEventListener('change', () => {
+        localStorage.setItem(USERNAME_KEY, getUsername());
+        refreshBalance();
+    });
+
+    bonusBtn.addEventListener('click', () => {
+        const username = getUsername();
+        if (!username) {
+            alert(i18n.usernameRequired);
+            return;
+        }
+        localStorage.setItem(USERNAME_KEY, username);
+        fetch('/api/jeton/bonus', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username }),
+        })
+            .then((r) => r.json())
+            .then((d) => {
+                if (d.ok) {
+                    jetonBalanceEl.textContent = d.balance;
+                    alert(i18n.bonusSuccess);
+                } else {
+                    jetonBalanceEl.textContent = d.balance;
+                    alert(i18n.bonusClaimed);
+                }
+            });
+    });
+
+    refreshBalance();
+
+    // ---------- Tabs ----------
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+    tabButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+            tabButtons.forEach((b) => b.classList.toggle('active', b === btn));
+            tabPanels.forEach((p) => {
+                p.hidden = p.dataset.panel !== btn.dataset.tab;
+            });
+        });
+    });
+
+    // ---------- Instant free card ----------
+    const instantBtn = document.getElementById('instantBtn');
+    const instantCard = document.getElementById('instantCard');
+    const instantFront = document.getElementById('instantFront');
+    const instantResult = document.getElementById('instantResult');
+
+    if (instantBtn) {
+        instantBtn.addEventListener('click', () => {
+            fetch('/api/anlik')
+                .then((r) => r.json())
+                .then((d) => {
+                    if (!d.ok) return;
+                    const card = d.card;
+                    instantCard.classList.remove('flipped');
+                    instantFront.innerHTML = `<img src="${card.image}" alt="${escapeHtml(card.name)}"><div class="instant-name">${escapeHtml(card.name)}</div>`;
+                    void instantCard.offsetWidth;
+                    setTimeout(() => {
+                        instantCard.classList.add('flipped');
+                        instantResult.innerHTML = `<strong>${escapeHtml(card.name)}</strong> — ${escapeHtml(card.intro)}`;
+                    }, 60);
+                });
+        });
+    }
+
+    // ---------- Spread readings ----------
+    const spreadButtons = document.querySelectorAll('.spread-btn');
+    const loading = document.getElementById('loading');
+    const resultArea = document.getElementById('resultArea');
+    const questionInput = document.getElementById('questionInput');
 
     function renderCard(entry) {
         const card = entry.card;
@@ -67,16 +162,27 @@
     }
 
     async function draw(spreadType) {
+        const username = getUsername();
+        if (!username) {
+            alert(i18n.usernameRequired);
+            return;
+        }
+        localStorage.setItem(USERNAME_KEY, username);
         loading.hidden = false;
         resultArea.innerHTML = '';
         try {
             const response = await fetch(`/api/tirage/${spreadType}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ question: questionInput.value.trim() }),
+                body: JSON.stringify({ question: questionInput.value.trim(), username }),
             });
             const data = await response.json();
+            if (response.status === 402) {
+                resultArea.innerHTML = `<p class="reading-question">💰 ${escapeHtml(i18n.jetonInsufficient)} (${data.balance}/${data.cost} ${escapeHtml(i18n.jetonUnit)})</p>`;
+                return;
+            }
             if (!data.ok) throw new Error(data.error || 'unknown error');
+            jetonBalanceEl.textContent = data.remaining_jeton;
             renderResult(data);
         } catch (err) {
             resultArea.innerHTML = `<p class="reading-question">⚠️ ${escapeHtml(err.message)}</p>`;
@@ -85,7 +191,59 @@
         }
     }
 
-    buttons.forEach((btn) => {
+    spreadButtons.forEach((btn) => {
         btn.addEventListener('click', () => draw(btn.dataset.spread));
     });
+
+    // ---------- Services / rituals "select & send" ----------
+    const contactForm = document.getElementById('contactForm');
+    const formStatus = document.getElementById('formStatus');
+
+    document.querySelectorAll('.btn-select').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            document.getElementById('fCategory').value = btn.dataset.category;
+            document.getElementById('fService').value = btn.dataset.name;
+            document.getElementById('fCost').value = btn.dataset.cost;
+            contactForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            formStatus.textContent = `${btn.dataset.name} — 🪙 ${btn.dataset.cost}`;
+        });
+    });
+
+    if (contactForm) {
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('fName').value.trim();
+            const email = document.getElementById('fEmail').value.trim();
+            const question = document.getElementById('fQuestion').value.trim();
+            if (!name || !email || !question) {
+                formStatus.textContent = i18n.formNeedFields;
+                return;
+            }
+            formStatus.textContent = i18n.formSending;
+            fetch('/api/mesaj', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name,
+                    email,
+                    question,
+                    motherName: document.getElementById('fMother').value.trim(),
+                    birthDate: document.getElementById('fBirth').value,
+                    responseType: document.getElementById('fResponseType').value,
+                    appointmentDate: document.getElementById('fAppointment').value,
+                    category: document.getElementById('fCategory').value,
+                    service: document.getElementById('fService').value,
+                    cost: document.getElementById('fCost').value,
+                }),
+            })
+                .then((r) => r.json())
+                .then((d) => {
+                    formStatus.textContent = d.ok ? i18n.formSuccess : i18n.formError;
+                    if (d.ok) contactForm.reset();
+                })
+                .catch(() => {
+                    formStatus.textContent = i18n.formError;
+                });
+        });
+    }
 })();

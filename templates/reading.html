@@ -5,29 +5,130 @@
     <h1>{{ t.reading_title }}</h1>
     <p class="reading-subtitle">{{ t.reading_subtitle }}</p>
 
-    <input id="questionInput" type="text" placeholder="{{ t.question_placeholder }}">
-
-    <div class="spread-buttons">
-        <button class="spread-btn" data-spread="3-card">🎴 {{ t.spread_3 }}</button>
-        <button class="spread-btn" data-spread="7-card">🎴 {{ t.spread_7 }}</button>
-        <button class="spread-btn" data-spread="yes-no">✨ {{ t.spread_yesno }}</button>
-        <button class="spread-btn" data-spread="love">💕 {{ t.spread_love }}</button>
-        <button class="spread-btn" data-spread="work">💼 {{ t.spread_work }}</button>
-        <button class="spread-btn" data-spread="general">🌟 {{ t.spread_general }}</button>
+    <div class="trust-box">
+        <b>{{ t.trust_title }}</b> {{ t.trust_desc }}
     </div>
 
-    <div id="loading" class="loading" hidden>
-        <div class="spinner"></div>
-        <p>{{ t.loading }}</p>
+    <div class="jeton-bar">
+        <input id="usernameInput" type="text" placeholder="{{ t.username_placeholder }}">
+        <span class="jeton-balance">💰 <span id="jetonBalance">—</span> {{ t.jeton_unit }}</span>
+        <button id="bonusBtn" class="btn btn-secondary btn-small">{{ t.jeton_bonus_button }}</button>
+    </div>
+    <p class="username-label">{{ t.username_label }}</p>
+
+    <div class="tab-bar">
+        <button class="tab-btn active" data-tab="services">{{ t.tab_services }}</button>
+        <button class="tab-btn" data-tab="rituals">{{ t.tab_rituals }}</button>
+        <button class="tab-btn" data-tab="instant">{{ t.tab_instant }}</button>
+        <button class="tab-btn" data-tab="packs">{{ t.tab_packs }}</button>
     </div>
 
-    <div id="resultArea" class="result-area"></div>
+    <div class="tab-panel" data-panel="services">
+        <table class="price-table">
+            <tr><th>{{ t.th_service }}</th><th>{{ t.th_duration }}</th><th>{{ t.th_price }}</th><th></th></tr>
+            {% for s in services %}
+            <tr>
+                <td>{{ s.name }}</td>
+                <td>{{ s.duration }}</td>
+                <td>🪙 {{ s.cost }} {{ t.jeton_cost_label }}</td>
+                <td><button class="btn-select" data-category="service" data-name="{{ s.name }}" data-duration="{{ s.duration }}" data-cost="{{ s.cost }}">{{ t.select_send }}</button></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div class="tab-panel" data-panel="rituals" hidden>
+        <table class="price-table">
+            <tr><th>{{ t.th_ritual }}</th><th>{{ t.th_price }}</th><th></th></tr>
+            {% for r in rituals %}
+            <tr>
+                <td>{{ r.emoji }} {{ r.name }}</td>
+                <td>🪙 {{ r.cost }} {{ t.jeton_cost_label }}</td>
+                <td><button class="btn-select" data-category="ritual" data-name="{{ r.name }}" data-duration="" data-cost="{{ r.cost }}">{{ t.select_send }}</button></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div class="tab-panel" data-panel="instant">
+        <h2 class="panel-title">{{ t.instant_title }} <small>({{ t.instant_free }})</small></h2>
+        <div class="instant-card-wrap">
+            <div class="instant-card" id="instantCard">
+                <div class="instant-face instant-back">🔮</div>
+                <div class="instant-face instant-front" id="instantFront"></div>
+            </div>
+        </div>
+        <div style="text-align:center">
+            <button class="btn btn-primary" id="instantBtn">{{ t.instant_button }}</button>
+        </div>
+        <div id="instantResult" class="instant-result"></div>
+
+        <h3 class="panel-subtitle">{{ t.spread_section_title }} <small>(🪙 {{ spread_cost }} {{ t.jeton_cost_label }})</small></h3>
+        <input id="questionInput" type="text" placeholder="{{ t.question_placeholder }}">
+        <div class="spread-buttons">
+            <button class="spread-btn" data-spread="3-card">🎴 {{ t.spread_3 }}</button>
+            <button class="spread-btn" data-spread="7-card">🎴 {{ t.spread_7 }}</button>
+            <button class="spread-btn" data-spread="yes-no">✨ {{ t.spread_yesno }}</button>
+            <button class="spread-btn" data-spread="love">💕 {{ t.spread_love }}</button>
+            <button class="spread-btn" data-spread="work">💼 {{ t.spread_work }}</button>
+            <button class="spread-btn" data-spread="general">🌟 {{ t.spread_general }}</button>
+        </div>
+        <div id="loading" class="loading" hidden>
+            <div class="spinner"></div>
+            <p>{{ t.loading }}</p>
+        </div>
+        <div id="resultArea" class="result-area"></div>
+    </div>
+
+    <div class="tab-panel" data-panel="packs" hidden>
+        <table class="price-table">
+            <tr><th>{{ t.th_price }}</th><th></th></tr>
+            {% for p in packs %}
+            <tr><td>🪙 {{ p.amount }} {{ t.jeton_cost_label }}</td><td>{{ p.price }}</td></tr>
+            {% endfor %}
+        </table>
+        <p class="packs-note">{{ t.packs_note }}</p>
+    </div>
+
+    <div class="contact-form-wrap">
+        <h2 class="panel-title">{{ t.form_title }}</h2>
+        <form id="contactForm">
+            <input type="hidden" id="fCategory" name="category">
+            <input type="hidden" id="fService" name="service">
+            <input type="hidden" id="fCost" name="cost">
+            <div class="form-grid">
+                <input name="name" id="fName" placeholder="{{ t.field_name }}" required>
+                <input name="motherName" id="fMother" placeholder="{{ t.field_mother }}">
+                <input name="birthDate" id="fBirth" type="date" title="{{ t.field_birthdate }}">
+                <input name="email" id="fEmail" type="email" placeholder="{{ t.field_email }}" required>
+                <select name="responseType" id="fResponseType">
+                    <option value="mail">{{ t.opt_mail }}</option>
+                    <option value="voice">{{ t.opt_voice }}</option>
+                    <option value="pdf">{{ t.opt_pdf }}</option>
+                </select>
+                <input name="appointmentDate" id="fAppointment" type="datetime-local" title="{{ t.field_appointment_date }}">
+                <textarea name="question" id="fQuestion" placeholder="{{ t.field_question }}" required></textarea>
+                <button type="submit" class="btn btn-primary full" id="formSubmitBtn">{{ t.form_submit }}</button>
+            </div>
+            <p id="formStatus" class="form-status"></p>
+        </form>
+    </div>
 </section>
 <script>
     window.TAROT_I18N = {
         upright: {{ t.upright|tojson }},
         reversed: {{ t.reversed|tojson }},
         drawAgain: {{ t.draw_again|tojson }},
+        usernameRequired: {{ t.username_required|tojson }},
+        jetonInsufficient: {{ t.jeton_insufficient|tojson }},
+        jetonUnit: {{ t.jeton_unit|tojson }},
+        bonusClaimed: {{ t.jeton_bonus_claimed|tojson }},
+        bonusSuccess: {{ t.jeton_bonus_success|tojson }},
+        formSending: {{ t.form_sending|tojson }},
+        formSuccess: {{ t.form_success|tojson }},
+        formError: {{ t.form_error|tojson }},
+        formNeedFields: {{ t.form_need_name_email|tojson }},
+        selectSend: {{ t.select_send|tojson }},
         sections: {
             love: {{ t.section_love|tojson }},
             career: {{ t.section_career|tojson }},

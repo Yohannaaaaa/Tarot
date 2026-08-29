@@ -11,3 +11,7 @@ venv/
 .DS_Store
 *.log
 .idea/
+
+# Runtime data (jeton balances, contact requests)
+data/users.json
+data/messages.json
