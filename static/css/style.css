@@ -145,11 +145,19 @@ main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; widt
     margin-top: 40px;
 }
 .feature-card {
+    display: block;
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 16px;
     padding: 24px;
     text-align: center;
+    text-decoration: none;
+    transition: transform .15s, box-shadow .15s, border-color .15s;
+}
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(212, 175, 55, .25);
+    border-color: var(--gold);
 }
 .feature-icon { font-size: 2em; margin-bottom: 10px; }
 .feature-card h3 { color: var(--gold-soft); margin: 0 0 8px; }

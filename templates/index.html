@@ -15,20 +15,15 @@
 </section>
 
 <section class="features">
-    <div class="feature-card">
+    <a class="feature-card" href="{{ url_for('cards_page') }}">
         <div class="feature-icon">🎴</div>
         <h3>{{ t.feature_1_title }}</h3>
         <p>{{ t.feature_1_text }}</p>
-    </div>
-    <div class="feature-card">
+    </a>
+    <a class="feature-card" href="{{ url_for('reading_page') }}">
         <div class="feature-icon">🌙</div>
         <h3>{{ t.feature_2_title }}</h3>
         <p>{{ t.feature_2_text }}</p>
-    </div>
-    <div class="feature-card">
-        <div class="feature-icon">🌐</div>
-        <h3>{{ t.feature_3_title }}</h3>
-        <p>{{ t.feature_3_text }}</p>
-    </div>
+    </a>
 </section>
 {% endblock %}
