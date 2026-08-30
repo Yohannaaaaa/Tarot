@@ -137,9 +137,17 @@ main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; widt
 .hero-lead { max-width: 560px; margin: 0 auto 30px; color: var(--text-dim); line-height: 1.6; }
 .hero-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
 
+.hero-minimal {
+    min-height: 65vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 @media (max-width: 640px) {
     .hero { padding: 40px 16px 20px; }
     .hero-inner { padding: 26px 18px; }
+    .hero-minimal { min-height: 55vh; }
 }
 
 .btn {
@@ -161,31 +169,6 @@ main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; widt
     border: 1px solid var(--gold);
     color: var(--text);
 }
-
-.features {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 20px;
-    margin-top: 40px;
-}
-.feature-card {
-    display: block;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    text-align: center;
-    text-decoration: none;
-    transition: transform .15s, box-shadow .15s, border-color .15s;
-}
-.feature-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(212, 175, 55, .25);
-    border-color: var(--gold);
-}
-.feature-icon { font-size: 2em; margin-bottom: 10px; }
-.feature-card h3 { color: var(--gold-soft); margin: 0 0 8px; }
-.feature-card p { color: var(--text-dim); margin: 0; line-height: 1.5; }
 
 /* Cards page */
 .cards-page h1 { text-align: center; color: var(--gold-soft); }
