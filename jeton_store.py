@@ -10,6 +10,7 @@ STORE_PATH = Path(__file__).resolve().parent / "data" / "users.json"
 
 STARTING_BALANCE = 1000
 SPREAD_COST = 200
+INSTANT_COST = 50
 DAILY_BONUS = 300
 
 _lock = threading.Lock()
