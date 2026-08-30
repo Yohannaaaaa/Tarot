@@ -67,9 +67,19 @@
 
     if (instantBtn) {
         instantBtn.addEventListener('click', () => {
-            fetch('/api/anlik')
-                .then((r) => r.json())
-                .then((d) => {
+            if (!i18n.loggedIn) { goToLogin(); return; }
+            fetch('/api/anlik', { method: 'POST' })
+                .then((r) => {
+                    if (r.status === 401) { goToLogin(); return null; }
+                    return r.json().then((d) => ({ status: r.status, body: d }));
+                })
+                .then((result) => {
+                    if (!result) return;
+                    const d = result.body;
+                    if (result.status === 402) {
+                        alert(`${i18n.jetonInsufficient} (${d.balance}/${d.cost} ${i18n.jetonUnit})`);
+                        return;
+                    }
                     if (!d.ok) return;
                     const card = d.card;
                     instantCard.classList.remove('flipped');
@@ -79,6 +89,7 @@
                         instantCard.classList.add('flipped');
                         instantResult.innerHTML = `<strong>${escapeHtml(card.name)}</strong> — ${escapeHtml(card.intro)}`;
                     }, 60);
+                    if (jetonBalanceEl) jetonBalanceEl.textContent = d.remaining_jeton;
                 });
         });
     }

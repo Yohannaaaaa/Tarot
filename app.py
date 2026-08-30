@@ -132,7 +132,6 @@ UI = {
         "th_ritual": "Rituel",
         "select_send": "Choisir & Envoyer",
         "instant_title": "🔮 Carte du moment",
-        "instant_free": "Gratuit",
         "instant_button": "🃏 Tirer une carte",
         "spread_section_title": "🎴 Choisis un tirage",
         "packs_note": "Paiement sécurisé par Stripe.",
@@ -260,7 +259,6 @@ UI = {
         "th_ritual": "Ritüel",
         "select_send": "Seç & Gönder",
         "instant_title": "🔮 Anlık Kart",
-        "instant_free": "Ücretsiz",
         "instant_button": "🃏 Kart Çek",
         "spread_section_title": "🎴 Açılım Seç",
         "packs_note": "Ödemeler Stripe ile güvenli şekilde yapılır.",
@@ -732,6 +730,7 @@ def reading_page():
         rituals=rituals,
         packs=JETON_PACKS,
         spread_cost=jeton_store.SPREAD_COST,
+        instant_cost=jeton_store.INSTANT_COST,
         daily_bonus=jeton_store.DAILY_BONUS,
     )
 
@@ -759,11 +758,19 @@ def api_reading(spread_key):
     return jsonify(result)
 
 
-@app.route("/api/anlik")
+@app.route("/api/anlik", methods=["POST"])
 def api_instant_card():
+    email = session.get("email")
+    if not email:
+        return jsonify({"ok": False, "error": "login_required"}), 401
+
+    ok, balance = jeton_store.deduct(email, jeton_store.INSTANT_COST)
+    if not ok:
+        return jsonify({"ok": False, "error": "insufficient_funds", "balance": balance, "cost": jeton_store.INSTANT_COST}), 402
+
     lang = get_lang()
     card = random.choice(MAJOR_CARDS)
-    return jsonify({"ok": True, "card": card_side(card, "upright", lang)})
+    return jsonify({"ok": True, "card": card_side(card, "upright", lang), "remaining_jeton": balance})
 
 
 @app.route("/api/jeton")
