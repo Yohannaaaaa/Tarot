@@ -114,6 +114,8 @@ UI = {
         "draw_again": "Tirer à nouveau",
         "loading": "Les cartes se mélangent...",
         "footer_note": "Le tarot est un outil de réflexion et d'inspiration, pas une prédiction scientifique.",
+        "footer_privacy": "Confidentialité",
+        "footer_terms": "Conditions d'utilisation",
         "tab_services": "🔮 Consultations Tarot",
         "tab_rituals": "✨ Rituels",
         "tab_instant": "🤖 Tirage Instantané",
@@ -235,6 +237,8 @@ UI = {
         "draw_again": "Tekrar çek",
         "loading": "Kartlar karılıyor...",
         "footer_note": "Tarot bir yansıma ve ilham aracıdır, bilimsel bir kehanet değildir.",
+        "footer_privacy": "Gizlilik",
+        "footer_terms": "Kullanım Şartları",
         "tab_services": "🔮 Tarot Bakımları",
         "tab_rituals": "✨ Ritüeller",
         "tab_instant": "🤖 Anında Açılım",
@@ -514,6 +518,16 @@ def draw_spread(spread_key, lang):
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/gizlilik-politikasi")
+def privacy_page():
+    return render_template("privacy.html")
+
+
+@app.route("/kullanim-sartlari")
+def terms_page():
+    return render_template("terms.html")
 
 
 @app.route("/cartes")
