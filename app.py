@@ -129,6 +129,8 @@ UI = {
         "packs_note": "Paiement sécurisé par Stripe.",
         "buy_pack": "Acheter",
         "buy_pack_error": "Erreur lors de la création du paiement, réessaie.",
+        "checkout_success": "Paiement réussi ! Tes jetons ont été ajoutés à ton compte.",
+        "checkout_cancelled": "Paiement annulé, aucun jeton n'a été débité.",
         "form_title": "✍️ Écris ta question",
         "field_name": "Prénom",
         "field_mother": "Prénom de la mère",
@@ -248,6 +250,8 @@ UI = {
         "packs_note": "Ödemeler Stripe ile güvenli şekilde yapılır.",
         "buy_pack": "Satın Al",
         "buy_pack_error": "Ödeme oluşturulurken hata oluştu, tekrar dene.",
+        "checkout_success": "Ödeme başarılı! Jetonların hesabına eklendi.",
+        "checkout_cancelled": "Ödeme iptal edildi, jeton düşülmedi.",
         "form_title": "✍️ Sorunu Yaz",
         "field_name": "İsim",
         "field_mother": "Anne adı",
@@ -699,6 +703,11 @@ MESSAGES_PATH = Path(__file__).resolve().parent / "data" / "messages.json"
 @app.route("/tirage")
 def reading_page():
     lang = get_lang()
+    checkout_status = request.args.get("checkout")
+    if checkout_status == "success":
+        flash("checkout_success", "success")
+    elif checkout_status == "cancel":
+        flash("checkout_cancelled", "error")
     services = [
         {"id": s["id"], "name": s["name"][lang], "duration": s["duration"][lang], "cost": s["cost"]}
         for s in SERVICES
@@ -814,6 +823,26 @@ def api_message():
     messages.append(entry)
     with open(MESSAGES_PATH, "w", encoding="utf-8") as f:
         json.dump(messages, f, ensure_ascii=False, indent=2)
+
+    send_email(
+        GMAIL_ADDRESS,
+        f"Nouvelle demande Rituams Tarot - {entry['name']}",
+        "\n".join([
+            f"Nom : {entry['name']}",
+            f"E-mail : {entry['email']}",
+            f"Prenom de la mere : {entry['motherName']}",
+            f"Date de naissance : {entry['birthDate']}",
+            f"Type de reponse souhaite : {entry['responseType']}",
+            f"Date de rendez-vous souhaitee : {entry['appointmentDate']}",
+            f"Categorie : {entry['category']}",
+            f"Service/rituel : {entry['service']}",
+            f"Cout : {entry['cost']}",
+            f"Langue : {entry['lang']}",
+            "",
+            "Question :",
+            entry["question"],
+        ]),
+    )
 
     return jsonify({"ok": True})
 
