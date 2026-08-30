@@ -24,7 +24,7 @@ body {
 body.has-hero-bg {
     background:
         linear-gradient(180deg, rgba(10,8,4,.4) 0%, rgba(10,8,4,.55) 100%),
-        url('/static/img/tarot_home.jpg') center top / cover no-repeat fixed;
+        url('/static/img/tarot_home.jpg') center center / cover no-repeat fixed;
     background-color: var(--bg);
 }
 
