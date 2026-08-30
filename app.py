@@ -3,18 +3,63 @@
 import json
 import os
 import random
+import secrets
+import smtplib
 from datetime import datetime
+from email.mime.text import MIMEText
 from pathlib import Path
+from urllib.parse import urlencode
 
+import requests
 import stripe
-from flask import Flask, jsonify, redirect, render_template, request, url_for
+from flask import Flask, flash, jsonify, redirect, render_template, request, session, url_for
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
+import accounts_store
 import jeton_store
 
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 
+GMAIL_ADDRESS = "tarot.clairvoyance.rituels@gmail.com"
+GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "")
+
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
+GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
+
 app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "rituams-tarot-dev-secret-change-me")
+
+
+def external_url(endpoint, **values):
+    url = url_for(endpoint, _external=True, **values)
+    if not (request.host.startswith("localhost") or request.host.startswith("127.0.0.1")):
+        url = url.replace("http://", "https://", 1)
+    return url
+
+
+def get_serializer():
+    return URLSafeTimedSerializer(app.secret_key)
+
+
+def send_email(to_addr, subject, body):
+    if not GMAIL_APP_PASSWORD:
+        return False
+    msg = MIMEText(body, "plain", "utf-8")
+    msg["Subject"] = subject
+    msg["From"] = GMAIL_ADDRESS
+    msg["To"] = to_addr
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=15) as server:
+            server.starttls()
+            server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
+            server.sendmail(GMAIL_ADDRESS, [to_addr], msg.as_string())
+        return True
+    except (smtplib.SMTPException, OSError):
+        return False
 
 DATA_PATH = Path(__file__).resolve().parent / "data" / "cards.json"
 with open(DATA_PATH, encoding="utf-8") as f:
@@ -109,8 +154,6 @@ UI = {
         "form_success": "Merci, ta demande a bien été enregistrée !",
         "form_error": "Erreur lors de l'envoi, réessaie.",
         "form_need_name_email": "Renseigne au moins ton prénom, ton e-mail et ta question.",
-        "username_label": "Ton pseudo (pour tes jetons)",
-        "username_placeholder": "Choisis un pseudo...",
         "jeton_balance": "Solde",
         "jeton_unit": "jetons",
         "jeton_bonus_button": "🎁 Bonus quotidien",
@@ -118,7 +161,43 @@ UI = {
         "jeton_bonus_success": "Bonus reçu !",
         "jeton_insufficient": "Jetons insuffisants",
         "jeton_cost_label": "jetons",
-        "username_required": "Choisis d'abord un pseudo pour utiliser tes jetons.",
+        "nav_login": "Connexion",
+        "nav_register": "Inscription",
+        "nav_logout": "Déconnexion",
+        "login_title": "Connexion",
+        "login_subtitle": "Connecte-toi pour accéder à tes jetons et tes tirages.",
+        "register_title": "Créer un compte",
+        "register_subtitle": "Inscris-toi pour recevoir tes jetons de bienvenue.",
+        "field_password": "Mot de passe",
+        "field_password_confirm": "Confirmer le mot de passe",
+        "field_nickname": "Pseudo (optionnel)",
+        "login_submit": "Se connecter",
+        "register_submit": "S'inscrire",
+        "no_account_yet": "Pas encore de compte ?",
+        "have_account_already": "Déjà inscrit(e) ?",
+        "or_divider": "ou",
+        "google_login_button": "Continuer avec Google",
+        "forgot_password_link": "Mot de passe oublié ?",
+        "forgot_password_title": "Mot de passe oublié",
+        "forgot_password_desc": "Indique ton e-mail, on t'enverra un lien de réinitialisation.",
+        "forgot_password_submit": "Envoyer le lien",
+        "reset_password_title": "Nouveau mot de passe",
+        "reset_password_desc": "Choisis un nouveau mot de passe.",
+        "field_new_password": "Nouveau mot de passe",
+        "field_new_password_confirm": "Confirmer le nouveau mot de passe",
+        "reset_password_submit": "Réinitialiser le mot de passe",
+        "back_to_login": "← Retour à la connexion",
+        "login_required_reading": "Connecte-toi pour utiliser tes jetons.",
+        "error_email_required": "Indique une adresse e-mail valide.",
+        "error_password_short": "Le mot de passe doit contenir au moins 6 caractères.",
+        "error_passwords_mismatch": "Les mots de passe ne correspondent pas.",
+        "error_email_taken": "Cet e-mail est déjà utilisé.",
+        "error_invalid_credentials": "E-mail ou mot de passe incorrect.",
+        "error_reset_link_invalid": "Ce lien de réinitialisation est invalide ou expiré.",
+        "error_email_not_configured": "L'envoi d'e-mails n'est pas encore configuré, réessaie plus tard.",
+        "error_google_not_configured": "La connexion Google n'est pas encore configurée.",
+        "success_reset_email_sent": "Si ce compte existe, un e-mail de réinitialisation a été envoyé.",
+        "success_password_reset": "Mot de passe modifié, tu peux te connecter.",
     },
     "tr": {
         "site_title": "Rituams Tarot",
@@ -203,8 +282,6 @@ UI = {
         "form_success": "Teşekkürler, talebin kaydedildi!",
         "form_error": "Gönderim hatası, tekrar dene.",
         "form_need_name_email": "En azından isim, e-posta ve sorunu doldur.",
-        "username_label": "Rumuzun (jetonların için)",
-        "username_placeholder": "Bir rumuz seç...",
         "jeton_balance": "Bakiye",
         "jeton_unit": "jeton",
         "jeton_bonus_button": "🎁 Günlük bonus",
@@ -212,7 +289,43 @@ UI = {
         "jeton_bonus_success": "Bonus alındı!",
         "jeton_insufficient": "Yetersiz jeton",
         "jeton_cost_label": "jeton",
-        "username_required": "Jetonlarını kullanmak için önce bir rumuz seç.",
+        "nav_login": "Giriş Yap",
+        "nav_register": "Kayıt Ol",
+        "nav_logout": "Çıkış Yap",
+        "login_title": "Giriş Yap",
+        "login_subtitle": "Jetonlarına ve açılımlarına erişmek için giriş yap.",
+        "register_title": "Hesap Oluştur",
+        "register_subtitle": "Kayıt ol ve hoş geldin jetonlarını al.",
+        "field_password": "Şifre",
+        "field_password_confirm": "Şifreyi onayla",
+        "field_nickname": "Rumuz (opsiyonel)",
+        "login_submit": "Giriş Yap",
+        "register_submit": "Kayıt Ol",
+        "no_account_yet": "Hesabın yok mu?",
+        "have_account_already": "Zaten hesabın var mı?",
+        "or_divider": "veya",
+        "google_login_button": "Google ile devam et",
+        "forgot_password_link": "Şifreni mi unuttun?",
+        "forgot_password_title": "Şifremi Unuttum",
+        "forgot_password_desc": "E-posta adresini yaz, sana bir sıfırlama bağlantısı gönderelim.",
+        "forgot_password_submit": "Bağlantıyı Gönder",
+        "reset_password_title": "Yeni Şifre",
+        "reset_password_desc": "Yeni bir şifre seç.",
+        "field_new_password": "Yeni şifre",
+        "field_new_password_confirm": "Yeni şifreyi onayla",
+        "reset_password_submit": "Şifreyi Sıfırla",
+        "back_to_login": "← Girişe dön",
+        "login_required_reading": "Jetonlarını kullanmak için giriş yap.",
+        "error_email_required": "Geçerli bir e-posta adresi gir.",
+        "error_password_short": "Şifre en az 6 karakter olmalı.",
+        "error_passwords_mismatch": "Şifreler eşleşmiyor.",
+        "error_email_taken": "Bu e-posta zaten kullanılıyor.",
+        "error_invalid_credentials": "E-posta veya şifre hatalı.",
+        "error_reset_link_invalid": "Bu sıfırlama bağlantısı geçersiz veya süresi dolmuş.",
+        "error_email_not_configured": "E-posta gönderimi henüz yapılandırılmadı, daha sonra tekrar dene.",
+        "error_google_not_configured": "Google ile giriş henüz yapılandırılmadı.",
+        "success_reset_email_sent": "Bu hesap varsa, bir sıfırlama e-postası gönderildi.",
+        "success_password_reset": "Şifre değiştirildi, giriş yapabilirsin.",
     },
 }
 
@@ -319,7 +432,13 @@ def ui(lang):
 @app.context_processor
 def inject_globals():
     lang = get_lang()
-    return {"lang": lang, "other_lang": "tr" if lang == "fr" else "fr", "t": ui(lang)}
+    return {
+        "lang": lang,
+        "other_lang": "tr" if lang == "fr" else "fr",
+        "t": ui(lang),
+        "logged_in": bool(session.get("email")),
+        "current_nickname": session.get("nickname"),
+    }
 
 
 @app.after_request
@@ -430,6 +549,167 @@ def card_detail(card_id):
     )
 
 
+@app.route("/inscription", methods=["GET", "POST"])
+def register_page():
+    if request.method == "POST":
+        email = (request.form.get("email") or "").strip().lower()
+        password = request.form.get("password") or ""
+        password2 = request.form.get("password2") or ""
+        nickname = (request.form.get("nickname") or "").strip()
+
+        if not email or "@" not in email:
+            flash("error_email_required", "error")
+        elif len(password) < 6:
+            flash("error_password_short", "error")
+        elif password != password2:
+            flash("error_passwords_mismatch", "error")
+        elif accounts_store.email_exists(email):
+            flash("error_email_taken", "error")
+        else:
+            account = accounts_store.create_account(email, password, nickname)
+            session["email"] = account["email"]
+            session["nickname"] = account["nickname"]
+            return redirect(url_for("reading_page"))
+    return render_template("register.html")
+
+
+@app.route("/connexion", methods=["GET", "POST"])
+def login_page():
+    if request.method == "POST":
+        email = (request.form.get("email") or "").strip().lower()
+        password = request.form.get("password") or ""
+        if accounts_store.verify_password(email, password):
+            account = accounts_store.get_account(email)
+            session["email"] = account["email"]
+            session["nickname"] = account["nickname"]
+            return redirect(url_for("reading_page"))
+        flash("error_invalid_credentials", "error")
+    return render_template("login.html")
+
+
+@app.route("/deconnexion")
+def logout():
+    session.clear()
+    return redirect(url_for("index"))
+
+
+@app.route("/mot-de-passe-oublie", methods=["GET", "POST"])
+def forgot_password_page():
+    if request.method == "POST":
+        email = (request.form.get("email") or "").strip().lower()
+        if accounts_store.email_exists(email):
+            token = get_serializer().dumps(email, salt="password-reset")
+            reset_url = external_url("reset_password_page", token=token)
+            lang = get_lang()
+            if lang == "fr":
+                subject = "Réinitialisation de mot de passe - Rituams Tarot"
+                body = (
+                    "Bonjour,\n\n"
+                    "Clique sur ce lien pour réinitialiser ton mot de passe "
+                    f"(valable 1 heure) :\n{reset_url}\n\n"
+                    "Si tu n'es pas à l'origine de cette demande, ignore ce message."
+                )
+            else:
+                subject = "Şifre Sıfırlama - Rituams Tarot"
+                body = (
+                    "Merhaba,\n\n"
+                    "Şifreni sıfırlamak için bu bağlantıya tıkla "
+                    f"(1 saat geçerlidir):\n{reset_url}\n\n"
+                    "Bu talebi sen yapmadıysan bu e-postayı yok sayabilirsin."
+                )
+            if send_email(email, subject, body):
+                flash("success_reset_email_sent", "success")
+            else:
+                flash("error_email_not_configured", "error")
+        else:
+            flash("success_reset_email_sent", "success")
+    return render_template("forgot_password.html")
+
+
+@app.route("/reinitialiser/<token>", methods=["GET", "POST"])
+def reset_password_page(token):
+    try:
+        email = get_serializer().loads(token, salt="password-reset", max_age=3600)
+    except (BadSignature, SignatureExpired):
+        flash("error_reset_link_invalid", "error")
+        return redirect(url_for("forgot_password_page"))
+
+    if request.method == "POST":
+        password = request.form.get("password") or ""
+        password2 = request.form.get("password2") or ""
+        if len(password) < 6:
+            flash("error_password_short", "error")
+        elif password != password2:
+            flash("error_passwords_mismatch", "error")
+        else:
+            accounts_store.set_password(email, password)
+            flash("success_password_reset", "success")
+            return redirect(url_for("login_page"))
+    return render_template("reset_password.html", token=token)
+
+
+@app.route("/auth/google/login")
+def google_login():
+    if not GOOGLE_CLIENT_ID:
+        flash("error_google_not_configured", "error")
+        return redirect(url_for("login_page"))
+    state = secrets.token_urlsafe(16)
+    session["oauth_state"] = state
+    params = {
+        "client_id": GOOGLE_CLIENT_ID,
+        "redirect_uri": external_url("google_callback"),
+        "response_type": "code",
+        "scope": "openid email profile",
+        "state": state,
+        "prompt": "select_account",
+    }
+    return redirect(f"{GOOGLE_AUTH_URL}?{urlencode(params)}")
+
+
+@app.route("/auth/google/callback")
+def google_callback():
+    state = request.args.get("state")
+    code = request.args.get("code")
+    if not code or not state or state != session.pop("oauth_state", None):
+        flash("error_google_not_configured", "error")
+        return redirect(url_for("login_page"))
+
+    try:
+        token_resp = requests.post(
+            GOOGLE_TOKEN_URL,
+            data={
+                "code": code,
+                "client_id": GOOGLE_CLIENT_ID,
+                "client_secret": GOOGLE_CLIENT_SECRET,
+                "redirect_uri": external_url("google_callback"),
+                "grant_type": "authorization_code",
+            },
+            timeout=10,
+        )
+        access_token = token_resp.json().get("access_token")
+        if not access_token:
+            raise ValueError("no access token")
+        userinfo = requests.get(
+            GOOGLE_USERINFO_URL,
+            headers={"Authorization": f"Bearer {access_token}"},
+            timeout=10,
+        ).json()
+    except (requests.RequestException, ValueError):
+        flash("error_google_not_configured", "error")
+        return redirect(url_for("login_page"))
+
+    email = (userinfo.get("email") or "").strip().lower()
+    if not email:
+        flash("error_google_not_configured", "error")
+        return redirect(url_for("login_page"))
+
+    name = userinfo.get("name") or email.split("@")[0]
+    account = accounts_store.upsert_google_account(email, userinfo.get("sub"), name)
+    session["email"] = account["email"]
+    session["nickname"] = account["nickname"]
+    return redirect(url_for("reading_page"))
+
+
 MAJOR_CARDS = [c for c in CARDS if c["arcana"] == "major"]
 MESSAGES_PATH = Path(__file__).resolve().parent / "data" / "messages.json"
 
@@ -463,12 +743,12 @@ def api_reading(spread_key):
     lang = get_lang()
     data = request.get_json(silent=True) or {}
     question = (data.get("question") or "").strip()
-    username = (data.get("username") or "").strip()
+    email = session.get("email")
 
-    if not username:
-        return jsonify({"ok": False, "error": "username_required"}), 400
+    if not email:
+        return jsonify({"ok": False, "error": "login_required"}), 401
 
-    ok, balance = jeton_store.deduct(username, jeton_store.SPREAD_COST)
+    ok, balance = jeton_store.deduct(email, jeton_store.SPREAD_COST)
     if not ok:
         return jsonify({"ok": False, "error": "insufficient_funds", "balance": balance, "cost": jeton_store.SPREAD_COST}), 402
 
@@ -488,23 +768,23 @@ def api_instant_card():
 
 @app.route("/api/jeton")
 def api_jeton_balance():
-    username = (request.args.get("username") or "").strip()
-    if not username:
-        return jsonify({"ok": False, "error": "username_required"}), 400
+    email = session.get("email")
+    if not email:
+        return jsonify({"ok": False, "error": "login_required"}), 401
     return jsonify({
         "ok": True,
-        "balance": jeton_store.get_balance(username),
-        "bonus_available": jeton_store.bonus_available(username),
+        "balance": jeton_store.get_balance(email),
+        "bonus_available": jeton_store.bonus_available(email),
+        "nickname": session.get("nickname"),
     })
 
 
 @app.route("/api/jeton/bonus", methods=["POST"])
 def api_jeton_bonus():
-    data = request.get_json(silent=True) or {}
-    username = (data.get("username") or "").strip()
-    if not username:
-        return jsonify({"ok": False, "error": "username_required"}), 400
-    ok, balance = jeton_store.claim_bonus(username)
+    email = session.get("email")
+    if not email:
+        return jsonify({"ok": False, "error": "login_required"}), 401
+    ok, balance = jeton_store.claim_bonus(email)
     if not ok:
         return jsonify({"ok": False, "error": "already_claimed", "balance": balance}), 400
     return jsonify({"ok": True, "balance": balance})
@@ -549,12 +829,12 @@ def api_message():
 
 @app.route("/api/jeton/checkout", methods=["POST"])
 def api_jeton_checkout():
-    data = request.get_json(silent=True) or {}
-    username = (data.get("username") or "").strip()
-    amount = data.get("amount")
+    email = session.get("email")
+    if not email:
+        return jsonify({"ok": False, "error": "login_required"}), 401
 
-    if not username:
-        return jsonify({"ok": False, "error": "username_required"}), 400
+    data = request.get_json(silent=True) or {}
+    amount = data.get("amount")
 
     pack = JETON_PACKS_BY_AMOUNT.get(amount)
     if not pack:
@@ -564,15 +844,15 @@ def api_jeton_checkout():
         return jsonify({"ok": False, "error": "stripe_not_configured"}), 503
 
     base_url = request.url_root.rstrip("/")
-    session = stripe.checkout.Session.create(
+    checkout_session = stripe.checkout.Session.create(
         mode="payment",
         line_items=[{"price": pack["stripe_price_id"], "quantity": 1}],
-        client_reference_id=username,
-        metadata={"username": username, "jeton_amount": str(pack["amount"])},
+        client_reference_id=email,
+        metadata={"username": email, "jeton_amount": str(pack["amount"])},
         success_url=f"{base_url}/tirage?checkout=success",
         cancel_url=f"{base_url}/tirage?checkout=cancel",
     )
-    return jsonify({"ok": True, "url": session.url})
+    return jsonify({"ok": True, "url": checkout_session.url})
 
 
 @app.route("/api/stripe/webhook", methods=["POST"])
@@ -586,9 +866,9 @@ def api_stripe_webhook():
         return jsonify({"ok": False, "error": "invalid_signature"}), 400
 
     if event["type"] == "checkout.session.completed":
-        session = event["data"]["object"]
-        username = (session.get("client_reference_id") or session.get("metadata", {}).get("username") or "").strip()
-        jeton_amount = session.get("metadata", {}).get("jeton_amount")
+        checkout_session = event["data"]["object"]
+        username = (checkout_session.get("client_reference_id") or checkout_session.get("metadata", {}).get("username") or "").strip()
+        jeton_amount = checkout_session.get("metadata", {}).get("jeton_amount")
         if username and jeton_amount:
             jeton_store.credit(username, int(jeton_amount))
 

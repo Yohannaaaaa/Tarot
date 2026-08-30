@@ -1,6 +1,5 @@
 (function () {
     const i18n = window.TAROT_I18N;
-    const USERNAME_KEY = "rituams_username";
 
     function escapeHtml(str) {
         const div = document.createElement('div');
@@ -8,24 +7,17 @@
         return div.innerHTML;
     }
 
-    // ---------- Username / jeton balance ----------
-    const usernameInput = document.getElementById('usernameInput');
+    function goToLogin() {
+        window.location.href = i18n.loginUrl;
+    }
+
+    // ---------- Jeton balance ----------
     const jetonBalanceEl = document.getElementById('jetonBalance');
     const bonusBtn = document.getElementById('bonusBtn');
 
-    function getUsername() {
-        return (usernameInput.value || '').trim();
-    }
-
-    usernameInput.value = localStorage.getItem(USERNAME_KEY) || '';
-
     function refreshBalance() {
-        const username = getUsername();
-        if (!username) {
-            jetonBalanceEl.textContent = '—';
-            return;
-        }
-        fetch(`/api/jeton?username=${encodeURIComponent(username)}`)
+        if (!i18n.loggedIn || !jetonBalanceEl) return;
+        fetch('/api/jeton')
             .then((r) => r.json())
             .then((d) => {
                 if (d.ok) jetonBalanceEl.textContent = d.balance;
@@ -33,34 +25,25 @@
             .catch(() => {});
     }
 
-    usernameInput.addEventListener('change', () => {
-        localStorage.setItem(USERNAME_KEY, getUsername());
-        refreshBalance();
-    });
-
-    bonusBtn.addEventListener('click', () => {
-        const username = getUsername();
-        if (!username) {
-            alert(i18n.usernameRequired);
-            return;
-        }
-        localStorage.setItem(USERNAME_KEY, username);
-        fetch('/api/jeton/bonus', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username }),
-        })
-            .then((r) => r.json())
-            .then((d) => {
-                if (d.ok) {
-                    jetonBalanceEl.textContent = d.balance;
-                    alert(i18n.bonusSuccess);
-                } else {
-                    jetonBalanceEl.textContent = d.balance;
-                    alert(i18n.bonusClaimed);
-                }
-            });
-    });
+    if (bonusBtn) {
+        bonusBtn.addEventListener('click', () => {
+            fetch('/api/jeton/bonus', { method: 'POST' })
+                .then((r) => {
+                    if (r.status === 401) { goToLogin(); return null; }
+                    return r.json();
+                })
+                .then((d) => {
+                    if (!d) return;
+                    if (d.ok) {
+                        jetonBalanceEl.textContent = d.balance;
+                        alert(i18n.bonusSuccess);
+                    } else {
+                        jetonBalanceEl.textContent = d.balance;
+                        alert(i18n.bonusClaimed);
+                    }
+                });
+        });
+    }
 
     refreshBalance();
 
@@ -162,27 +145,22 @@
     }
 
     async function draw(spreadType) {
-        const username = getUsername();
-        if (!username) {
-            alert(i18n.usernameRequired);
-            return;
-        }
-        localStorage.setItem(USERNAME_KEY, username);
         loading.hidden = false;
         resultArea.innerHTML = '';
         try {
             const response = await fetch(`/api/tirage/${spreadType}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ question: questionInput.value.trim(), username }),
+                body: JSON.stringify({ question: questionInput.value.trim() }),
             });
+            if (response.status === 401) { goToLogin(); return; }
             const data = await response.json();
             if (response.status === 402) {
                 resultArea.innerHTML = `<p class="reading-question">💰 ${escapeHtml(i18n.jetonInsufficient)} (${data.balance}/${data.cost} ${escapeHtml(i18n.jetonUnit)})</p>`;
                 return;
             }
             if (!data.ok) throw new Error(data.error || 'unknown error');
-            jetonBalanceEl.textContent = data.remaining_jeton;
+            if (jetonBalanceEl) jetonBalanceEl.textContent = data.remaining_jeton;
             renderResult(data);
         } catch (err) {
             resultArea.innerHTML = `<p class="reading-question">⚠️ ${escapeHtml(err.message)}</p>`;
@@ -212,21 +190,20 @@
     // ---------- Jeton pack purchase (Stripe Checkout) ----------
     document.querySelectorAll('.btn-buy-pack').forEach((btn) => {
         btn.addEventListener('click', () => {
-            const username = getUsername();
-            if (!username) {
-                alert(i18n.usernameRequired);
-                return;
-            }
-            localStorage.setItem(USERNAME_KEY, username);
+            if (!i18n.loggedIn) { goToLogin(); return; }
             const amount = parseInt(btn.dataset.amount, 10);
             btn.disabled = true;
             fetch('/api/jeton/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, amount }),
+                body: JSON.stringify({ amount }),
             })
-                .then((r) => r.json())
+                .then((r) => {
+                    if (r.status === 401) { goToLogin(); return null; }
+                    return r.json();
+                })
                 .then((d) => {
+                    if (!d) return;
                     if (d.ok && d.url) {
                         window.location.href = d.url;
                     } else {
