@@ -16,6 +16,7 @@ from flask import Flask, flash, jsonify, redirect, render_template, request, ses
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
 import accounts_store
+import db
 import jeton_store
 
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
@@ -32,6 +33,7 @@ GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "rituams-tarot-dev-secret-change-me")
+db.init_schema()
 
 
 def external_url(endpoint, **values):
