@@ -11,11 +11,16 @@
     </div>
 
     <div class="jeton-bar">
-        <input id="usernameInput" type="text" placeholder="{{ t.username_placeholder }}">
-        <span class="jeton-balance">💰 <span id="jetonBalance">—</span> {{ t.jeton_unit }}</span>
-        <button id="bonusBtn" class="btn btn-secondary btn-small">{{ t.jeton_bonus_button }}</button>
+        {% if logged_in %}
+            <span class="jeton-user">👤 {{ current_nickname }}</span>
+            <span class="jeton-balance">💰 <span id="jetonBalance">—</span> {{ t.jeton_unit }}</span>
+            <button id="bonusBtn" class="btn btn-secondary btn-small">{{ t.jeton_bonus_button }}</button>
+        {% else %}
+            <span class="jeton-login-prompt">🔒 {{ t.login_required_reading }}</span>
+            <a class="btn btn-primary btn-small" href="{{ url_for('login_page') }}">{{ t.nav_login }}</a>
+            <a class="btn btn-secondary btn-small" href="{{ url_for('register_page') }}">{{ t.nav_register }}</a>
+        {% endif %}
     </div>
-    <p class="username-label">{{ t.username_label }}</p>
 
     <div class="tab-bar">
         <button class="tab-btn active" data-tab="services">{{ t.tab_services }}</button>
@@ -121,10 +126,11 @@
 </section>
 <script>
     window.TAROT_I18N = {
+        loggedIn: {{ logged_in|tojson }},
+        loginUrl: {{ url_for('login_page')|tojson }},
         upright: {{ t.upright|tojson }},
         reversed: {{ t.reversed|tojson }},
         drawAgain: {{ t.draw_again|tojson }},
-        usernameRequired: {{ t.username_required|tojson }},
         jetonInsufficient: {{ t.jeton_insufficient|tojson }},
         jetonUnit: {{ t.jeton_unit|tojson }},
         bonusClaimed: {{ t.jeton_bonus_claimed|tojson }},

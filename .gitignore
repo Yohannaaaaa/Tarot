@@ -12,6 +12,7 @@ venv/
 *.log
 .idea/
 
-# Runtime data (jeton balances, contact requests)
+# Runtime data (jeton balances, contact requests, accounts)
 data/users.json
 data/messages.json
+data/accounts.json

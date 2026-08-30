@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ t.login_title }} · {{ t.site_title }}{% endblock %}
+{% block content %}
+<section class="auth-page">
+    <div class="auth-card">
+        <h1>{{ t.login_title }}</h1>
+        <p class="auth-subtitle">{{ t.login_subtitle }}</p>
+
+        <a class="btn btn-google" href="{{ url_for('google_login') }}">🔵 {{ t.google_login_button }}</a>
+        <div class="auth-divider"><span>{{ t.or_divider }}</span></div>
+
+        <form method="post" class="auth-form">
+            <input type="email" name="email" placeholder="{{ t.field_email }}" required autocomplete="email">
+            <input type="password" name="password" placeholder="{{ t.field_password }}" required autocomplete="current-password">
+            <button type="submit" class="btn btn-primary full">{{ t.login_submit }}</button>
+        </form>
+
+        <p class="auth-link"><a href="{{ url_for('forgot_password_page') }}">{{ t.forgot_password_link }}</a></p>
+        <p class="auth-link">{{ t.no_account_yet }} <a href="{{ url_for('register_page') }}">{{ t.nav_register }}</a></p>
+    </div>
+</section>
+{% endblock %}

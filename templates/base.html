@@ -14,6 +14,15 @@
             <a href="{{ url_for('cards_page') }}">{{ t.nav_cards }}</a>
             <a href="{{ url_for('reading_page') }}">{{ t.nav_reading }}</a>
         </nav>
+        <div class="auth-nav">
+            {% if logged_in %}
+                <span class="auth-greeting">👤 {{ current_nickname }}</span>
+                <a href="{{ url_for('logout') }}">{{ t.nav_logout }}</a>
+            {% else %}
+                <a href="{{ url_for('login_page') }}">{{ t.nav_login }}</a>
+                <a href="{{ url_for('register_page') }}">{{ t.nav_register }}</a>
+            {% endif %}
+        </div>
         <div class="lang-switch">
             <a href="?lang=fr" class="{{ 'active' if lang == 'fr' else '' }}">FR</a>
             <span>/</span>
@@ -21,6 +30,15 @@
         </div>
     </header>
     <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-wrap">
+                    {% for category, key in messages %}
+                        <p class="flash-message {{ 'flash-error' if category == 'error' else 'flash-success' }}">{{ t.get(key, key) }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
         {% block content %}{% endblock %}
     </main>
     <footer class="site-footer">
