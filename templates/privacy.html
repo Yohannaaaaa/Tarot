@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ t.footer_privacy }} · {{ t.site_title }}{% endblock %}
+{% block content %}
+<section class="legal-page">
+{% if lang == 'tr' %}
+    <h1>Gizlilik Politikası</h1>
+    <p class="legal-updated">Son güncelleme: 2026</p>
+
+    <h2>1. Toplanan Veriler</h2>
+    <p>Hesap oluştururken e-posta adresini ve (varsa) belirlediğin rumuzu topluyoruz. "Sorunu Yaz" formunu kullanırsan isim, anne adı, doğum tarihi, e-posta adresi ve sorunu topluyoruz. Google ile giriş yaparsan Google hesabından e-posta adresini ve adını alıyoruz.</p>
+
+    <h2>2. Ödeme Bilgileri</h2>
+    <p>Kart bilgilerin hiçbir zaman bizim sunucularımızda saklanmaz. Tüm ödemeler Stripe, Inc. üzerinden güvenli şekilde işlenir ve Stripe'ın kendi gizlilik politikası geçerlidir.</p>
+
+    <h2>3. Çerezler</h2>
+    <p>Dil tercihini hatırlamak ve oturumunu açık tutmak için teknik çerezler kullanıyoruz. Reklam veya takip amaçlı üçüncü taraf çerezi kullanmıyoruz.</p>
+
+    <h2>4. Verilerin Kullanımı ve Paylaşımı</h2>
+    <p>Verilerini hesabını yönetmek, jeton bakiyeni takip etmek ve sorularını yanıtlamak için kullanıyoruz. Verilerini satmıyoruz; sadece hizmeti sağlamak için gerekli servis sağlayıcılarla (Stripe – ödeme, Google – giriş, Render – barındırma) paylaşıyoruz.</p>
+
+    <h2>5. Saklama Süresi ve Haklarınız</h2>
+    <p>Verilerin, hesabın aktif olduğu sürece saklanır. Verilerine erişme, düzeltme veya silinmesini talep etme hakkına sahipsin. Talebin için: <a href="mailto:tarot.clairvoyance.rituels@gmail.com">tarot.clairvoyance.rituels@gmail.com</a></p>
+
+    <h2>6. Yaş Sınırı</h2>
+    <p>Bu site 18 yaş ve üzeri kullanıcılara yöneliktir.</p>
+{% else %}
+    <h1>Politique de confidentialité</h1>
+    <p class="legal-updated">Dernière mise à jour : 2026</p>
+
+    <h2>1. Données collectées</h2>
+    <p>Lors de la création d'un compte, nous collectons ton adresse e-mail et, si tu en choisis un, ton pseudo. Si tu utilises le formulaire « Écris ta question », nous collectons ton prénom, le prénom de ta mère, ta date de naissance, ton e-mail et ta question. Si tu te connectes avec Google, nous récupérons ton adresse e-mail et ton nom depuis ton compte Google.</p>
+
+    <h2>2. Informations de paiement</h2>
+    <p>Tes informations de carte bancaire ne sont jamais stockées sur nos serveurs. Tous les paiements sont traités de façon sécurisée par Stripe, Inc., et la politique de confidentialité de Stripe s'applique.</p>
+
+    <h2>3. Cookies</h2>
+    <p>Nous utilisons des cookies techniques pour mémoriser ta langue préférée et maintenir ta session ouverte. Nous n'utilisons aucun cookie tiers publicitaire ou de suivi.</p>
+
+    <h2>4. Utilisation et partage des données</h2>
+    <p>Tes données servent à gérer ton compte, suivre ton solde de jetons et répondre à tes questions. Nous ne vendons pas tes données ; elles ne sont partagées qu'avec les prestataires nécessaires au service (Stripe – paiement, Google – connexion, Render – hébergement).</p>
+
+    <h2>5. Conservation et tes droits</h2>
+    <p>Tes données sont conservées tant que ton compte est actif. Tu as le droit d'accéder à tes données, de les corriger ou d'en demander la suppression. Pour toute demande : <a href="mailto:tarot.clairvoyance.rituels@gmail.com">tarot.clairvoyance.rituels@gmail.com</a></p>
+
+    <h2>6. Âge minimum</h2>
+    <p>Ce site est destiné aux utilisateurs de 18 ans et plus.</p>
+{% endif %}
+</section>
+{% endblock %}

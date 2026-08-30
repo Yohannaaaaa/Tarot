@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ t.footer_terms }} · {{ t.site_title }}{% endblock %}
+{% block content %}
+<section class="legal-page">
+{% if lang == 'tr' %}
+    <h1>Kullanım Şartları</h1>
+    <p class="legal-updated">Son güncelleme: 2026</p>
+
+    <h2>1. Hizmet Tanımı</h2>
+    <p>Rituams Tarot, eğlence ve kişisel yansıma amaçlı tarot kart açılımları ve rehberlik hizmetleri sunar. Sunulan içerik bilimsel bir kehanet ya da tıbbi, hukuki veya finansal profesyonel tavsiye yerine geçmez.</p>
+
+    <h2>2. Jeton Sistemi</h2>
+    <p>Site içi hizmetler "jeton" adlı sanal bir birim ile satın alınır. Jeton paketleri gerçek para karşılığında Stripe üzerinden satın alınır ve satın alma sonrası hesabına otomatik olarak eklenir.</p>
+
+    <h2>3. İade Politikası</h2>
+    <p>Satın alınan jetonlar dijital içerik niteliğinde olup, kullanılmamış olsalar bile satın alma anından itibaren iade edilemez. Ancak teknik bir hata nedeniyle jetonların hesabına yüklenmediğini fark edersen, <a href="mailto:tarot.clairvoyance.rituels@gmail.com">tarot.clairvoyance.rituels@gmail.com</a> adresinden bize ulaş, durumu inceleyip düzelteceğiz.</p>
+
+    <h2>4. Kullanıcı Sorumluluğu</h2>
+    <p>Hesap bilgilerinin gizliliğinden kullanıcı sorumludur. Yanlış veya yanıltıcı bilgi verilmesinden kaynaklanan sorunlardan site sorumlu tutulamaz.</p>
+
+    <h2>5. Yaş Sınırı</h2>
+    <p>Hizmetlerimizi kullanmak için en az 18 yaşında olman gerekir.</p>
+
+    <h2>6. Değişiklikler</h2>
+    <p>Bu şartlar zaman zaman güncellenebilir. Güncel hali her zaman bu sayfada yayınlanır.</p>
+
+    <h2>7. İletişim</h2>
+    <p>Sorularınız için: <a href="mailto:tarot.clairvoyance.rituels@gmail.com">tarot.clairvoyance.rituels@gmail.com</a></p>
+{% else %}
+    <h1>Conditions d'utilisation</h1>
+    <p class="legal-updated">Dernière mise à jour : 2026</p>
+
+    <h2>1. Description du service</h2>
+    <p>Rituams Tarot propose des tirages de tarot et des services de guidance à but de divertissement et de réflexion personnelle. Le contenu proposé ne remplace en aucun cas une prédiction scientifique ni un conseil professionnel médical, juridique ou financier.</p>
+
+    <h2>2. Système de jetons</h2>
+    <p>Les services du site s'achètent avec une unité virtuelle appelée « jeton ». Les packs de jetons sont achetés avec de l'argent réel via Stripe et sont ajoutés automatiquement à ton compte après l'achat.</p>
+
+    <h2>3. Politique de remboursement</h2>
+    <p>Les jetons achetés sont des biens numériques et ne sont pas remboursables une fois l'achat effectué, même s'ils n'ont pas été utilisés. Si toutefois une erreur technique empêche l'ajout des jetons à ton compte, contacte-nous à <a href="mailto:tarot.clairvoyance.rituels@gmail.com">tarot.clairvoyance.rituels@gmail.com</a>, nous examinerons la situation et la corrigerons.</p>
+
+    <h2>4. Responsabilité de l'utilisateur</h2>
+    <p>Tu es responsable de la confidentialité des informations de ton compte. Le site ne peut être tenu responsable des problèmes découlant d'informations fausses ou trompeuses fournies par l'utilisateur.</p>
+
+    <h2>5. Âge minimum</h2>
+    <p>Tu dois avoir au moins 18 ans pour utiliser nos services.</p>
+
+    <h2>6. Modifications</h2>
+    <p>Ces conditions peuvent être mises à jour de temps à autre. La version en vigueur est toujours publiée sur cette page.</p>
+
+    <h2>7. Contact</h2>
+    <p>Pour toute question : <a href="mailto:tarot.clairvoyance.rituels@gmail.com">tarot.clairvoyance.rituels@gmail.com</a></p>
+{% endif %}
+</section>
+{% endblock %}

@@ -112,6 +112,24 @@ main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; widt
     border-top: 1px solid var(--border);
     background: rgba(10, 8, 4, .75);
 }
+.footer-links { margin: 8px 0 0; display: flex; gap: 8px; justify-content: center; }
+.footer-links a { color: var(--text-dim); text-decoration: none; }
+.footer-links a:hover { color: var(--gold-soft); }
+
+.legal-page {
+    max-width: 720px;
+    margin: 0 auto;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 30px 32px;
+    line-height: 1.6;
+}
+.legal-page h1 { color: var(--gold-soft); margin-top: 0; }
+.legal-page h2 { color: var(--gold-soft); font-size: 1.1em; margin: 24px 0 8px; }
+.legal-page p { color: var(--text-dim); margin: 0 0 4px; }
+.legal-page a { color: var(--gold-soft); }
+.legal-updated { font-size: .85em; font-style: italic; margin-bottom: 20px; }
 
 /* Hero */
 .hero { text-align: center; padding: 60px 10px 40px; }
