@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}404 · {{ t.site_title }}{% endblock %}
+{% block content %}
+<section class="auth-page">
+    <div class="auth-card" style="text-align:center">
+        <h1>🔮 404</h1>
+        <p class="auth-subtitle">{{ t.not_found_message }}</p>
+        <a class="btn btn-primary" href="{{ url_for('index') }}">{{ t.back_to_home }}</a>
+    </div>
+</section>
+{% endblock %}

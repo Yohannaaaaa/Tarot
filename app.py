@@ -35,6 +35,9 @@ GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "rituams-tarot-dev-secret-change-me")
+app.config["SESSION_COOKIE_SECURE"] = bool(os.environ.get("RENDER"))
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 db.init_schema()
 
 limiter = Limiter(get_remote_address, app=app, default_limits=[])
@@ -46,6 +49,11 @@ def ratelimit_handler(e):
         return jsonify({"ok": False, "error": "rate_limited"}), 429
     flash("error_rate_limited", "error")
     return redirect(request.referrer or url_for("index"))
+
+
+@app.errorhandler(404)
+def not_found_handler(e):
+    return render_template("404.html"), 404
 
 
 def external_url(endpoint, **values):
@@ -87,6 +95,7 @@ DEFAULT_LANG = "fr"
 UI = {
     "fr": {
         "site_title": "Rituams Tarot",
+        "meta_description": "Tirages de tarot gratuits et consultations en français et en turc : 78 cartes détaillées, tirages variés, rituels et guidance personnalisée.",
         "nav_home": "Accueil",
         "nav_cards": "Les Cartes",
         "nav_reading": "Tirage",
@@ -220,9 +229,12 @@ UI = {
         "account_no_password_note": "Tu t'es connecté(e) avec Google et n'as pas encore de mot de passe. Tu peux en définir un ci-dessous.",
         "field_current_password": "Mot de passe actuel",
         "change_password_submit": "Mettre à jour le mot de passe",
+        "not_found_message": "Cette page n'existe pas ou a été déplacée.",
+        "back_to_home": "← Retour à l'accueil",
     },
     "tr": {
         "site_title": "Rituams Tarot",
+        "meta_description": "Fransızca ve Türkçe ücretsiz tarot açılımları ve bakımlar: 78 detaylı kart, farklı açılımlar, ritüeller ve kişisel rehberlik.",
         "nav_home": "Ana Sayfa",
         "nav_cards": "Kartlar",
         "nav_reading": "Açılım",
@@ -356,6 +368,8 @@ UI = {
         "account_no_password_note": "Google ile giriş yaptın ve henüz bir şifren yok. Aşağıdan bir şifre belirleyebilirsin.",
         "field_current_password": "Mevcut şifre",
         "change_password_submit": "Şifreyi Güncelle",
+        "not_found_message": "Bu sayfa mevcut değil ya da taşınmış.",
+        "back_to_home": "← Ana sayfaya dön",
     },
 }
 
