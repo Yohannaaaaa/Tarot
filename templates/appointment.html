@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ t.appointment_title }} · {{ t.site_title }}{% endblock %}
+{% block body_class %}has-hero-bg{% endblock %}
+{% block content %}
+<section class="auth-page">
+    <div class="auth-card">
+        <h1>{{ t.appointment_title }}</h1>
+        <p class="auth-subtitle">{{ t.appointment_subtitle }}</p>
+
+        <form method="post" class="auth-form">
+            <input type="text" name="name" placeholder="{{ t.field_name }}" required>
+            <input type="tel" name="phone" placeholder="{{ t.field_phone }}" required>
+            <input type="email" name="email" placeholder="{{ t.field_email }}">
+            <input type="datetime-local" name="appointment_date" title="{{ t.field_appointment_datetime }}" required>
+            <textarea name="note" placeholder="{{ t.field_note }}" rows="4"></textarea>
+            <button type="submit" class="btn btn-primary full">{{ t.appointment_submit }}</button>
+        </form>
+    </div>
+</section>
+{% endblock %}
