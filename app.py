@@ -759,7 +759,7 @@ def account_page():
             flash("success_password_reset", "success")
             account = accounts_store.get_account(email)
 
-    balance = jeton_store.get_balance(email)
+    balance = "∞" if is_admin() else jeton_store.get_balance(email)
     return render_template("account.html", account=account, balance=balance)
 
 
@@ -950,9 +950,12 @@ def api_reading(spread_key):
     if not email:
         return jsonify({"ok": False, "error": "login_required"}), 401
 
-    ok, balance = jeton_store.deduct(email, jeton_store.SPREAD_COST)
-    if not ok:
-        return jsonify({"ok": False, "error": "insufficient_funds", "balance": balance, "cost": jeton_store.SPREAD_COST}), 402
+    if is_admin():
+        balance = "∞"
+    else:
+        ok, balance = jeton_store.deduct(email, jeton_store.SPREAD_COST)
+        if not ok:
+            return jsonify({"ok": False, "error": "insufficient_funds", "balance": balance, "cost": jeton_store.SPREAD_COST}), 402
 
     result = draw_spread(spread_key, lang)
     result["ok"] = True
@@ -967,9 +970,12 @@ def api_instant_card():
     if not email:
         return jsonify({"ok": False, "error": "login_required"}), 401
 
-    ok, balance = jeton_store.deduct(email, jeton_store.INSTANT_COST)
-    if not ok:
-        return jsonify({"ok": False, "error": "insufficient_funds", "balance": balance, "cost": jeton_store.INSTANT_COST}), 402
+    if is_admin():
+        balance = "∞"
+    else:
+        ok, balance = jeton_store.deduct(email, jeton_store.INSTANT_COST)
+        if not ok:
+            return jsonify({"ok": False, "error": "insufficient_funds", "balance": balance, "cost": jeton_store.INSTANT_COST}), 402
 
     lang = get_lang()
     card = random.choice(MAJOR_CARDS)
@@ -981,6 +987,13 @@ def api_jeton_balance():
     email = session.get("email")
     if not email:
         return jsonify({"ok": False, "error": "login_required"}), 401
+    if is_admin():
+        return jsonify({
+            "ok": True,
+            "balance": "∞",
+            "bonus_available": False,
+            "nickname": session.get("nickname"),
+        })
     return jsonify({
         "ok": True,
         "balance": jeton_store.get_balance(email),
@@ -994,6 +1007,8 @@ def api_jeton_bonus():
     email = session.get("email")
     if not email:
         return jsonify({"ok": False, "error": "login_required"}), 401
+    if is_admin():
+        return jsonify({"ok": True, "balance": "∞"})
     ok, balance = jeton_store.claim_bonus(email)
     if not ok:
         return jsonify({"ok": False, "error": "already_claimed", "balance": balance}), 400
