@@ -13,6 +13,8 @@ from urllib.parse import urlencode
 import requests
 import stripe
 from flask import Flask, flash, jsonify, redirect, render_template, request, session, url_for
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
 import accounts_store
@@ -34,6 +36,16 @@ GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "rituams-tarot-dev-secret-change-me")
 db.init_schema()
+
+limiter = Limiter(get_remote_address, app=app, default_limits=[])
+
+
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    if request.path.startswith("/api/"):
+        return jsonify({"ok": False, "error": "rate_limited"}), 429
+    flash("error_rate_limited", "error")
+    return redirect(request.referrer or url_for("index"))
 
 
 def external_url(endpoint, **values):
@@ -195,6 +207,19 @@ UI = {
         "error_google_not_configured": "La connexion Google n'est pas encore configurée.",
         "success_reset_email_sent": "Si ce compte existe, un e-mail de réinitialisation a été envoyé.",
         "success_password_reset": "Mot de passe modifié, tu peux te connecter.",
+        "error_rate_limited": "Trop de tentatives, réessaie dans quelques minutes.",
+        "nav_account": "Mon compte",
+        "account_title": "Mon compte",
+        "account_email_label": "E-mail",
+        "account_nickname_label": "Pseudo",
+        "account_balance_label": "Solde de jetons",
+        "account_login_method_label": "Méthode de connexion",
+        "login_method_password": "E-mail et mot de passe",
+        "login_method_google": "Compte Google lié",
+        "change_password_title": "Changer le mot de passe",
+        "account_no_password_note": "Tu t'es connecté(e) avec Google et n'as pas encore de mot de passe. Tu peux en définir un ci-dessous.",
+        "field_current_password": "Mot de passe actuel",
+        "change_password_submit": "Mettre à jour le mot de passe",
     },
     "tr": {
         "site_title": "Rituams Tarot",
@@ -318,6 +343,19 @@ UI = {
         "error_google_not_configured": "Google ile giriş henüz yapılandırılmadı.",
         "success_reset_email_sent": "Bu hesap varsa, bir sıfırlama e-postası gönderildi.",
         "success_password_reset": "Şifre değiştirildi, giriş yapabilirsin.",
+        "error_rate_limited": "Çok fazla deneme yaptın, birkaç dakika sonra tekrar dene.",
+        "nav_account": "Hesabım",
+        "account_title": "Hesabım",
+        "account_email_label": "E-posta",
+        "account_nickname_label": "Rumuz",
+        "account_balance_label": "Jeton Bakiyesi",
+        "account_login_method_label": "Giriş yöntemi",
+        "login_method_password": "E-posta ve şifre",
+        "login_method_google": "Google hesabı bağlı",
+        "change_password_title": "Şifre Değiştir",
+        "account_no_password_note": "Google ile giriş yaptın ve henüz bir şifren yok. Aşağıdan bir şifre belirleyebilirsin.",
+        "field_current_password": "Mevcut şifre",
+        "change_password_submit": "Şifreyi Güncelle",
     },
 }
 
@@ -552,6 +590,7 @@ def card_detail(card_id):
 
 
 @app.route("/inscription", methods=["GET", "POST"])
+@limiter.limit("10 per hour", methods=["POST"])
 def register_page():
     if request.method == "POST":
         email = (request.form.get("email") or "").strip().lower()
@@ -576,6 +615,7 @@ def register_page():
 
 
 @app.route("/connexion", methods=["GET", "POST"])
+@limiter.limit("15 per minute", methods=["POST"])
 def login_page():
     if request.method == "POST":
         email = (request.form.get("email") or "").strip().lower()
@@ -595,7 +635,35 @@ def logout():
     return redirect(url_for("index"))
 
 
+@app.route("/hesabim", methods=["GET", "POST"])
+@limiter.limit("10 per hour", methods=["POST"])
+def account_page():
+    email = session.get("email")
+    if not email:
+        return redirect(url_for("login_page"))
+    account = accounts_store.get_account(email)
+
+    if request.method == "POST":
+        current_password = request.form.get("current_password") or ""
+        new_password = request.form.get("new_password") or ""
+        new_password2 = request.form.get("new_password2") or ""
+        if account.get("password_hash") and not accounts_store.verify_password(email, current_password):
+            flash("error_invalid_credentials", "error")
+        elif len(new_password) < 6:
+            flash("error_password_short", "error")
+        elif new_password != new_password2:
+            flash("error_passwords_mismatch", "error")
+        else:
+            accounts_store.set_password(email, new_password)
+            flash("success_password_reset", "success")
+            account = accounts_store.get_account(email)
+
+    balance = jeton_store.get_balance(email)
+    return render_template("account.html", account=account, balance=balance)
+
+
 @app.route("/mot-de-passe-oublie", methods=["GET", "POST"])
+@limiter.limit("5 per hour", methods=["POST"])
 def forgot_password_page():
     if request.method == "POST":
         email = (request.form.get("email") or "").strip().lower()
@@ -807,6 +875,7 @@ def api_jeton_bonus():
 
 
 @app.route("/api/mesaj", methods=["POST"])
+@limiter.limit("5 per hour")
 def api_message():
     data = request.get_json(silent=True) or {}
     name = (data.get("name") or "").strip()

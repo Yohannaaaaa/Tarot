@@ -16,7 +16,7 @@
         </nav>
         <div class="auth-nav">
             {% if logged_in %}
-                <span class="auth-greeting">👤 {{ current_nickname }}</span>
+                <a href="{{ url_for('account_page') }}" class="auth-greeting">👤 {{ current_nickname }}</a>
                 <a href="{{ url_for('logout') }}">{{ t.nav_logout }}</a>
             {% else %}
                 <a href="{{ url_for('login_page') }}">{{ t.nav_login }}</a>
