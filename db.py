@@ -37,8 +37,9 @@ def init_schema():
     conn = get_conn()
     try:
         with conn.cursor() as cur:
+            # Prefixees "tarot_" : cette base peut etre partagee avec d'autres projets.
             cur.execute("""
-                CREATE TABLE IF NOT EXISTS accounts (
+                CREATE TABLE IF NOT EXISTS tarot_accounts (
                     email_key TEXT PRIMARY KEY,
                     email TEXT NOT NULL,
                     password_hash TEXT,
@@ -48,7 +49,7 @@ def init_schema():
                 )
             """)
             cur.execute("""
-                CREATE TABLE IF NOT EXISTS jetons (
+                CREATE TABLE IF NOT EXISTS tarot_jetons (
                     username TEXT PRIMARY KEY,
                     balance INTEGER NOT NULL,
                     last_bonus DATE,

@@ -102,7 +102,7 @@ def _json_claim_bonus(username, amount):
 
 def _ensure_row(cur, key):
     cur.execute(
-        "INSERT INTO jetons (username, balance, updated_at) VALUES (%s, %s, now()) "
+        "INSERT INTO tarot_jetons (username, balance, updated_at) VALUES (%s, %s, now()) "
         "ON CONFLICT (username) DO NOTHING",
         (key, STARTING_BALANCE),
     )
@@ -114,7 +114,7 @@ def get_balance(username):
     conn = db.get_conn()
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT balance FROM jetons WHERE username=%s", (_key(username),))
+            cur.execute("SELECT balance FROM tarot_jetons WHERE username=%s", (_key(username),))
             row = cur.fetchone()
             return row[0] if row else STARTING_BALANCE
     finally:
@@ -127,7 +127,7 @@ def bonus_available(username):
     conn = db.get_conn()
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT last_bonus FROM jetons WHERE username=%s", (_key(username),))
+            cur.execute("SELECT last_bonus FROM tarot_jetons WHERE username=%s", (_key(username),))
             row = cur.fetchone()
             if not row:
                 return True
@@ -145,13 +145,13 @@ def deduct(username, amount=SPREAD_COST):
     try:
         with conn.cursor() as cur:
             _ensure_row(cur, key)
-            cur.execute("SELECT balance FROM jetons WHERE username=%s FOR UPDATE", (key,))
+            cur.execute("SELECT balance FROM tarot_jetons WHERE username=%s FOR UPDATE", (key,))
             balance = cur.fetchone()[0]
             if balance < amount:
                 conn.commit()
                 return False, balance
             balance -= amount
-            cur.execute("UPDATE jetons SET balance=%s, updated_at=now() WHERE username=%s", (balance, key))
+            cur.execute("UPDATE tarot_jetons SET balance=%s, updated_at=now() WHERE username=%s", (balance, key))
         conn.commit()
         return True, balance
     finally:
@@ -167,9 +167,9 @@ def credit(username, amount):
     try:
         with conn.cursor() as cur:
             _ensure_row(cur, key)
-            cur.execute("SELECT balance FROM jetons WHERE username=%s FOR UPDATE", (key,))
+            cur.execute("SELECT balance FROM tarot_jetons WHERE username=%s FOR UPDATE", (key,))
             balance = cur.fetchone()[0] + amount
-            cur.execute("UPDATE jetons SET balance=%s, updated_at=now() WHERE username=%s", (balance, key))
+            cur.execute("UPDATE tarot_jetons SET balance=%s, updated_at=now() WHERE username=%s", (balance, key))
         conn.commit()
         return balance
     finally:
@@ -186,14 +186,14 @@ def claim_bonus(username, amount=DAILY_BONUS):
     try:
         with conn.cursor() as cur:
             _ensure_row(cur, key)
-            cur.execute("SELECT balance, last_bonus FROM jetons WHERE username=%s FOR UPDATE", (key,))
+            cur.execute("SELECT balance, last_bonus FROM tarot_jetons WHERE username=%s FOR UPDATE", (key,))
             balance, last_bonus = cur.fetchone()
             if last_bonus == today:
                 conn.commit()
                 return False, balance
             balance += amount
             cur.execute(
-                "UPDATE jetons SET balance=%s, last_bonus=%s, updated_at=now() WHERE username=%s",
+                "UPDATE tarot_jetons SET balance=%s, last_bonus=%s, updated_at=now() WHERE username=%s",
                 (balance, today, key),
             )
         conn.commit()
