@@ -27,6 +27,22 @@ import jeton_store
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 
+PAYPAL_CLIENT_ID = os.environ.get("PAYPAL_CLIENT_ID", "")
+PAYPAL_CLIENT_SECRET = os.environ.get("PAYPAL_CLIENT_SECRET", "")
+PAYPAL_MODE = os.environ.get("PAYPAL_MODE", "sandbox")
+PAYPAL_API_BASE = "https://api-m.paypal.com" if PAYPAL_MODE == "live" else "https://api-m.sandbox.paypal.com"
+
+
+def get_paypal_access_token():
+    resp = requests.post(
+        f"{PAYPAL_API_BASE}/v1/oauth2/token",
+        auth=(PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET),
+        data={"grant_type": "client_credentials"},
+        timeout=10,
+    )
+    resp.raise_for_status()
+    return resp.json()["access_token"]
+
 GMAIL_ADDRESS = "tarot.clairvoyance.rituels@gmail.com"
 GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "")
 
@@ -469,11 +485,11 @@ RITUALS = [
 ]
 
 JETON_PACKS = [
-    {"amount": 200, "price": "£4.99", "stripe_price_id": "price_1U9od2LYpYxtFvCYCu69apgZ"},
-    {"amount": 500, "price": "£9.99", "stripe_price_id": "price_1U9odELYpYxtFvCYeOxxxDac"},
-    {"amount": 1200, "price": "£19.99", "stripe_price_id": "price_1U9odGLYpYxtFvCYK1tnGZup"},
-    {"amount": 3000, "price": "£39.99", "stripe_price_id": "price_1U9odJLYpYxtFvCY1Qlbgtoo"},
-    {"amount": 8000, "price": "£89.99", "stripe_price_id": "price_1U9odLLYpYxtFvCY4YjrF4VE"},
+    {"amount": 200, "price": "£4.99", "price_value": 4.99, "stripe_price_id": "price_1U9od2LYpYxtFvCYCu69apgZ"},
+    {"amount": 500, "price": "£9.99", "price_value": 9.99, "stripe_price_id": "price_1U9odELYpYxtFvCYeOxxxDac"},
+    {"amount": 1200, "price": "£19.99", "price_value": 19.99, "stripe_price_id": "price_1U9odGLYpYxtFvCYK1tnGZup"},
+    {"amount": 3000, "price": "£39.99", "price_value": 39.99, "stripe_price_id": "price_1U9odJLYpYxtFvCY1Qlbgtoo"},
+    {"amount": 8000, "price": "£89.99", "price_value": 89.99, "stripe_price_id": "price_1U9odLLYpYxtFvCY4YjrF4VE"},
 ]
 JETON_PACKS_BY_AMOUNT = {p["amount"]: p for p in JETON_PACKS}
 
@@ -918,6 +934,7 @@ def reading_page():
         spread_cost=jeton_store.SPREAD_COST,
         instant_cost=jeton_store.INSTANT_COST,
         daily_bonus=jeton_store.DAILY_BONUS,
+        paypal_client_id=PAYPAL_CLIENT_ID,
     )
 
 
@@ -1153,6 +1170,83 @@ def api_jeton_checkout():
         cancel_url=f"{base_url}/tirage?checkout=cancel",
     )
     return jsonify({"ok": True, "url": checkout_session.url})
+
+
+@app.route("/api/paypal/create-order", methods=["POST"])
+def api_paypal_create_order():
+    email = session.get("email")
+    if not email:
+        return jsonify({"ok": False, "error": "login_required"}), 401
+
+    if not (PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET):
+        return jsonify({"ok": False, "error": "paypal_not_configured"}), 503
+
+    data = request.get_json(silent=True) or {}
+    amount = data.get("amount")
+    pack = JETON_PACKS_BY_AMOUNT.get(amount)
+    if not pack:
+        return jsonify({"ok": False, "error": "unknown_pack"}), 404
+
+    try:
+        token = get_paypal_access_token()
+        resp = requests.post(
+            f"{PAYPAL_API_BASE}/v2/checkout/orders",
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+            json={
+                "intent": "CAPTURE",
+                "purchase_units": [{
+                    "amount": {"currency_code": "GBP", "value": f"{pack['price_value']:.2f}"},
+                    "custom_id": f"{email}:{pack['amount']}",
+                }],
+            },
+            timeout=10,
+        )
+        resp.raise_for_status()
+        order = resp.json()
+    except requests.RequestException:
+        return jsonify({"ok": False, "error": "paypal_error"}), 502
+
+    return jsonify({"ok": True, "order_id": order["id"]})
+
+
+@app.route("/api/paypal/capture-order", methods=["POST"])
+def api_paypal_capture_order():
+    email = session.get("email")
+    if not email:
+        return jsonify({"ok": False, "error": "login_required"}), 401
+
+    data = request.get_json(silent=True) or {}
+    order_id = (data.get("order_id") or "").strip()
+    if not order_id:
+        return jsonify({"ok": False, "error": "missing_order_id"}), 400
+
+    try:
+        token = get_paypal_access_token()
+        resp = requests.post(
+            f"{PAYPAL_API_BASE}/v2/checkout/orders/{order_id}/capture",
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+            timeout=10,
+        )
+        resp.raise_for_status()
+        capture = resp.json()
+    except requests.RequestException:
+        return jsonify({"ok": False, "error": "paypal_error"}), 502
+
+    if capture.get("status") != "COMPLETED":
+        return jsonify({"ok": False, "error": "not_completed"}), 400
+
+    try:
+        custom_id = capture["purchase_units"][0]["payments"]["captures"][0].get("custom_id", "")
+        paid_email, _, amount_str = custom_id.partition(":")
+        amount = int(amount_str)
+    except (KeyError, IndexError, ValueError):
+        return jsonify({"ok": False, "error": "bad_capture"}), 400
+
+    if paid_email != email or amount not in JETON_PACKS_BY_AMOUNT:
+        return jsonify({"ok": False, "error": "mismatch"}), 400
+
+    balance = jeton_store.credit(email, amount)
+    return jsonify({"ok": True, "balance": balance})
 
 
 @app.route("/api/stripe/webhook", methods=["POST"])
