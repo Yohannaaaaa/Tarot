@@ -13,7 +13,6 @@
 
     // ---------- Jeton balance ----------
     const jetonBalanceEl = document.getElementById('jetonBalance');
-    const bonusBtn = document.getElementById('bonusBtn');
 
     function refreshBalance() {
         if (!i18n.loggedIn || !jetonBalanceEl) return;
@@ -23,26 +22,6 @@
                 if (d.ok) jetonBalanceEl.textContent = d.balance;
             })
             .catch(() => {});
-    }
-
-    if (bonusBtn) {
-        bonusBtn.addEventListener('click', () => {
-            fetch('/api/jeton/bonus', { method: 'POST' })
-                .then((r) => {
-                    if (r.status === 401) { goToLogin(); return null; }
-                    return r.json();
-                })
-                .then((d) => {
-                    if (!d) return;
-                    if (d.ok) {
-                        jetonBalanceEl.textContent = d.balance;
-                        alert(i18n.bonusSuccess);
-                    } else {
-                        jetonBalanceEl.textContent = d.balance;
-                        alert(i18n.bonusClaimed);
-                    }
-                });
-        });
     }
 
     refreshBalance();

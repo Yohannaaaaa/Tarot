@@ -3,17 +3,16 @@
 """Soldes de jetons : PostgreSQL si DATABASE_URL est definie, sinon fichier JSON."""
 import json
 import threading
-from datetime import date, datetime
+from datetime import datetime
 from pathlib import Path
 
 import db
 
 STORE_PATH = Path(__file__).resolve().parent / "data" / "users.json"
 
-STARTING_BALANCE = 1000
+STARTING_BALANCE = 500
 SPREAD_COST = 200
 INSTANT_COST = 50
-DAILY_BONUS = 300
 
 _lock = threading.Lock()
 
@@ -47,20 +46,11 @@ def _json_get_balance(username):
         return user["balance"] if user else STARTING_BALANCE
 
 
-def _json_bonus_available(username):
-    with _lock:
-        users = _json_load()
-        user = users.get(_key(username))
-        if not user:
-            return True
-        return user.get("last_bonus") != date.today().isoformat()
-
-
 def _json_deduct(username, amount):
     with _lock:
         users = _json_load()
         key = _key(username)
-        user = users.setdefault(key, {"display": username, "balance": STARTING_BALANCE, "last_bonus": None})
+        user = users.setdefault(key, {"display": username, "balance": STARTING_BALANCE})
         if user["balance"] < amount:
             return False, user["balance"]
         user["balance"] -= amount
@@ -74,28 +64,12 @@ def _json_credit(username, amount):
     with _lock:
         users = _json_load()
         key = _key(username)
-        user = users.setdefault(key, {"display": username, "balance": STARTING_BALANCE, "last_bonus": None})
+        user = users.setdefault(key, {"display": username, "balance": STARTING_BALANCE})
         user["balance"] += amount
         user["display"] = username
         user["updated_at"] = datetime.utcnow().isoformat()
         _json_save(users)
         return user["balance"]
-
-
-def _json_claim_bonus(username, amount):
-    with _lock:
-        users = _json_load()
-        key = _key(username)
-        today = date.today().isoformat()
-        user = users.setdefault(key, {"display": username, "balance": STARTING_BALANCE, "last_bonus": None})
-        if user.get("last_bonus") == today:
-            return False, user["balance"]
-        user["balance"] += amount
-        user["last_bonus"] = today
-        user["display"] = username
-        user["updated_at"] = datetime.utcnow().isoformat()
-        _json_save(users)
-        return True, user["balance"]
 
 
 # ---------- Backend PostgreSQL ----------
@@ -117,21 +91,6 @@ def get_balance(username):
             cur.execute("SELECT balance FROM tarot_jetons WHERE username=%s", (_key(username),))
             row = cur.fetchone()
             return row[0] if row else STARTING_BALANCE
-    finally:
-        db.put_conn(conn)
-
-
-def bonus_available(username):
-    if not db.has_db():
-        return _json_bonus_available(username)
-    conn = db.get_conn()
-    try:
-        with conn.cursor() as cur:
-            cur.execute("SELECT last_bonus FROM tarot_jetons WHERE username=%s", (_key(username),))
-            row = cur.fetchone()
-            if not row:
-                return True
-            return row[0] != date.today()
     finally:
         db.put_conn(conn)
 
@@ -159,7 +118,7 @@ def deduct(username, amount=SPREAD_COST):
 
 
 def credit(username, amount):
-    """Ajoute des jetons (achat Stripe). Retourne le nouveau solde."""
+    """Ajoute des jetons (achat Stripe/PayPal). Retourne le nouveau solde."""
     if not db.has_db():
         return _json_credit(username, amount)
     key = _key(username)
@@ -172,31 +131,5 @@ def credit(username, amount):
             cur.execute("UPDATE tarot_jetons SET balance=%s, updated_at=now() WHERE username=%s", (balance, key))
         conn.commit()
         return balance
-    finally:
-        db.put_conn(conn)
-
-
-def claim_bonus(username, amount=DAILY_BONUS):
-    """Retourne (ok, nouveau_solde). ok=False si le bonus du jour a deja ete pris."""
-    if not db.has_db():
-        return _json_claim_bonus(username, amount)
-    key = _key(username)
-    today = date.today()
-    conn = db.get_conn()
-    try:
-        with conn.cursor() as cur:
-            _ensure_row(cur, key)
-            cur.execute("SELECT balance, last_bonus FROM tarot_jetons WHERE username=%s FOR UPDATE", (key,))
-            balance, last_bonus = cur.fetchone()
-            if last_bonus == today:
-                conn.commit()
-                return False, balance
-            balance += amount
-            cur.execute(
-                "UPDATE tarot_jetons SET balance=%s, last_bonus=%s, updated_at=now() WHERE username=%s",
-                (balance, today, key),
-            )
-        conn.commit()
-        return True, balance
     finally:
         db.put_conn(conn)

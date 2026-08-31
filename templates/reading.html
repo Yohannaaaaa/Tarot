@@ -14,7 +14,6 @@
         {% if logged_in %}
             <span class="jeton-user">👤 {{ current_nickname }}</span>
             <span class="jeton-balance">💰 <span id="jetonBalance">—</span> {{ t.jeton_unit }}</span>
-            <button id="bonusBtn" class="btn btn-secondary btn-small">{{ t.jeton_bonus_button }}</button>
         {% else %}
             <span class="jeton-login-prompt">🔒 {{ t.login_required_reading }}</span>
             <a class="btn btn-primary btn-small" href="{{ url_for('login_page') }}">{{ t.nav_login }}</a>
@@ -138,8 +137,6 @@
         drawAgain: {{ t.draw_again|tojson }},
         jetonInsufficient: {{ t.jeton_insufficient|tojson }},
         jetonUnit: {{ t.jeton_unit|tojson }},
-        bonusClaimed: {{ t.jeton_bonus_claimed|tojson }},
-        bonusSuccess: {{ t.jeton_bonus_success|tojson }},
         formSending: {{ t.form_sending|tojson }},
         formSuccess: {{ t.form_success|tojson }},
         formError: {{ t.form_error|tojson }},
