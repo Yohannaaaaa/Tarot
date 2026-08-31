@@ -19,6 +19,9 @@
         </nav>
         <div class="auth-nav">
             {% if logged_in %}
+                {% if is_admin %}
+                    <a href="{{ url_for('admin_appointments') }}">📅 Admin</a>
+                {% endif %}
                 <a href="{{ url_for('account_page') }}" class="auth-greeting">👤 {{ current_nickname }}</a>
                 <a href="{{ url_for('logout') }}">{{ t.nav_logout }}</a>
             {% else %}

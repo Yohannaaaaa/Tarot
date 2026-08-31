@@ -30,6 +30,17 @@ STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 GMAIL_ADDRESS = "tarot.clairvoyance.rituels@gmail.com"
 GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "")
 
+ADMIN_EMAILS = {
+    e.strip().lower()
+    for e in os.environ.get("ADMIN_EMAILS", GMAIL_ADDRESS).split(",")
+    if e.strip()
+}
+
+
+def is_admin():
+    email = session.get("email")
+    return bool(email and email.lower() in ADMIN_EMAILS)
+
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "")
 TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN", "")
 TWILIO_FROM_NUMBER = os.environ.get("TWILIO_FROM_NUMBER", "")
@@ -541,6 +552,7 @@ def inject_globals():
         "logged_in": bool(session.get("email")),
         "current_nickname": session.get("nickname"),
         "whatsapp_link": f"https://wa.me/{WHATSAPP_NUMBER}" if WHATSAPP_NUMBER else None,
+        "is_admin": is_admin(),
     }
 
 
@@ -856,6 +868,29 @@ def google_callback():
 MAJOR_CARDS = [c for c in CARDS if c["arcana"] == "major"]
 MESSAGES_PATH = Path(__file__).resolve().parent / "data" / "messages.json"
 APPOINTMENTS_PATH = Path(__file__).resolve().parent / "data" / "appointments.json"
+BLOCKED_DATES_PATH = Path(__file__).resolve().parent / "data" / "blocked_dates.json"
+
+
+def load_appointments():
+    try:
+        with open(APPOINTMENTS_PATH, encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+
+def load_blocked_dates():
+    try:
+        with open(BLOCKED_DATES_PATH, encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return []
+
+
+def save_blocked_dates(dates):
+    BLOCKED_DATES_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(BLOCKED_DATES_PATH, "w", encoding="utf-8") as f:
+        json.dump(dates, f, ensure_ascii=False, indent=2)
 
 
 @app.route("/tirage")
@@ -1028,13 +1063,9 @@ def appointment_page():
                 "lang": get_lang(),
                 "createdAt": datetime.utcnow().isoformat(),
             }
-            APPOINTMENTS_PATH.parent.mkdir(parents=True, exist_ok=True)
-            try:
-                with open(APPOINTMENTS_PATH, encoding="utf-8") as f:
-                    appointments = json.load(f)
-            except (FileNotFoundError, json.JSONDecodeError):
-                appointments = []
+            appointments = load_appointments()
             appointments.append(entry)
+            APPOINTMENTS_PATH.parent.mkdir(parents=True, exist_ok=True)
             with open(APPOINTMENTS_PATH, "w", encoding="utf-8") as f:
                 json.dump(appointments, f, ensure_ascii=False, indent=2)
 
@@ -1060,17 +1091,40 @@ def appointment_page():
 
 @app.route("/api/randevu/dolu-tarihler")
 def api_busy_dates():
-    try:
-        with open(APPOINTMENTS_PATH, encoding="utf-8") as f:
-            appointments = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        appointments = []
-    busy_dates = sorted({
+    appointments = load_appointments()
+    busy_dates = {
         a["appointmentDate"].split("T")[0]
         for a in appointments
         if a.get("appointmentDate")
-    })
-    return jsonify({"ok": True, "busy_dates": busy_dates})
+    }
+    busy_dates.update(load_blocked_dates())
+    return jsonify({"ok": True, "busy_dates": sorted(busy_dates)})
+
+
+@app.route("/admin/randevular", methods=["GET", "POST"])
+@limiter.limit("30 per hour", methods=["POST"])
+def admin_appointments():
+    if not is_admin():
+        return redirect(url_for("login_page"))
+
+    if request.method == "POST":
+        action = request.form.get("action")
+        blocked = load_blocked_dates()
+        if action == "block":
+            date_str = (request.form.get("block_date") or "").strip()
+            if date_str and date_str not in blocked:
+                blocked.append(date_str)
+                save_blocked_dates(sorted(blocked))
+        elif action == "unblock":
+            date_str = (request.form.get("date") or "").strip()
+            if date_str in blocked:
+                blocked.remove(date_str)
+                save_blocked_dates(blocked)
+        return redirect(url_for("admin_appointments"))
+
+    appointments = sorted(load_appointments(), key=lambda a: a.get("appointmentDate", ""))
+    blocked_dates = load_blocked_dates()
+    return render_template("admin_appointments.html", appointments=appointments, blocked_dates=blocked_dates)
 
 
 @app.route("/api/jeton/checkout", methods=["POST"])
