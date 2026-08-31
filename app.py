@@ -16,9 +16,6 @@ from flask import Flask, flash, jsonify, redirect, render_template, request, ses
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
-from twilio.base.exceptions import TwilioException
-from twilio.rest import Client as TwilioClient
-from twilio.twiml.voice_response import VoiceResponse
 
 import accounts_store
 import db
@@ -56,11 +53,6 @@ ADMIN_EMAILS = {
 def is_admin():
     email = session.get("email")
     return bool(email and email.lower() in ADMIN_EMAILS)
-
-TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "")
-TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN", "")
-TWILIO_FROM_NUMBER = os.environ.get("TWILIO_FROM_NUMBER", "")
-TWILIO_NOTIFY_TO = os.environ.get("TWILIO_NOTIFY_TO", "")
 
 WHATSAPP_NUMBER = os.environ.get("WHATSAPP_NUMBER", "")
 
@@ -118,25 +110,6 @@ def send_email(to_addr, subject, body):
             server.sendmail(GMAIL_ADDRESS, [to_addr], msg.as_string())
         return True
     except (smtplib.SMTPException, OSError):
-        return False
-
-
-def notify_appointment_call(name, phone, appointment_date, note):
-    if not (TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN and TWILIO_FROM_NUMBER and TWILIO_NOTIFY_TO):
-        return False
-    try:
-        client = TwilioClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
-        message = (
-            f"Yeni randevu talebi. İsim: {name}. Telefon numarası: {phone}. "
-            f"İstenen tarih: {appointment_date}."
-        )
-        if note:
-            message += f" Not: {note}."
-        twiml = VoiceResponse()
-        twiml.say(message, language="tr-TR")
-        client.calls.create(to=TWILIO_NOTIFY_TO, from_=TWILIO_FROM_NUMBER, twiml=str(twiml))
-        return True
-    except (TwilioException, requests.RequestException):
         return False
 
 
@@ -1079,7 +1052,6 @@ def appointment_page():
             with open(APPOINTMENTS_PATH, "w", encoding="utf-8") as f:
                 json.dump(appointments, f, ensure_ascii=False, indent=2)
 
-            notify_appointment_call(name, phone, appointment_date, note)
             send_email(
                 GMAIL_ADDRESS,
                 f"Nouvelle demande de rendez-vous - {name}",
@@ -1138,6 +1110,7 @@ def admin_appointments():
 
 
 @app.route("/api/jeton/checkout", methods=["POST"])
+@limiter.limit("20 per hour")
 def api_jeton_checkout():
     email = session.get("email")
     if not email:
@@ -1166,6 +1139,7 @@ def api_jeton_checkout():
 
 
 @app.route("/api/paypal/create-order", methods=["POST"])
+@limiter.limit("20 per hour")
 def api_paypal_create_order():
     email = session.get("email")
     if not email:
@@ -1203,6 +1177,7 @@ def api_paypal_create_order():
 
 
 @app.route("/api/paypal/capture-order", methods=["POST"])
+@limiter.limit("20 per hour")
 def api_paypal_capture_order():
     email = session.get("email")
     if not email:
