@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ t.account_title }} · {{ t.site_title }}{% endblock %}
+{% block content %}
+<section class="auth-page">
+    <div class="auth-card">
+        <h1>{{ t.account_title }}</h1>
+
+        <div class="account-info">
+            <p><strong>{{ t.account_email_label }}:</strong> {{ account.email }}</p>
+            <p><strong>{{ t.account_nickname_label }}:</strong> {{ account.nickname }}</p>
+            <p><strong>{{ t.account_balance_label }}:</strong> 🪙 {{ balance }} {{ t.jeton_unit }}</p>
+            <p><strong>{{ t.account_login_method_label }}:</strong>
+                {% if account.google_id %}{{ t.login_method_google }}{% endif %}
+                {% if account.google_id and account.password_hash %} · {% endif %}
+                {% if account.password_hash %}{{ t.login_method_password }}{% endif %}
+            </p>
+        </div>
+
+        <div class="auth-divider"><span>{{ t.change_password_title }}</span></div>
+
+        {% if not account.password_hash %}
+        <p class="account-note">{{ t.account_no_password_note }}</p>
+        {% endif %}
+
+        <form method="post" class="auth-form">
+            {% if account.password_hash %}
+            <input type="password" name="current_password" placeholder="{{ t.field_current_password }}" required autocomplete="current-password">
+            {% endif %}
+            <input type="password" name="new_password" placeholder="{{ t.field_new_password }}" required autocomplete="new-password">
+            <input type="password" name="new_password2" placeholder="{{ t.field_new_password_confirm }}" required autocomplete="new-password">
+            <button type="submit" class="btn btn-primary full">{{ t.change_password_submit }}</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

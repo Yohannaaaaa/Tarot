@@ -90,7 +90,8 @@ a { color: inherit; }
     transition: color .2s;
 }
 .auth-nav a:hover { color: var(--gold-soft); }
-.auth-greeting { color: var(--gold-soft); }
+.auth-greeting { color: var(--gold-soft); text-decoration: none; }
+.auth-greeting:hover { text-decoration: underline; }
 
 .flash-wrap { max-width: 560px; margin: 0 auto 20px; }
 .flash-message {
@@ -597,6 +598,11 @@ main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; widt
 .auth-link { margin: 16px 0 0; color: var(--text-dim); font-size: .9em; }
 .auth-link a { color: var(--gold-soft); font-weight: 700; text-decoration: none; }
 .auth-link a:hover { text-decoration: underline; }
+
+.account-info { text-align: left; margin-bottom: 10px; }
+.account-info p { color: var(--text-dim); margin: 6px 0; }
+.account-info strong { color: var(--gold-soft); }
+.account-note { color: var(--text-dim); font-size: .85em; text-align: left; margin: 0 0 14px; font-style: italic; }
 
 @media (max-width: 640px) {
     .detail-header { flex-direction: column; align-items: flex-start; }
