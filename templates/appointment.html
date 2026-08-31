@@ -7,6 +7,7 @@
         <h1>{{ t.appointment_title }}</h1>
         <p class="auth-subtitle">{{ t.appointment_subtitle }}</p>
 
+        <p class="calendar-hint">👇 {{ t.appointment_calendar_hint }}</p>
         <div class="calendar-wrap">
             <div class="calendar-header">
                 <button type="button" id="calPrev" class="cal-nav-btn">‹</button>
@@ -19,6 +20,7 @@
                 <span><i class="cal-dot cal-dot-free"></i> {{ t.calendar_legend_free }}</span>
                 <span><i class="cal-dot cal-dot-busy"></i> {{ t.calendar_legend_busy }}</span>
             </div>
+            <p id="calendarWarning" class="calendar-warning" hidden></p>
         </div>
 
         <div class="time-picker-wrap" id="timePickerWrap" hidden>
