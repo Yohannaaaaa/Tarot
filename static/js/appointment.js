@@ -9,6 +9,7 @@
     const timeWrap = document.getElementById('timePickerWrap');
     const timeSelect = document.getElementById('appointmentTimeSelect');
     const form = document.getElementById('appointmentForm');
+    const warning = document.getElementById('calendarWarning');
 
     if (!grid) return;
 
@@ -37,6 +38,7 @@
         document.querySelectorAll('.cal-day.cal-selected').forEach((el) => el.classList.remove('cal-selected'));
         cell.classList.add('cal-selected');
         timeWrap.hidden = false;
+        if (warning) warning.hidden = true;
         updateHiddenInput();
     }
 
@@ -89,7 +91,11 @@
         form.addEventListener('submit', (e) => {
             if (!dateInput.value) {
                 e.preventDefault();
-                alert(i18n.selectDatePrompt || 'Please select a date and time.');
+                if (warning) {
+                    warning.textContent = i18n.selectDatePrompt || 'Please select a date and time.';
+                    warning.hidden = false;
+                }
+                grid.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         });
     }
