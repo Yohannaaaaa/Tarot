@@ -46,7 +46,12 @@
                 <tr>
                     <td>{{ a.appointmentDate }}</td>
                     <td>{{ a.name }}</td>
-                    <td><a href="tel:{{ a.phone }}">{{ a.phone }}</a></td>
+                    <td>
+                        <a href="tel:{{ a.phone }}">{{ a.phone }}</a>
+                        <a class="admin-wa-link" title="WhatsApp'tan yaz/ara"
+                           href="https://wa.me/{{ a.phone|wa_number }}?text={{ ('Merhaba ' ~ a.name ~ ', ' ~ a.appointmentDate ~ ' tarihli randevun için yazıyorum.')|urlencode }}"
+                           target="_blank" rel="noopener">💬</a>
+                    </td>
                     <td>{{ a.email }}</td>
                     <td>{{ a.note }}</td>
                     <td>{{ a.createdAt[:16] }}</td>
