@@ -6,7 +6,7 @@ import random
 import re
 import secrets
 import smtplib
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from email.mime.text import MIMEText
 from pathlib import Path
 from urllib.parse import urlencode
@@ -57,6 +57,9 @@ def is_admin():
 
 
 WHATSAPP_NUMBER = os.environ.get("WHATSAPP_NUMBER", "")
+
+CRON_SECRET = os.environ.get("CRON_SECRET", "")
+ISTANBUL_TZ = timezone(timedelta(hours=3))
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
@@ -1055,9 +1058,7 @@ def appointment_page():
             }
             appointments = load_appointments()
             appointments.append(entry)
-            APPOINTMENTS_PATH.parent.mkdir(parents=True, exist_ok=True)
-            with open(APPOINTMENTS_PATH, "w", encoding="utf-8") as f:
-                json.dump(appointments, f, ensure_ascii=False, indent=2)
+            save_appointments(appointments)
 
             send_email(
                 GMAIL_ADDRESS,
@@ -1088,6 +1089,53 @@ def api_busy_dates():
     }
     busy_dates.update(load_blocked_dates())
     return jsonify({"ok": True, "busy_dates": sorted(busy_dates)})
+
+
+def save_appointments(appointments):
+    APPOINTMENTS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(APPOINTMENTS_PATH, "w", encoding="utf-8") as f:
+        json.dump(appointments, f, ensure_ascii=False, indent=2)
+
+
+@app.route("/api/cron/randevu-hatirlat")
+def cron_appointment_reminder():
+    if not CRON_SECRET or request.args.get("secret") != CRON_SECRET:
+        return jsonify({"ok": False, "error": "forbidden"}), 403
+
+    appointments = load_appointments()
+    now = datetime.now(ISTANBUL_TZ).replace(tzinfo=None)
+    reminded = 0
+    changed = False
+
+    for appt in appointments:
+        if appt.get("reminded"):
+            continue
+        try:
+            appt_dt = datetime.fromisoformat(appt["appointmentDate"])
+        except (KeyError, ValueError):
+            continue
+        seconds_until = (appt_dt - now).total_seconds()
+        if 0 <= seconds_until <= 900:
+            wa_link = f"https://wa.me/{wa_number_filter(appt.get('phone'))}"
+            body_lines = [
+                "Randevu zamanı yaklaşıyor!",
+                "",
+                f"İsim: {appt.get('name', '')}",
+                f"Telefon: {appt.get('phone', '')}",
+                f"Tarih: {appt.get('appointmentDate', '')}",
+                f"Not: {appt.get('note', '')}",
+                "",
+                f"WhatsApp'tan yaz: {wa_link}",
+            ]
+            send_email(GMAIL_ADDRESS, f"Randevu hatırlatma - {appt.get('name', '')}", "\n".join(body_lines))
+            appt["reminded"] = True
+            changed = True
+            reminded += 1
+
+    if changed:
+        save_appointments(appointments)
+
+    return jsonify({"ok": True, "reminded": reminded})
 
 
 @app.route("/admin/randevular", methods=["GET", "POST"])
