@@ -125,7 +125,7 @@ def get_account(email):
         with conn.cursor() as cur:
             cur.execute(
                 "SELECT email, password_hash, nickname, google_id, created_at "
-                "FROM accounts WHERE email_key=%s",
+                "FROM tarot_accounts WHERE email_key=%s",
                 (_key(email),),
             )
             return _row_to_account(cur.fetchone())
@@ -139,7 +139,7 @@ def email_exists(email):
     conn = db.get_conn()
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT 1 FROM accounts WHERE email_key=%s", (_key(email),))
+            cur.execute("SELECT 1 FROM tarot_accounts WHERE email_key=%s", (_key(email),))
             return cur.fetchone() is not None
     finally:
         db.put_conn(conn)
@@ -156,7 +156,7 @@ def create_account(email, password, nickname):
     try:
         with conn.cursor() as cur:
             cur.execute(
-                "INSERT INTO accounts (email_key, email, password_hash, nickname) "
+                "INSERT INTO tarot_accounts (email_key, email, password_hash, nickname) "
                 "VALUES (%s, %s, %s, %s) ON CONFLICT (email_key) DO NOTHING",
                 (key, email.strip(), password_hash, nick),
             )
@@ -183,7 +183,7 @@ def set_password(email, new_password):
     try:
         with conn.cursor() as cur:
             cur.execute(
-                "UPDATE accounts SET password_hash=%s WHERE email_key=%s",
+                "UPDATE tarot_accounts SET password_hash=%s WHERE email_key=%s",
                 (generate_password_hash(new_password), _key(email)),
             )
             updated = cur.rowcount > 0
@@ -203,7 +203,7 @@ def upsert_google_account(email, google_id, name):
     try:
         with conn.cursor() as cur:
             cur.execute(
-                "INSERT INTO accounts (email_key, email, password_hash, nickname, google_id) "
+                "INSERT INTO tarot_accounts (email_key, email, password_hash, nickname, google_id) "
                 "VALUES (%s, %s, NULL, %s, %s) "
                 "ON CONFLICT (email_key) DO UPDATE SET google_id = EXCLUDED.google_id",
                 (key, email.strip(), nick, google_id),
