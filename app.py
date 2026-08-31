@@ -265,9 +265,14 @@ UI = {
         "field_phone": "Numéro de téléphone",
         "field_appointment_datetime": "Date et heure souhaitées",
         "field_note": "Ta note (optionnel)",
+        "field_appointment_time": "Heure",
         "appointment_submit": "Envoyer la demande de rendez-vous",
         "error_appointment_missing_fields": "Renseigne au moins ton prénom, ton téléphone et la date souhaitée.",
         "success_appointment_sent": "Ta demande de rendez-vous a été reçue, nous te contacterons bientôt !",
+        "appointment_select_date_prompt": "Choisis d'abord une date et une heure dans le calendrier.",
+        "calendar_legend_free": "Disponible",
+        "calendar_legend_busy": "Déjà réservé",
+        "calendar_weekdays": ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
     },
     "tr": {
         "site_title": "Rituams Tarot",
@@ -413,9 +418,14 @@ UI = {
         "field_phone": "Telefon Numarası",
         "field_appointment_datetime": "İstenen tarih ve saat",
         "field_note": "Notun (opsiyonel)",
+        "field_appointment_time": "Saat",
         "appointment_submit": "Randevu Talebi Gönder",
         "error_appointment_missing_fields": "En azından isim, telefon numarası ve istenen tarihi doldur.",
         "success_appointment_sent": "Randevu talebin alındı, en kısa sürede seninle iletişime geçeceğiz!",
+        "appointment_select_date_prompt": "Önce takvimden bir tarih ve saat seç.",
+        "calendar_legend_free": "Müsait",
+        "calendar_legend_busy": "Dolu",
+        "calendar_weekdays": ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"],
     },
 }
 
@@ -1043,6 +1053,21 @@ def appointment_page():
             flash("success_appointment_sent", "success")
             return redirect(url_for("appointment_page"))
     return render_template("appointment.html")
+
+
+@app.route("/api/randevu/dolu-tarihler")
+def api_busy_dates():
+    try:
+        with open(APPOINTMENTS_PATH, encoding="utf-8") as f:
+            appointments = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        appointments = []
+    busy_dates = sorted({
+        a["appointmentDate"].split("T")[0]
+        for a in appointments
+        if a.get("appointmentDate")
+    })
+    return jsonify({"ok": True, "busy_dates": busy_dates})
 
 
 @app.route("/api/jeton/checkout", methods=["POST"])

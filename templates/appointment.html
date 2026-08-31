@@ -7,14 +7,52 @@
         <h1>{{ t.appointment_title }}</h1>
         <p class="auth-subtitle">{{ t.appointment_subtitle }}</p>
 
-        <form method="post" class="auth-form">
+        <div class="calendar-wrap">
+            <div class="calendar-header">
+                <button type="button" id="calPrev" class="cal-nav-btn">‹</button>
+                <span id="calMonthLabel"></span>
+                <button type="button" id="calNext" class="cal-nav-btn">›</button>
+            </div>
+            <div class="calendar-weekdays" id="calWeekdays"></div>
+            <div class="calendar-grid" id="calGrid"></div>
+            <div class="calendar-legend">
+                <span><i class="cal-dot cal-dot-free"></i> {{ t.calendar_legend_free }}</span>
+                <span><i class="cal-dot cal-dot-busy"></i> {{ t.calendar_legend_busy }}</span>
+            </div>
+        </div>
+
+        <div class="time-picker-wrap" id="timePickerWrap" hidden>
+            <label for="appointmentTimeSelect">{{ t.field_appointment_time }}</label>
+            <select id="appointmentTimeSelect">
+                <option value="10:00">10:00</option>
+                <option value="11:00">11:00</option>
+                <option value="12:00">12:00</option>
+                <option value="14:00">14:00</option>
+                <option value="15:00">15:00</option>
+                <option value="16:00">16:00</option>
+                <option value="17:00">17:00</option>
+                <option value="18:00">18:00</option>
+                <option value="19:00">19:00</option>
+                <option value="20:00">20:00</option>
+            </select>
+        </div>
+
+        <form method="post" class="auth-form" id="appointmentForm">
+            <input type="hidden" name="appointment_date" id="appointmentDateInput">
             <input type="text" name="name" placeholder="{{ t.field_name }}" required>
             <input type="tel" name="phone" placeholder="{{ t.field_phone }}" required>
             <input type="email" name="email" placeholder="{{ t.field_email }}">
-            <input type="datetime-local" name="appointment_date" title="{{ t.field_appointment_datetime }}" required>
             <textarea name="note" placeholder="{{ t.field_note }}" rows="4"></textarea>
             <button type="submit" class="btn btn-primary full">{{ t.appointment_submit }}</button>
         </form>
     </div>
 </section>
+<script>
+    window.TAROT_APPT_I18N = {
+        locale: {{ ('tr-TR' if lang == 'tr' else 'fr-FR')|tojson }},
+        weekdays: {{ (t.calendar_weekdays)|tojson }},
+        selectDatePrompt: {{ t.appointment_select_date_prompt|tojson }},
+    };
+</script>
+<script src="{{ url_for('static', filename='js/appointment.js') }}"></script>
 {% endblock %}
