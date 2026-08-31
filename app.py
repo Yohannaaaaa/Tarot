@@ -231,9 +231,6 @@ UI = {
         "form_need_name_email": "Renseigne au moins ton prénom, ton e-mail et ta question.",
         "jeton_balance": "Solde",
         "jeton_unit": "jetons",
-        "jeton_bonus_button": "🎁 Bonus quotidien",
-        "jeton_bonus_claimed": "Bonus déjà réclamé aujourd'hui",
-        "jeton_bonus_success": "Bonus reçu !",
         "jeton_insufficient": "Jetons insuffisants",
         "jeton_cost_label": "jetons",
         "nav_login": "Connexion",
@@ -384,9 +381,6 @@ UI = {
         "form_need_name_email": "En azından isim, e-posta ve sorunu doldur.",
         "jeton_balance": "Bakiye",
         "jeton_unit": "jeton",
-        "jeton_bonus_button": "🎁 Günlük bonus",
-        "jeton_bonus_claimed": "Bugünkü bonus zaten alındı",
-        "jeton_bonus_success": "Bonus alındı!",
         "jeton_insufficient": "Yetersiz jeton",
         "jeton_cost_label": "jeton",
         "nav_login": "Giriş Yap",
@@ -933,7 +927,6 @@ def reading_page():
         packs=JETON_PACKS,
         spread_cost=jeton_store.SPREAD_COST,
         instant_cost=jeton_store.INSTANT_COST,
-        daily_bonus=jeton_store.DAILY_BONUS,
         paypal_client_id=PAYPAL_CLIENT_ID,
     )
 
@@ -991,28 +984,13 @@ def api_jeton_balance():
         return jsonify({
             "ok": True,
             "balance": "∞",
-            "bonus_available": False,
             "nickname": session.get("nickname"),
         })
     return jsonify({
         "ok": True,
         "balance": jeton_store.get_balance(email),
-        "bonus_available": jeton_store.bonus_available(email),
         "nickname": session.get("nickname"),
     })
-
-
-@app.route("/api/jeton/bonus", methods=["POST"])
-def api_jeton_bonus():
-    email = session.get("email")
-    if not email:
-        return jsonify({"ok": False, "error": "login_required"}), 401
-    if is_admin():
-        return jsonify({"ok": True, "balance": "∞"})
-    ok, balance = jeton_store.claim_bonus(email)
-    if not ok:
-        return jsonify({"ok": False, "error": "already_claimed", "balance": balance}), 400
-    return jsonify({"ok": True, "balance": balance})
 
 
 @app.route("/api/mesaj", methods=["POST"])
