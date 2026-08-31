@@ -35,6 +35,8 @@ TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN", "")
 TWILIO_FROM_NUMBER = os.environ.get("TWILIO_FROM_NUMBER", "")
 TWILIO_NOTIFY_TO = os.environ.get("TWILIO_NOTIFY_TO", "")
 
+WHATSAPP_NUMBER = os.environ.get("WHATSAPP_NUMBER", "")
+
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
@@ -538,6 +540,7 @@ def inject_globals():
         "t": ui(lang),
         "logged_in": bool(session.get("email")),
         "current_nickname": session.get("nickname"),
+        "whatsapp_link": f"https://wa.me/{WHATSAPP_NUMBER}" if WHATSAPP_NUMBER else None,
     }
 
 
