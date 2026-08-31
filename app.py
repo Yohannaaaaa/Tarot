@@ -3,6 +3,7 @@
 import json
 import os
 import random
+import re
 import secrets
 import smtplib
 from datetime import datetime
@@ -54,6 +55,7 @@ def is_admin():
     email = session.get("email")
     return bool(email and email.lower() in ADMIN_EMAILS)
 
+
 WHATSAPP_NUMBER = os.environ.get("WHATSAPP_NUMBER", "")
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
@@ -83,6 +85,11 @@ def ratelimit_handler(e):
 @app.errorhandler(404)
 def not_found_handler(e):
     return render_template("404.html"), 404
+
+
+@app.template_filter("wa_number")
+def wa_number_filter(phone):
+    return re.sub(r"\D", "", phone or "")
 
 
 def external_url(endpoint, **values):
