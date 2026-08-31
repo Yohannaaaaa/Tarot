@@ -557,13 +557,15 @@ main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; widt
 .auth-card h1 { color: var(--gold-soft); margin: 0 0 6px; }
 .auth-subtitle { color: var(--text-dim); margin: 0 0 22px; line-height: 1.5; }
 .auth-form { display: flex; flex-direction: column; gap: 12px; text-align: left; }
-.auth-form input {
+.auth-form input, .auth-form textarea {
     padding: 12px 14px;
     border-radius: 10px;
     border: 1px solid var(--border);
     background: var(--bg-soft);
     color: var(--text);
     font-size: .95em;
+    font-family: inherit;
+    resize: vertical;
 }
 .btn-google {
     display: flex;

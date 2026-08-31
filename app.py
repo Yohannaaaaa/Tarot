@@ -16,6 +16,9 @@ from flask import Flask, flash, jsonify, redirect, render_template, request, ses
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
+from twilio.base.exceptions import TwilioException
+from twilio.rest import Client as TwilioClient
+from twilio.twiml.voice_response import VoiceResponse
 
 import accounts_store
 import db
@@ -26,6 +29,11 @@ STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 
 GMAIL_ADDRESS = "tarot.clairvoyance.rituels@gmail.com"
 GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "")
+
+TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "")
+TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN", "")
+TWILIO_FROM_NUMBER = os.environ.get("TWILIO_FROM_NUMBER", "")
+TWILIO_NOTIFY_TO = os.environ.get("TWILIO_NOTIFY_TO", "")
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
@@ -82,6 +90,26 @@ def send_email(to_addr, subject, body):
         return True
     except (smtplib.SMTPException, OSError):
         return False
+
+
+def notify_appointment_call(name, phone, appointment_date, note):
+    if not (TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN and TWILIO_FROM_NUMBER and TWILIO_NOTIFY_TO):
+        return False
+    try:
+        client = TwilioClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+        message = (
+            f"Yeni randevu talebi. İsim: {name}. Telefon numarası: {phone}. "
+            f"İstenen tarih: {appointment_date}."
+        )
+        if note:
+            message += f" Not: {note}."
+        twiml = VoiceResponse()
+        twiml.say(message, language="tr-TR")
+        client.calls.create(to=TWILIO_NOTIFY_TO, from_=TWILIO_FROM_NUMBER, twiml=str(twiml))
+        return True
+    except (TwilioException, requests.RequestException):
+        return False
+
 
 DATA_PATH = Path(__file__).resolve().parent / "data" / "cards.json"
 with open(DATA_PATH, encoding="utf-8") as f:
@@ -231,6 +259,15 @@ UI = {
         "change_password_submit": "Mettre à jour le mot de passe",
         "not_found_message": "Cette page n'existe pas ou a été déplacée.",
         "back_to_home": "← Retour à l'accueil",
+        "nav_appointment": "Rendez-vous",
+        "appointment_title": "Prendre rendez-vous",
+        "appointment_subtitle": "Réserve un créneau pour une consultation, on te recontacte pour confirmer.",
+        "field_phone": "Numéro de téléphone",
+        "field_appointment_datetime": "Date et heure souhaitées",
+        "field_note": "Ta note (optionnel)",
+        "appointment_submit": "Envoyer la demande de rendez-vous",
+        "error_appointment_missing_fields": "Renseigne au moins ton prénom, ton téléphone et la date souhaitée.",
+        "success_appointment_sent": "Ta demande de rendez-vous a été reçue, nous te contacterons bientôt !",
     },
     "tr": {
         "site_title": "Rituams Tarot",
@@ -370,6 +407,15 @@ UI = {
         "change_password_submit": "Şifreyi Güncelle",
         "not_found_message": "Bu sayfa mevcut değil ya da taşınmış.",
         "back_to_home": "← Ana sayfaya dön",
+        "nav_appointment": "Randevu Al",
+        "appointment_title": "Randevu Al",
+        "appointment_subtitle": "Bir bakım için randevu talebinde bulun, seninle iletişime geçip onaylayalım.",
+        "field_phone": "Telefon Numarası",
+        "field_appointment_datetime": "İstenen tarih ve saat",
+        "field_note": "Notun (opsiyonel)",
+        "appointment_submit": "Randevu Talebi Gönder",
+        "error_appointment_missing_fields": "En azından isim, telefon numarası ve istenen tarihi doldur.",
+        "success_appointment_sent": "Randevu talebin alındı, en kısa sürede seninle iletişime geçeceğiz!",
     },
 }
 
@@ -796,6 +842,7 @@ def google_callback():
 
 MAJOR_CARDS = [c for c in CARDS if c["arcana"] == "major"]
 MESSAGES_PATH = Path(__file__).resolve().parent / "data" / "messages.json"
+APPOINTMENTS_PATH = Path(__file__).resolve().parent / "data" / "appointments.json"
 
 
 @app.route("/tirage")
@@ -944,6 +991,58 @@ def api_message():
     )
 
     return jsonify({"ok": True})
+
+
+@app.route("/randevu-al", methods=["GET", "POST"])
+@limiter.limit("5 per hour", methods=["POST"])
+def appointment_page():
+    if request.method == "POST":
+        name = (request.form.get("name") or "").strip()
+        phone = (request.form.get("phone") or "").strip()
+        email = (request.form.get("email") or "").strip()
+        appointment_date = (request.form.get("appointment_date") or "").strip()
+        note = (request.form.get("note") or "").strip()
+
+        if not name or not phone or not appointment_date:
+            flash("error_appointment_missing_fields", "error")
+        else:
+            entry = {
+                "name": name,
+                "phone": phone,
+                "email": email,
+                "appointmentDate": appointment_date,
+                "note": note,
+                "lang": get_lang(),
+                "createdAt": datetime.utcnow().isoformat(),
+            }
+            APPOINTMENTS_PATH.parent.mkdir(parents=True, exist_ok=True)
+            try:
+                with open(APPOINTMENTS_PATH, encoding="utf-8") as f:
+                    appointments = json.load(f)
+            except (FileNotFoundError, json.JSONDecodeError):
+                appointments = []
+            appointments.append(entry)
+            with open(APPOINTMENTS_PATH, "w", encoding="utf-8") as f:
+                json.dump(appointments, f, ensure_ascii=False, indent=2)
+
+            notify_appointment_call(name, phone, appointment_date, note)
+            send_email(
+                GMAIL_ADDRESS,
+                f"Nouvelle demande de rendez-vous - {name}",
+                "\n".join([
+                    f"Nom : {name}",
+                    f"Telephone : {phone}",
+                    f"E-mail : {email}",
+                    f"Date souhaitee : {appointment_date}",
+                    f"Langue : {entry['lang']}",
+                    "",
+                    "Note :",
+                    note,
+                ]),
+            )
+            flash("success_appointment_sent", "success")
+            return redirect(url_for("appointment_page"))
+    return render_template("appointment.html")
 
 
 @app.route("/api/jeton/checkout", methods=["POST"])

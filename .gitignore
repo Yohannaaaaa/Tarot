@@ -16,3 +16,4 @@ venv/
 data/users.json
 data/messages.json
 data/accounts.json
+data/appointments.json
