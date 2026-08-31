@@ -42,7 +42,7 @@ def get_paypal_access_token():
     return resp.json()["access_token"]
 
 GMAIL_ADDRESS = "tarot.clairvoyance.rituels@gmail.com"
-GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "")
+GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "").replace(" ", "")
 
 ADMIN_EMAILS = {
     e.strip().lower()
@@ -119,6 +119,7 @@ def send_email(to_addr, subject, body):
             server.starttls()
             server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
             server.sendmail(GMAIL_ADDRESS, [to_addr], msg.as_string())
+        print(f"[send_email] OK to {to_addr!r} subject={subject!r}", flush=True)
         return True
     except (smtplib.SMTPException, OSError) as exc:
         print(f"[send_email] FAILED to {to_addr!r} subject={subject!r}: {exc!r}", flush=True)
