@@ -108,6 +108,7 @@ def get_serializer():
 
 def send_email(to_addr, subject, body):
     if not GMAIL_APP_PASSWORD:
+        print("[send_email] SKIPPED: GMAIL_APP_PASSWORD is not set", flush=True)
         return False
     msg = MIMEText(body, "plain", "utf-8")
     msg["Subject"] = subject
@@ -119,7 +120,8 @@ def send_email(to_addr, subject, body):
             server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
             server.sendmail(GMAIL_ADDRESS, [to_addr], msg.as_string())
         return True
-    except (smtplib.SMTPException, OSError):
+    except (smtplib.SMTPException, OSError) as exc:
+        print(f"[send_email] FAILED to {to_addr!r} subject={subject!r}: {exc!r}", flush=True)
         return False
 
 
