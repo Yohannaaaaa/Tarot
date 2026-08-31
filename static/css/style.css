@@ -538,6 +538,7 @@ main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; widt
     white-space: nowrap;
 }
 .packs-note { color: var(--text-dim); text-align: center; margin-top: 16px; }
+.paypal-btn-container { margin-top: 6px; min-width: 120px; max-width: 160px; }
 
 /* Instant card */
 .instant-card-wrap { perspective: 1200px; display: flex; justify-content: center; margin: 20px 0; }

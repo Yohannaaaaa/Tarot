@@ -93,7 +93,12 @@
             <tr>
                 <td>🪙 {{ p.amount }} {{ t.jeton_cost_label }}</td>
                 <td>{{ p.price }}</td>
-                <td><button class="btn-select btn-buy-pack" data-amount="{{ p.amount }}">{{ t.buy_pack }}</button></td>
+                <td>
+                    <button class="btn-select btn-buy-pack" data-amount="{{ p.amount }}">{{ t.buy_pack }}</button>
+                    {% if paypal_client_id %}
+                    <div class="paypal-btn-container" data-amount="{{ p.amount }}"></div>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </table>
@@ -155,4 +160,43 @@
     };
 </script>
 <script src="{{ url_for('static', filename='js/reading.js') }}"></script>
+{% if paypal_client_id %}
+<script src="https://www.paypal.com/sdk/js?client-id={{ paypal_client_id }}&currency=GBP"></script>
+<script>
+    (function () {
+        var loginUrl = {{ url_for('login_page')|tojson }};
+        document.querySelectorAll('.paypal-btn-container').forEach(function (container) {
+            var amount = parseInt(container.dataset.amount, 10);
+            paypal.Buttons({
+                createOrder: function () {
+                    return fetch('/api/paypal/create-order', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ amount: amount }),
+                    }).then(function (r) {
+                        if (r.status === 401) { window.location.href = loginUrl; throw new Error('login_required'); }
+                        return r.json();
+                    }).then(function (d) {
+                        if (!d.ok) throw new Error(d.error || 'error');
+                        return d.order_id;
+                    });
+                },
+                onApprove: function (data) {
+                    return fetch('/api/paypal/capture-order', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ order_id: data.orderID }),
+                    }).then(function (r) { return r.json(); }).then(function (d) {
+                        if (d.ok) {
+                            window.location.href = "{{ url_for('reading_page') }}?checkout=success";
+                        } else {
+                            alert({{ t.buy_pack_error|tojson }});
+                        }
+                    });
+                },
+            }).render(container);
+        });
+    })();
+</script>
+{% endif %}
 {% endblock %}
