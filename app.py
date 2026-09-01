@@ -1337,6 +1337,9 @@ def api_paypal_capture_order():
     if paid_email != email or amount not in JETON_PACKS_BY_AMOUNT:
         return jsonify({"ok": False, "error": "mismatch"}), 400
 
+    if not jeton_store.mark_payment_processed(f"paypal:{order_id}"):
+        return jsonify({"ok": True, "balance": jeton_store.get_balance(email)})
+
     balance = jeton_store.credit(email, amount)
     return jsonify({"ok": True, "balance": balance})
 
@@ -1355,7 +1358,7 @@ def api_stripe_webhook():
         checkout_session = event["data"]["object"]
         username = (checkout_session.get("client_reference_id") or checkout_session.get("metadata", {}).get("username") or "").strip()
         jeton_amount = checkout_session.get("metadata", {}).get("jeton_amount")
-        if username and jeton_amount:
+        if username and jeton_amount and jeton_store.mark_payment_processed(f"stripe:{checkout_session['id']}"):
             jeton_store.credit(username, int(jeton_amount))
 
     return jsonify({"ok": True})

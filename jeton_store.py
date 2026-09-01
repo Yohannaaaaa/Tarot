@@ -9,6 +9,7 @@ from pathlib import Path
 import db
 
 STORE_PATH = Path(__file__).resolve().parent / "data" / "users.json"
+PROCESSED_PAYMENTS_PATH = Path(__file__).resolve().parent / "data" / "processed_payments.json"
 
 STARTING_BALANCE = 500
 SPREAD_COST = 200
@@ -131,5 +132,36 @@ def credit(username, amount):
             cur.execute("UPDATE tarot_jetons SET balance=%s, updated_at=now() WHERE username=%s", (balance, key))
         conn.commit()
         return balance
+    finally:
+        db.put_conn(conn)
+
+
+def _json_mark_payment_processed(ref):
+    with _lock:
+        try:
+            with open(PROCESSED_PAYMENTS_PATH, encoding="utf-8") as f:
+                refs = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            refs = []
+        if ref in refs:
+            return False
+        refs.append(ref)
+        PROCESSED_PAYMENTS_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(PROCESSED_PAYMENTS_PATH, "w", encoding="utf-8") as f:
+            json.dump(refs, f, ensure_ascii=False, indent=2)
+        return True
+
+
+def mark_payment_processed(ref):
+    """Enregistre une reference de paiement (Stripe/PayPal). Retourne False si deja traitee (paiement rejoue)."""
+    if not db.has_db():
+        return _json_mark_payment_processed(ref)
+    conn = db.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("INSERT INTO tarot_processed_payments (ref) VALUES (%s) ON CONFLICT DO NOTHING", (ref,))
+            processed = cur.rowcount > 0
+        conn.commit()
+        return processed
     finally:
         db.put_conn(conn)
