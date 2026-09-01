@@ -65,6 +65,8 @@ def is_admin():
 
 
 WHATSAPP_NUMBER = os.environ.get("WHATSAPP_NUMBER", "")
+INSTAGRAM_URL = "https://www.instagram.com/iam____svetlana/"
+TIKTOK_URL = "https://www.tiktok.com/@svetlanaquinn"
 
 CRON_SECRET = os.environ.get("CRON_SECRET", "")
 ISTANBUL_TZ = timezone(timedelta(hours=3))
@@ -707,6 +709,8 @@ def inject_globals():
         "logged_in": bool(session.get("email")),
         "current_nickname": session.get("nickname"),
         "whatsapp_link": f"https://wa.me/{WHATSAPP_NUMBER}" if WHATSAPP_NUMBER else None,
+        "instagram_url": INSTAGRAM_URL,
+        "tiktok_url": TIKTOK_URL,
         "is_admin": is_admin(),
         "canonical_url": canonical_url,
         "hreflang_fr": hreflang_fr,
