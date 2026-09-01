@@ -279,7 +279,6 @@ UI = {
         "buy_pack_error": "Erreur lors de la création du paiement, réessaie.",
         "checkout_success": "Paiement réussi ! Tes jetons ont été ajoutés à ton compte.",
         "checkout_cancelled": "Paiement annulé, aucun jeton n'a été débité.",
-        "form_title": "✍️ Écris ta question",
         "field_name": "Prénom",
         "field_mother": "Prénom de la mère",
         "field_birthdate": "Date de naissance",
@@ -288,14 +287,7 @@ UI = {
         "opt_mail": "Par e-mail",
         "opt_voice": "Rendez-vous vocal",
         "opt_pdf": "Réponse en PDF",
-        "field_appointment_date": "Date de rendez-vous souhaitée",
-        "field_question": "Écris ta question",
         "field_photo": "📷 Ajouter une photo (ex. tasse de café pour une lecture de marc)",
-        "form_submit": "Envoyer la demande",
-        "form_sending": "Envoi en cours...",
-        "form_success": "Merci, ta demande a bien été enregistrée !",
-        "form_error": "Erreur lors de l'envoi, réessaie.",
-        "form_need_name_email": "Renseigne au moins ton prénom, ton e-mail et ta question.",
         "jeton_balance": "Solde",
         "jeton_unit": "jetons",
         "jeton_insufficient": "Jetons insuffisants",
@@ -365,14 +357,12 @@ UI = {
         "error_appointment_insufficient_funds": "Tu n'as pas assez de jetons pour ce type de consultation. Achète des jetons sur la page Tirage.",
         "error_appointment_date_taken": "Cette date vient d'être réservée par quelqu'un d'autre. Choisis-en une autre.",
         "error_appointment_past": "Cette date est déjà passée. Choisis une date future.",
+        "error_photo_invalid_type": "Le fichier joint doit être une image.",
+        "error_photo_too_large": "La photo est trop lourde (5 Mo maximum).",
         "success_appointment_sent": "Ta demande de rendez-vous a été reçue, nous te contacterons bientôt !",
         "appointment_select_date_prompt": "Choisis d'abord une date et une heure dans le calendrier.",
         "field_appointment_category": "Type de consultation",
-        "appointment_category_love": "Amour",
-        "appointment_category_money": "Argent",
-        "appointment_category_job": "Travail",
-        "appointment_category_three_questions": "3 questions",
-        "appointment_category_one_question": "1 question",
+        "appointment_category_placeholder": "Choisis un service ou un rituel",
         "appointment_balance_label": "Ton solde : {balance} jetons",
         "calendar_legend_free": "Disponible",
         "calendar_legend_busy": "Déjà réservé",
@@ -469,7 +459,6 @@ UI = {
         "buy_pack_error": "Ödeme oluşturulurken hata oluştu, tekrar dene.",
         "checkout_success": "Ödeme başarılı! Jetonların hesabına eklendi.",
         "checkout_cancelled": "Ödeme iptal edildi, jeton düşülmedi.",
-        "form_title": "✍️ Sorunu Yaz",
         "field_name": "İsim",
         "field_mother": "Anne adı",
         "field_birthdate": "Doğum tarihi",
@@ -478,14 +467,7 @@ UI = {
         "opt_mail": "Mail ile",
         "opt_voice": "Sesli randevu",
         "opt_pdf": "PDF cevap",
-        "field_appointment_date": "İstenen randevu tarihi",
-        "field_question": "Sorunu yaz",
         "field_photo": "📷 Fotoğraf ekle (ör. kahve falı için fincan fotoğrafı)",
-        "form_submit": "Talebi Gönder",
-        "form_sending": "Gönderiliyor...",
-        "form_success": "Teşekkürler, talebin kaydedildi!",
-        "form_error": "Gönderim hatası, tekrar dene.",
-        "form_need_name_email": "En azından isim, e-posta ve sorunu doldur.",
         "jeton_balance": "Bakiye",
         "jeton_unit": "jeton",
         "jeton_insufficient": "Yetersiz jeton",
@@ -555,14 +537,12 @@ UI = {
         "error_appointment_insufficient_funds": "Bu açılım için yeterli jetonun yok. Kartlar sayfasından jeton satın alabilirsin.",
         "error_appointment_date_taken": "Bu tarih az önce başkası tarafından alındı. Başka bir tarih seç.",
         "error_appointment_past": "Bu tarih geçmişte kalmış. İleri bir tarih seç.",
+        "error_photo_invalid_type": "Eklenen dosya bir resim olmalı.",
+        "error_photo_too_large": "Fotoğraf çok büyük (en fazla 5 MB).",
         "success_appointment_sent": "Randevu talebin alındı, en kısa sürede seninle iletişime geçeceğiz!",
         "appointment_select_date_prompt": "Önce takvimden bir tarih ve saat seç.",
         "field_appointment_category": "Açılım Türü",
-        "appointment_category_love": "Aşk",
-        "appointment_category_money": "Para",
-        "appointment_category_job": "İş",
-        "appointment_category_three_questions": "3 Soru",
-        "appointment_category_one_question": "1 Soru",
+        "appointment_category_placeholder": "Bir hizmet ya da ritüel seç",
         "appointment_balance_label": "Bakiyen: {balance} jeton",
         "calendar_legend_free": "Müsait",
         "calendar_legend_busy": "Dolu",
@@ -607,6 +587,21 @@ RITUALS = [
     {"id": "intention", "emoji": "🌙", "cost": 1500,
      "name": {"fr": "Rituel d'Intention Personnelle", "tr": "Kişisel Niyet Ritüeli"}},
 ]
+
+REQUEST_CATEGORIES = (
+    [{"id": f"service:{s['id']}", "group": "service", "cost": s["cost"], "name": s["name"]} for s in SERVICES]
+    + [{"id": f"ritual:{r['id']}", "group": "ritual", "cost": r["cost"], "name": r["name"]} for r in RITUALS]
+)
+REQUEST_CATEGORY_COST = {c["id"]: c["cost"] for c in REQUEST_CATEGORIES}
+REQUEST_CATEGORY_NAME = {c["id"]: c["name"] for c in REQUEST_CATEGORIES}
+
+
+def localized_request_categories():
+    lang = get_lang()
+    return [
+        {"id": c["id"], "group": c["group"], "cost": c["cost"], "name": c["name"][lang]}
+        for c in REQUEST_CATEGORIES
+    ]
 
 JETON_PACKS = [
     {"amount": 200, "price": "£4.99", "price_value": 4.99, "stripe_price_id": "price_1U9od2LYpYxtFvCYCu69apgZ"},
@@ -1019,7 +1014,6 @@ def google_callback():
 
 
 MAJOR_CARDS = [c for c in CARDS if c["arcana"] == "major"]
-MESSAGES_PATH = Path(__file__).resolve().parent / "data" / "messages.json"
 APPOINTMENTS_PATH = Path(__file__).resolve().parent / "data" / "appointments.json"
 BLOCKED_DATES_PATH = Path(__file__).resolve().parent / "data" / "blocked_dates.json"
 
@@ -1139,82 +1133,17 @@ def api_jeton_balance():
 MAX_PHOTO_SIZE = 5 * 1024 * 1024
 
 
-@app.route("/api/mesaj", methods=["POST"])
-@limiter.limit("5 per hour")
-def api_message():
-    data = request.form
-    name = (data.get("name") or "").strip()
-    email = (data.get("email") or "").strip()
-    question = (data.get("question") or "").strip()
-    if not name or not email or not question:
-        return jsonify({"ok": False, "error": "missing_fields"}), 400
-
+def extract_photo_from_request():
+    """Retourne (photo_filestorage, photo_bytes, error_flash_key). photo est None si aucune photo fournie."""
     photo = request.files.get("photo")
-    photo_bytes = None
-    if photo and photo.filename:
-        if not (photo.mimetype or "").startswith("image/"):
-            return jsonify({"ok": False, "error": "invalid_photo_type"}), 400
-        photo_bytes = photo.read(MAX_PHOTO_SIZE + 1)
-        if len(photo_bytes) > MAX_PHOTO_SIZE:
-            return jsonify({"ok": False, "error": "photo_too_large"}), 400
-
-    entry = {
-        "name": name,
-        "motherName": (data.get("motherName") or "").strip(),
-        "birthDate": (data.get("birthDate") or "").strip(),
-        "email": email,
-        "responseType": (data.get("responseType") or "mail").strip(),
-        "appointmentDate": (data.get("appointmentDate") or "").strip(),
-        "question": question,
-        "category": (data.get("category") or "").strip(),
-        "service": (data.get("service") or "").strip(),
-        "cost": data.get("cost"),
-        "hasPhoto": bool(photo_bytes),
-        "lang": get_lang(),
-        "createdAt": datetime.utcnow().isoformat(),
-    }
-
-    MESSAGES_PATH.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        with open(MESSAGES_PATH, encoding="utf-8") as f:
-            messages = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        messages = []
-    messages.append(entry)
-    with open(MESSAGES_PATH, "w", encoding="utf-8") as f:
-        json.dump(messages, f, ensure_ascii=False, indent=2)
-
-    body = "\n".join([
-        f"Nom : {entry['name']}",
-        f"E-mail : {entry['email']}",
-        f"Prenom de la mere : {entry['motherName']}",
-        f"Date de naissance : {entry['birthDate']}",
-        f"Type de reponse souhaite : {entry['responseType']}",
-        f"Date de rendez-vous souhaitee : {entry['appointmentDate']}",
-        f"Categorie : {entry['category']}",
-        f"Service/rituel : {entry['service']}",
-        f"Cout : {entry['cost']}",
-        f"Langue : {entry['lang']}",
-        "",
-        "Question :",
-        entry["question"],
-    ])
-    subject = f"Nouvelle demande Rituams Tarot - {entry['name']}"
-    if photo_bytes:
-        send_email_with_attachment_async(GMAIL_ADDRESS, subject, body, photo_bytes, photo.filename, photo.mimetype)
-    else:
-        send_email_async(GMAIL_ADDRESS, subject, body)
-
-    return jsonify({"ok": True})
-
-
-APPOINTMENT_CATEGORY_COST = {
-    "love": 250,
-    "money": 250,
-    "job": 250,
-    "three_questions": 200,
-    "one_question": 100,
-}
+    if not photo or not photo.filename:
+        return None, None, None
+    if not (photo.mimetype or "").startswith("image/"):
+        return None, None, "error_photo_invalid_type"
+    photo_bytes = photo.read(MAX_PHOTO_SIZE + 1)
+    if len(photo_bytes) > MAX_PHOTO_SIZE:
+        return None, None, "error_photo_too_large"
+    return photo, photo_bytes, None
 
 
 @app.route("/randevu-al", methods=["GET", "POST"])
@@ -1229,10 +1158,13 @@ def appointment_page():
         name = (request.form.get("name") or "").strip()
         phone = (request.form.get("phone") or "").strip()
         contact_email = (request.form.get("email") or "").strip()
+        mother_name = (request.form.get("motherName") or "").strip()
+        birth_date = (request.form.get("birthDate") or "").strip()
+        response_type = (request.form.get("responseType") or "mail").strip()
         appointment_date = (request.form.get("appointment_date") or "").strip()
         note = (request.form.get("note") or "").strip()
         category = (request.form.get("category") or "").strip()
-        cost = APPOINTMENT_CATEGORY_COST.get(category)
+        cost = REQUEST_CATEGORY_COST.get(category)
         requested_day = appointment_date.split("T")[0]
         busy_days = {a["appointmentDate"].split("T")[0] for a in load_appointments() if a.get("appointmentDate")}
         busy_days.update(load_blocked_dates())
@@ -1240,9 +1172,12 @@ def appointment_page():
             appt_dt = datetime.fromisoformat(appointment_date) if appointment_date else None
         except ValueError:
             appt_dt = None
+        photo, photo_bytes, photo_error = extract_photo_from_request()
 
         if not name or not phone or not appointment_date or not cost or appt_dt is None:
             flash("error_appointment_missing_fields", "error")
+        elif photo_error:
+            flash(photo_error, "error")
         elif appt_dt < datetime.now(ISTANBUL_TZ).replace(tzinfo=None):
             flash("error_appointment_past", "error")
         elif requested_day in busy_days:
@@ -1250,36 +1185,47 @@ def appointment_page():
         elif not is_admin() and not jeton_store.deduct(user_email, cost)[0]:
             flash("error_appointment_insufficient_funds", "error")
         else:
+            lang = get_lang()
+            category_name = REQUEST_CATEGORY_NAME.get(category, {}).get(lang, category)
             entry = {
                 "name": name,
                 "phone": phone,
                 "email": contact_email,
+                "motherName": mother_name,
+                "birthDate": birth_date,
+                "responseType": response_type,
                 "appointmentDate": appointment_date,
                 "note": note,
                 "category": category,
+                "categoryLabel": category_name,
                 "categoryCost": cost,
-                "lang": get_lang(),
+                "hasPhoto": bool(photo_bytes),
+                "lang": lang,
                 "createdAt": datetime.utcnow().isoformat(),
             }
             appointments = load_appointments()
             appointments.append(entry)
             save_appointments(appointments)
 
-            send_email_async(
-                GMAIL_ADDRESS,
-                f"Nouvelle demande de rendez-vous - {name}",
-                "\n".join([
-                    f"Nom : {name}",
-                    f"Telephone : {phone}",
-                    f"E-mail : {contact_email}",
-                    f"Date souhaitee : {appointment_date}",
-                    f"Type de consultation : {category} ({cost} jetons)",
-                    f"Langue : {entry['lang']}",
-                    "",
-                    "Note :",
-                    note,
-                ]),
-            )
+            body = "\n".join([
+                f"Nom : {name}",
+                f"Telephone : {phone}",
+                f"E-mail : {contact_email}",
+                f"Prenom de la mere : {mother_name}",
+                f"Date de naissance : {birth_date}",
+                f"Type de reponse souhaite : {response_type}",
+                f"Date souhaitee : {appointment_date}",
+                f"Type de consultation : {category_name} ({cost} jetons)",
+                f"Langue : {lang}",
+                "",
+                "Note :",
+                note,
+            ])
+            subject = f"Nouvelle demande de rendez-vous - {name}"
+            if photo_bytes:
+                send_email_with_attachment_async(GMAIL_ADDRESS, subject, body, photo_bytes, photo.filename, photo.mimetype)
+            else:
+                send_email_async(GMAIL_ADDRESS, subject, body)
             flash("success_appointment_sent", "success")
             return redirect(url_for("appointment_page"))
 
@@ -1287,7 +1233,8 @@ def appointment_page():
     return render_template(
         "appointment.html",
         balance=balance,
-        category_costs=APPOINTMENT_CATEGORY_COST,
+        categories=localized_request_categories(),
+        preselected_category=request.args.get("category", ""),
     )
 
 

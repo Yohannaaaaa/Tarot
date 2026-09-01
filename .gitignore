@@ -14,7 +14,6 @@ venv/
 
 # Runtime data (jeton balances, contact requests, accounts)
 data/users.json
-data/messages.json
 data/accounts.json
 data/appointments.json
 data/blocked_dates.json
