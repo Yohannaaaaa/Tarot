@@ -528,6 +528,8 @@ UI = {
 SERVICES = [
     {"id": "single", "duration": {"fr": "5 min", "tr": "5 dk"}, "cost": 300,
      "name": {"fr": "Consultation à question unique", "tr": "Tek Soru Bakımı"}},
+    {"id": "coffee", "duration": {"fr": "15 min", "tr": "15 dk"}, "cost": 500,
+     "name": {"fr": "Lecture de Marc de Café", "tr": "Kahve Falı"}},
     {"id": "triple", "duration": {"fr": "10 min", "tr": "10 dk"}, "cost": 700,
      "name": {"fr": "Consultation à 3 questions", "tr": "3 Soru Bakımı"}},
     {"id": "love", "duration": {"fr": "20 min", "tr": "20 dk"}, "cost": 1000,
