@@ -8,4 +8,14 @@
         <a class="btn btn-secondary" href="{{ url_for('cards_page') }}">🃏 {{ t.cta_cards }}</a>
     </div>
 </section>
+<section class="home-about-teaser">
+    <a href="{{ url_for('about_page') }}" class="home-about-teaser-link">
+        <img src="{{ url_for('static', filename='img/svetlana.jpg') }}" alt="{{ t.about_name }}">
+        <div>
+            <h2>{{ t.home_about_teaser_title }}</h2>
+            <p>{{ t.home_about_teaser_text }}</p>
+            <span class="home-about-teaser-cta">{{ t.home_about_teaser_link }}</span>
+        </div>
+    </a>
+</section>
 {% endblock %}

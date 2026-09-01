@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ t.about_title }} · {{ t.site_title }}{% endblock %}
+{% block content %}
+<section class="about-page">
+    <div class="about-card">
+        <img class="about-photo" src="{{ url_for('static', filename='img/svetlana.jpg') }}" alt="{{ t.about_name }}">
+        <h1>{{ t.about_name }}</h1>
+        <p class="about-years">{{ t.about_years }}</p>
+        <p class="about-specialties"><b>{{ t.about_specialties_label }}</b> {{ t.about_specialties }}</p>
+
+        <div class="about-bio">
+            <p>{{ t.about_bio_1 }}</p>
+            <p>{{ t.about_bio_2 }}</p>
+            <p>{{ t.about_bio_3 }}</p>
+            <p>{{ t.about_bio_4 }}</p>
+        </div>
+
+        <a class="btn btn-primary" href="{{ url_for('appointment_page') }}">{{ t.about_cta }}</a>
+    </div>
+</section>
+{% endblock %}
