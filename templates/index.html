@@ -1,6 +1,24 @@
 {% extends "base.html" %}
 {% block title %}{{ t.home_title }}{% endblock %}
 {% block body_class %}has-hero-bg{% endblock %}
+{% block structured_data %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "serviceType": {{ "Tarot Reading"|tojson }},
+    "name": {{ t.site_title|tojson }},
+    "description": {{ t.meta_description|tojson }},
+    "url": {{ canonical_url|tojson }},
+    "image": {{ url_for('static', filename='img/rituams-banner.jpg', _external=True)|tojson }},
+    "areaServed": {{ "Online"|tojson }},
+    "provider": {
+        "@type": "Person",
+        "name": {{ t.about_name|tojson }}
+    }
+}
+</script>
+{% endblock %}
 {% block content %}
 <section class="hero hero-minimal">
     <div>
