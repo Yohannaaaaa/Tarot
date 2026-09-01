@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import hmac
 import json
 import os
 import random
@@ -1173,7 +1174,7 @@ def save_appointments(appointments):
 
 @app.route("/api/cron/randevu-hatirlat")
 def cron_appointment_reminder():
-    if not CRON_SECRET or request.args.get("secret") != CRON_SECRET:
+    if not CRON_SECRET or not hmac.compare_digest(request.args.get("secret", ""), CRON_SECRET):
         return jsonify({"ok": False, "error": "forbidden"}), 403
 
     appointments = load_appointments()
