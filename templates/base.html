@@ -51,6 +51,8 @@
     <footer class="site-footer">
         <p>{{ t.footer_note }}</p>
         <p class="footer-links">
+            <a href="{{ url_for('faq_page') }}">{{ t.footer_faq }}</a>
+            <span>·</span>
             <a href="{{ url_for('privacy_page') }}">{{ t.footer_privacy }}</a>
             <span>·</span>
             <a href="{{ url_for('terms_page') }}">{{ t.footer_terms }}</a>

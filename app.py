@@ -203,6 +203,20 @@ UI = {
         "footer_note": "Le tarot est un outil de réflexion et d'inspiration, pas une prédiction scientifique.",
         "footer_privacy": "Confidentialité",
         "footer_terms": "Conditions d'utilisation",
+        "footer_faq": "FAQ",
+        "faq_title": "Questions fréquentes",
+        "faq_q1": "Comment ça marche ?",
+        "faq_a1": "Tu crées un compte, tu reçois 500 jetons gratuits, et tu peux faire des tirages instantanés ou prendre rendez-vous pour une consultation en direct. Chaque tirage ou rendez-vous coûte un nombre de jetons fixe, affiché avant de valider.",
+        "faq_q2": "Les paiements sont-ils sécurisés ?",
+        "faq_a2": "Oui. Les achats de jetons passent par Stripe ou PayPal, deux plateformes de paiement reconnues. Nous ne stockons jamais tes coordonnées bancaires.",
+        "faq_q3": "Comment annuler ou changer mon rendez-vous ?",
+        "faq_a3": "Contacte-nous directement via le bouton WhatsApp (en bas à droite du site) en indiquant la date de ton rendez-vous, et nous trouverons un nouveau créneau ensemble.",
+        "faq_q4": "Mes informations sont-elles confidentielles ?",
+        "faq_a4": "Oui, toutes tes informations (nom, question, date de naissance) restent strictement confidentielles et ne sont utilisées que pour ta consultation. Voir notre page Confidentialité pour plus de détails.",
+        "faq_q5": "En combien de temps j'ai une réponse ?",
+        "faq_a5": "Les tirages instantanés sont immédiats. Pour une demande de rendez-vous, nous te recontactons généralement sous 24 à 48h pour confirmer le créneau.",
+        "faq_q6": "Qu'est-ce qu'un jeton et comment en acheter ?",
+        "faq_a6": "Le jeton est la monnaie du site : il sert à payer les tirages et les rendez-vous. Tu peux en acheter sur la page Tirage, onglet \"Packs\", par carte (Stripe) ou PayPal.",
         "tab_services": "🔮 Consultations Tarot",
         "tab_rituals": "✨ Rituels",
         "tab_instant": "🤖 Tirage Instantané",
@@ -378,6 +392,20 @@ UI = {
         "footer_note": "Tarot bir yansıma ve ilham aracıdır, bilimsel bir kehanet değildir.",
         "footer_privacy": "Gizlilik",
         "footer_terms": "Kullanım Şartları",
+        "footer_faq": "SSS",
+        "faq_title": "Sık Sorulan Sorular",
+        "faq_q1": "Sistem nasıl çalışıyor?",
+        "faq_a1": "Hesap oluşturursun, 500 jeton hediye edilir; anlık kart açılımı yapabilir ya da canlı bir bakım için randevu alabilirsin. Her açılım/randevu sabit bir jeton miktarına mal olur, onaylamadan önce sana gösterilir.",
+        "faq_q2": "Ödemeler güvenli mi?",
+        "faq_a2": "Evet. Jeton satın alımları Stripe veya PayPal üzerinden yapılır, ikisi de tanınmış ödeme platformlarıdır. Kart bilgilerini asla saklamayız.",
+        "faq_q3": "Randevumu nasıl iptal ederim / değiştiririm?",
+        "faq_a3": "Sitenin sağ altındaki WhatsApp butonuyla bize doğrudan ulaş, randevu tarihini belirt, birlikte yeni bir zaman ayarlayalım.",
+        "faq_q4": "Bilgilerim gizli tutuluyor mu?",
+        "faq_a4": "Evet, tüm bilgilerin (isim, sorun, doğum tarihi) kesinlikle gizli tutulur ve sadece senin bakımın için kullanılır. Detaylar için Gizlilik sayfamıza bakabilirsin.",
+        "faq_q5": "Yanıtı ne kadar sürede alırım?",
+        "faq_a5": "Anlık kart açılımları hemen sonuç verir. Randevu taleplerinde genellikle 24-48 saat içinde seninle iletişime geçip randevunu onaylarız.",
+        "faq_q6": "Jeton nedir, nasıl satın alırım?",
+        "faq_a6": "Jeton, sitenin para birimidir: açılım ve randevu ödemelerinde kullanılır. Açılım sayfasındaki \"Paketler\" sekmesinden kart (Stripe) veya PayPal ile satın alabilirsin.",
         "tab_services": "🔮 Tarot Bakımları",
         "tab_rituals": "✨ Ritüeller",
         "tab_instant": "🤖 Anında Açılım",
@@ -701,6 +729,11 @@ def index():
 @app.route("/hakkimda")
 def about_page():
     return render_template("about.html")
+
+
+@app.route("/sss")
+def faq_page():
+    return render_template("faq.html")
 
 
 @app.route("/gizlilik-politikasi")

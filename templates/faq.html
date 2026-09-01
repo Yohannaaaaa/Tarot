@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ t.faq_title }} · {{ t.site_title }}{% endblock %}
+{% block content %}
+<section class="legal-page faq-page">
+    <h1>{{ t.faq_title }}</h1>
+    {% for n in range(1, 7) %}
+    <div class="faq-item">
+        <h2>{{ t["faq_q" ~ n] }}</h2>
+        <p>{{ t["faq_a" ~ n] }}</p>
+    </div>
+    {% endfor %}
+</section>
+{% endblock %}
