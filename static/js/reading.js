@@ -29,14 +29,25 @@
     // ---------- Tabs ----------
     const tabButtons = document.querySelectorAll('.tab-btn');
     const tabPanels = document.querySelectorAll('.tab-panel');
-    tabButtons.forEach((btn) => {
-        btn.addEventListener('click', () => {
-            tabButtons.forEach((b) => b.classList.toggle('active', b === btn));
-            tabPanels.forEach((p) => {
-                p.hidden = p.dataset.panel !== btn.dataset.tab;
-            });
+
+    function switchTab(tabName) {
+        tabButtons.forEach((b) => b.classList.toggle('active', b.dataset.tab === tabName));
+        tabPanels.forEach((p) => {
+            p.hidden = p.dataset.panel !== tabName;
         });
+    }
+
+    tabButtons.forEach((btn) => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
+
+    const buyJetonShortcut = document.getElementById('buyJetonShortcut');
+    if (buyJetonShortcut) {
+        buyJetonShortcut.addEventListener('click', () => {
+            switchTab('packs');
+            document.querySelector('.tab-bar').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
 
     // ---------- Instant free card ----------
     const instantBtn = document.getElementById('instantBtn');

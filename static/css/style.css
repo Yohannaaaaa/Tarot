@@ -519,6 +519,16 @@ main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; widt
 }
 .jeton-login-prompt { color: var(--text-dim); font-weight: 700; }
 .btn-small { padding: 10px 14px; font-size: .9em; }
+.btn-buy-jeton-shortcut {
+    border: 1px solid var(--gold);
+    border-radius: 10px;
+    background: linear-gradient(180deg, var(--gold-soft), var(--gold));
+    color: #1a1200;
+    padding: 10px 14px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+}
 
 /* Tabs */
 .tab-bar {
