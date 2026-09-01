@@ -6,6 +6,19 @@
     <div class="auth-card">
         <h1>{{ t.appointment_title }}</h1>
         <p class="auth-subtitle">{{ t.appointment_subtitle }}</p>
+        <p class="appointment-balance">{{ t.appointment_balance_label.format(balance=balance) }}</p>
+
+        <div class="field-group">
+            <label for="appointmentCategorySelect">{{ t.field_appointment_category }}</label>
+            <select name="category" id="appointmentCategorySelect" form="appointmentForm" required>
+                <option value="" disabled selected>—</option>
+                <option value="love">{{ t.appointment_category_love }} — {{ category_costs.love }} 🪙</option>
+                <option value="money">{{ t.appointment_category_money }} — {{ category_costs.money }} 🪙</option>
+                <option value="job">{{ t.appointment_category_job }} — {{ category_costs.job }} 🪙</option>
+                <option value="three_questions">{{ t.appointment_category_three_questions }} — {{ category_costs.three_questions }} 🪙</option>
+                <option value="one_question">{{ t.appointment_category_one_question }} — {{ category_costs.one_question }} 🪙</option>
+            </select>
+        </div>
 
         <p class="calendar-hint">👇 {{ t.appointment_calendar_hint }}</p>
         <div class="calendar-wrap">
