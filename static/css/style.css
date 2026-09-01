@@ -228,6 +228,17 @@ main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; widt
 .hero-lead { max-width: 560px; margin: 0 auto 30px; color: var(--text-dim); line-height: 1.6; }
 .hero-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
 
+.home-banner {
+    display: block;
+    max-width: 320px;
+    width: 100%;
+    height: auto;
+    margin: 0 auto 28px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .5);
+}
+
 .hero-minimal {
     min-height: 65vh;
     display: flex;

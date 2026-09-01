@@ -3,9 +3,12 @@
 {% block body_class %}has-hero-bg{% endblock %}
 {% block content %}
 <section class="hero hero-minimal">
-    <div class="hero-actions">
-        <a class="btn btn-primary" href="{{ url_for('reading_page') }}">✨ {{ t.cta_reading }}</a>
-        <a class="btn btn-secondary" href="{{ url_for('cards_page') }}">🃏 {{ t.cta_cards }}</a>
+    <div>
+        <img class="home-banner" src="{{ url_for('static', filename='img/rituams-banner.jpg') }}" alt="Rituams Tarot">
+        <div class="hero-actions">
+            <a class="btn btn-primary" href="{{ url_for('reading_page') }}">✨ {{ t.cta_reading }}</a>
+            <a class="btn btn-secondary" href="{{ url_for('cards_page') }}">🃏 {{ t.cta_cards }}</a>
+        </div>
     </div>
 </section>
 <section class="home-about-teaser">
