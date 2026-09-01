@@ -6,7 +6,22 @@
     <meta name="description" content="{{ t.meta_description }}">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%94%AE</text></svg>">
     <title>{% block title %}{{ t.site_title }}{% endblock %}</title>
+    {% if canonical_url %}<link rel="canonical" href="{{ canonical_url }}">{% endif %}
+    {% if hreflang_fr %}<link rel="alternate" hreflang="fr" href="{{ hreflang_fr }}">{% endif %}
+    {% if hreflang_tr %}<link rel="alternate" hreflang="tr" href="{{ hreflang_tr }}">{% endif %}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ t.site_title }}">
+    <meta property="og:title" content="{{ self.title() }}">
+    <meta property="og:description" content="{{ t.meta_description }}">
+    <meta property="og:locale" content="{{ 'tr_TR' if lang == 'tr' else 'fr_FR' }}">
+    {% if canonical_url %}<meta property="og:url" content="{{ canonical_url }}">{% endif %}
+    <meta property="og:image" content="{{ url_for('static', filename='img/rituams-banner.jpg', _external=True) }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ self.title() }}">
+    <meta name="twitter:description" content="{{ t.meta_description }}">
+    <meta name="twitter:image" content="{{ url_for('static', filename='img/rituams-banner.jpg', _external=True) }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block structured_data %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
     <header class="topbar">

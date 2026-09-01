@@ -18,7 +18,7 @@ from urllib.parse import urlencode
 
 import requests
 import stripe
-from flask import Flask, flash, jsonify, redirect, render_template, request, session, url_for
+from flask import Flask, Response, flash, jsonify, redirect, render_template, request, session, url_for
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
@@ -195,7 +195,7 @@ UI = {
         "nav_cards": "Les Cartes",
         "nav_reading": "Tirage",
         "nav_about": "À propos",
-        "home_title": "Rituams Tarot",
+        "home_title": "Rituams Tarot – Tarot en Ligne, Rituels & Voyance",
         "cta_reading": "Faire un tirage",
         "cta_cards": "Explorer les cartes",
         "home_about_teaser_title": "Qui suis-je ?",
@@ -375,7 +375,7 @@ UI = {
         "nav_cards": "Kartlar",
         "nav_reading": "Açılım",
         "nav_about": "Hakkımda",
-        "home_title": "Rituams Tarot",
+        "home_title": "Rituams Tarot – Online Tarot, Ritüel ve Kahve Falı",
         "cta_reading": "Açılım yap",
         "cta_cards": "Kartları keşfet",
         "home_about_teaser_title": "Ben kimim?",
@@ -680,6 +680,15 @@ def ui(lang):
 @app.context_processor
 def inject_globals():
     lang = get_lang()
+    canonical_url = hreflang_fr = hreflang_tr = None
+    if request.endpoint and request.method == "GET":
+        try:
+            view_args = request.view_args or {}
+            canonical_url = external_url(request.endpoint, **view_args)
+            hreflang_fr = external_url(request.endpoint, lang="fr", **view_args)
+            hreflang_tr = external_url(request.endpoint, lang="tr", **view_args)
+        except Exception:
+            pass
     return {
         "lang": lang,
         "other_lang": "tr" if lang == "fr" else "fr",
@@ -688,6 +697,9 @@ def inject_globals():
         "current_nickname": session.get("nickname"),
         "whatsapp_link": f"https://wa.me/{WHATSAPP_NUMBER}" if WHATSAPP_NUMBER else None,
         "is_admin": is_admin(),
+        "canonical_url": canonical_url,
+        "hreflang_fr": hreflang_fr,
+        "hreflang_tr": hreflang_tr,
     }
 
 
@@ -776,6 +788,49 @@ def draw_spread(spread_key, lang):
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/robots.txt")
+def robots_txt():
+    lines = [
+        "User-agent: *",
+        "Disallow: /api/",
+        "Disallow: /admin/",
+        "Disallow: /hesabim",
+        "Disallow: /randevu-al",
+        "Disallow: /connexion",
+        "Disallow: /inscription",
+        "Disallow: /mot-de-passe-oublie",
+        "Disallow: /reinitialiser/",
+        "Disallow: /auth/",
+        f"Sitemap: {external_url('sitemap_xml')}",
+    ]
+    return Response("\n".join(lines), mimetype="text/plain")
+
+
+SITEMAP_ENDPOINTS = ["index", "about_page", "faq_page", "privacy_page", "terms_page", "cards_page", "reading_page"]
+
+
+@app.route("/sitemap.xml")
+def sitemap_xml():
+    urls = [external_url(endpoint) for endpoint in SITEMAP_ENDPOINTS]
+    urls += [external_url("card_detail", card_id=card["id"]) for card in CARDS]
+
+    parts = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+        'xmlns:xhtml="http://www.w3.org/1999/xhtml">',
+    ]
+    for url in urls:
+        sep = "&" if "?" in url else "?"
+        parts.append(
+            f"<url><loc>{url}</loc>"
+            f'<xhtml:link rel="alternate" hreflang="fr" href="{url}{sep}lang=fr"/>'
+            f'<xhtml:link rel="alternate" hreflang="tr" href="{url}{sep}lang=tr"/>'
+            f"</url>"
+        )
+    parts.append("</urlset>")
+    return Response("\n".join(parts), mimetype="application/xml")
 
 
 @app.route("/hakkimda")
