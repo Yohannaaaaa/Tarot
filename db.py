@@ -56,6 +56,12 @@ def init_schema():
                     updated_at TIMESTAMPTZ
                 )
             """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS tarot_processed_payments (
+                    ref TEXT PRIMARY KEY,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+                )
+            """)
         conn.commit()
     finally:
         put_conn(conn)
