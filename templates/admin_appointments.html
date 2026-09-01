@@ -39,6 +39,7 @@
                     <th>İsim</th>
                     <th>Telefon</th>
                     <th>E-posta</th>
+                    <th>Açılım</th>
                     <th>Not</th>
                     <th>Alındı</th>
                 </tr>
@@ -53,6 +54,7 @@
                            target="_blank" rel="noopener">💬</a>
                     </td>
                     <td>{{ a.email }}</td>
+                    <td>{{ a.category|default('-') }}{% if a.categoryCost %} ({{ a.categoryCost }} 🪙){% endif %}</td>
                     <td>{{ a.note }}</td>
                     <td>{{ a.createdAt[:16] }}</td>
                 </tr>

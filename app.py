@@ -285,9 +285,17 @@ UI = {
         "field_note": "Ta note (optionnel)",
         "field_appointment_time": "Heure",
         "appointment_submit": "Envoyer la demande de rendez-vous",
-        "error_appointment_missing_fields": "Renseigne au moins ton prénom, ton téléphone et la date souhaitée.",
+        "error_appointment_missing_fields": "Renseigne au moins ton prénom, ton téléphone, la date souhaitée et le type de consultation.",
+        "error_appointment_insufficient_funds": "Tu n'as pas assez de jetons pour ce type de consultation. Achète des jetons sur la page Tirage.",
         "success_appointment_sent": "Ta demande de rendez-vous a été reçue, nous te contacterons bientôt !",
         "appointment_select_date_prompt": "Choisis d'abord une date et une heure dans le calendrier.",
+        "field_appointment_category": "Type de consultation",
+        "appointment_category_love": "Amour",
+        "appointment_category_money": "Argent",
+        "appointment_category_job": "Travail",
+        "appointment_category_three_questions": "3 questions",
+        "appointment_category_one_question": "1 question",
+        "appointment_balance_label": "Ton solde : {balance} jetons",
         "calendar_legend_free": "Disponible",
         "calendar_legend_busy": "Déjà réservé",
         "calendar_weekdays": ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
@@ -436,9 +444,17 @@ UI = {
         "field_note": "Notun (opsiyonel)",
         "field_appointment_time": "Saat",
         "appointment_submit": "Randevu Talebi Gönder",
-        "error_appointment_missing_fields": "En azından isim, telefon numarası ve istenen tarihi doldur.",
+        "error_appointment_missing_fields": "En azından isim, telefon numarası, istenen tarih ve açılım türünü doldur.",
+        "error_appointment_insufficient_funds": "Bu açılım için yeterli jetonun yok. Kartlar sayfasından jeton satın alabilirsin.",
         "success_appointment_sent": "Randevu talebin alındı, en kısa sürede seninle iletişime geçeceğiz!",
         "appointment_select_date_prompt": "Önce takvimden bir tarih ve saat seç.",
+        "field_appointment_category": "Açılım Türü",
+        "appointment_category_love": "Aşk",
+        "appointment_category_money": "Para",
+        "appointment_category_job": "İş",
+        "appointment_category_three_questions": "3 Soru",
+        "appointment_category_one_question": "1 Soru",
+        "appointment_balance_label": "Bakiyen: {balance} jeton",
         "calendar_legend_free": "Müsait",
         "calendar_legend_busy": "Dolu",
         "calendar_weekdays": ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"],
@@ -1044,25 +1060,45 @@ def api_message():
     return jsonify({"ok": True})
 
 
+APPOINTMENT_CATEGORY_COST = {
+    "love": 250,
+    "money": 250,
+    "job": 250,
+    "three_questions": 200,
+    "one_question": 100,
+}
+
+
 @app.route("/randevu-al", methods=["GET", "POST"])
 @limiter.limit("5 per hour", methods=["POST"])
 def appointment_page():
+    user_email = session.get("email")
+    if not user_email:
+        flash("login_required_reading", "error")
+        return redirect(url_for("login_page"))
+
     if request.method == "POST":
         name = (request.form.get("name") or "").strip()
         phone = (request.form.get("phone") or "").strip()
-        email = (request.form.get("email") or "").strip()
+        contact_email = (request.form.get("email") or "").strip()
         appointment_date = (request.form.get("appointment_date") or "").strip()
         note = (request.form.get("note") or "").strip()
+        category = (request.form.get("category") or "").strip()
+        cost = APPOINTMENT_CATEGORY_COST.get(category)
 
-        if not name or not phone or not appointment_date:
+        if not name or not phone or not appointment_date or not cost:
             flash("error_appointment_missing_fields", "error")
+        elif not is_admin() and not jeton_store.deduct(user_email, cost)[0]:
+            flash("error_appointment_insufficient_funds", "error")
         else:
             entry = {
                 "name": name,
                 "phone": phone,
-                "email": email,
+                "email": contact_email,
                 "appointmentDate": appointment_date,
                 "note": note,
+                "category": category,
+                "categoryCost": cost,
                 "lang": get_lang(),
                 "createdAt": datetime.utcnow().isoformat(),
             }
@@ -1076,8 +1112,9 @@ def appointment_page():
                 "\n".join([
                     f"Nom : {name}",
                     f"Telephone : {phone}",
-                    f"E-mail : {email}",
+                    f"E-mail : {contact_email}",
                     f"Date souhaitee : {appointment_date}",
+                    f"Type de consultation : {category} ({cost} jetons)",
                     f"Langue : {entry['lang']}",
                     "",
                     "Note :",
@@ -1086,7 +1123,13 @@ def appointment_page():
             )
             flash("success_appointment_sent", "success")
             return redirect(url_for("appointment_page"))
-    return render_template("appointment.html")
+
+    balance = "∞" if is_admin() else jeton_store.get_balance(user_email)
+    return render_template(
+        "appointment.html",
+        balance=balance,
+        category_costs=APPOINTMENT_CATEGORY_COST,
+    )
 
 
 @app.route("/api/randevu/dolu-tarihler")

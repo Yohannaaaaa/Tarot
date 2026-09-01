@@ -712,6 +712,18 @@ main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; widt
     color: var(--text);
     font-size: .95em;
 }
+.appointment-balance { text-align: center; color: var(--text-dim); font-size: .9em; margin: -6px 0 16px; }
+.field-group { margin-bottom: 16px; text-align: left; }
+.field-group label { display: block; color: var(--text-dim); font-size: .85em; margin-bottom: 6px; }
+.field-group select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg-soft);
+    color: var(--text);
+    font-size: .95em;
+}
 .btn-google {
     display: flex;
     align-items: center;
