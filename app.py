@@ -18,6 +18,7 @@ from flask import Flask, flash, jsonify, redirect, render_template, request, ses
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 import accounts_store
 import db
@@ -69,6 +70,7 @@ GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 app.secret_key = os.environ.get("SECRET_KEY", "rituams-tarot-dev-secret-change-me")
 app.config["SESSION_COOKIE_SECURE"] = bool(os.environ.get("RENDER"))
 app.config["SESSION_COOKIE_HTTPONLY"] = True
