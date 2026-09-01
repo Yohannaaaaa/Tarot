@@ -122,6 +122,8 @@
                 </select>
                 <input name="appointmentDate" id="fAppointment" type="datetime-local" title="{{ t.field_appointment_date }}">
                 <textarea name="question" id="fQuestion" placeholder="{{ t.field_question }}" required></textarea>
+                <label class="form-photo-label" for="fPhoto">{{ t.field_photo }}</label>
+                <input type="file" name="photo" id="fPhoto" accept="image/*">
                 <button type="submit" class="btn btn-primary full" id="formSubmitBtn">{{ t.form_submit }}</button>
             </div>
             <p id="formStatus" class="form-status"></p>

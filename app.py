@@ -9,6 +9,9 @@ import secrets
 import smtplib
 import threading
 from datetime import datetime, timedelta, timezone
+from email.mime.application import MIMEApplication
+from email.mime.image import MIMEImage
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
 from urllib.parse import urlencode
@@ -20,6 +23,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from werkzeug.middleware.proxy_fix import ProxyFix
+from werkzeug.utils import secure_filename
 
 import accounts_store
 import db
@@ -76,6 +80,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "rituams-tarot-dev-secret-change-m
 app.config["SESSION_COOKIE_SECURE"] = bool(os.environ.get("RENDER"))
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024
 db.init_schema()
 
 limiter = Limiter(get_remote_address, app=app, default_limits=[])
@@ -85,6 +90,14 @@ limiter = Limiter(get_remote_address, app=app, default_limits=[])
 def ratelimit_handler(e):
     if request.path.startswith("/api/"):
         return jsonify({"ok": False, "error": "rate_limited"}), 429
+    flash("error_rate_limited", "error")
+    return redirect(request.referrer or url_for("index"))
+
+
+@app.errorhandler(413)
+def request_too_large_handler(e):
+    if request.path.startswith("/api/"):
+        return jsonify({"ok": False, "error": "too_large"}), 413
     flash("error_rate_limited", "error")
     return redirect(request.referrer or url_for("index"))
 
@@ -110,29 +123,59 @@ def get_serializer():
     return URLSafeTimedSerializer(app.secret_key)
 
 
-def send_email(to_addr, subject, body):
-    if not GMAIL_APP_PASSWORD:
-        print("[send_email] SKIPPED: GMAIL_APP_PASSWORD is not set", flush=True)
-        return False
-    subject = subject.replace("\r", " ").replace("\n", " ")
-    msg = MIMEText(body, "plain", "utf-8")
-    msg["Subject"] = subject
-    msg["From"] = GMAIL_ADDRESS
-    msg["To"] = to_addr
+def _send_mime(msg, to_addr):
     try:
         with smtplib.SMTP("smtp.gmail.com", 587, timeout=15) as server:
             server.starttls()
             server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
             server.sendmail(GMAIL_ADDRESS, [to_addr], msg.as_string())
-        print(f"[send_email] OK to {to_addr!r} subject={subject!r}", flush=True)
+        print(f"[send_email] OK to {to_addr!r} subject={msg['Subject']!r}", flush=True)
         return True
     except Exception as exc:
-        print(f"[send_email] FAILED to {to_addr!r} subject={subject!r}: {exc!r}", flush=True)
+        print(f"[send_email] FAILED to {to_addr!r} subject={msg['Subject']!r}: {exc!r}", flush=True)
         return False
+
+
+def send_email(to_addr, subject, body):
+    if not GMAIL_APP_PASSWORD:
+        print("[send_email] SKIPPED: GMAIL_APP_PASSWORD is not set", flush=True)
+        return False
+    msg = MIMEText(body, "plain", "utf-8")
+    msg["Subject"] = subject.replace("\r", " ").replace("\n", " ")
+    msg["From"] = GMAIL_ADDRESS
+    msg["To"] = to_addr
+    return _send_mime(msg, to_addr)
 
 
 def send_email_async(to_addr, subject, body):
     threading.Thread(target=send_email, args=(to_addr, subject, body), daemon=True).start()
+
+
+def send_email_with_attachment(to_addr, subject, body, attachment_bytes, attachment_filename, attachment_content_type):
+    if not GMAIL_APP_PASSWORD:
+        print("[send_email] SKIPPED: GMAIL_APP_PASSWORD is not set", flush=True)
+        return False
+    msg = MIMEMultipart()
+    msg["Subject"] = subject.replace("\r", " ").replace("\n", " ")
+    msg["From"] = GMAIL_ADDRESS
+    msg["To"] = to_addr
+    msg.attach(MIMEText(body, "plain", "utf-8"))
+    maintype, _, subtype = (attachment_content_type or "application/octet-stream").partition("/")
+    if maintype == "image":
+        part = MIMEImage(attachment_bytes, _subtype=subtype or "jpeg")
+    else:
+        part = MIMEApplication(attachment_bytes)
+    part.add_header("Content-Disposition", "attachment", filename=secure_filename(attachment_filename) or "photo.jpg")
+    msg.attach(part)
+    return _send_mime(msg, to_addr)
+
+
+def send_email_with_attachment_async(to_addr, subject, body, attachment_bytes, attachment_filename, attachment_content_type):
+    threading.Thread(
+        target=send_email_with_attachment,
+        args=(to_addr, subject, body, attachment_bytes, attachment_filename, attachment_content_type),
+        daemon=True,
+    ).start()
 
 
 DATA_PATH = Path(__file__).resolve().parent / "data" / "cards.json"
@@ -247,6 +290,7 @@ UI = {
         "opt_pdf": "Réponse en PDF",
         "field_appointment_date": "Date de rendez-vous souhaitée",
         "field_question": "Écris ta question",
+        "field_photo": "📷 Ajouter une photo (ex. tasse de café pour une lecture de marc)",
         "form_submit": "Envoyer la demande",
         "form_sending": "Envoi en cours...",
         "form_success": "Merci, ta demande a bien été enregistrée !",
@@ -436,6 +480,7 @@ UI = {
         "opt_pdf": "PDF cevap",
         "field_appointment_date": "İstenen randevu tarihi",
         "field_question": "Sorunu yaz",
+        "field_photo": "📷 Fotoğraf ekle (ör. kahve falı için fincan fotoğrafı)",
         "form_submit": "Talebi Gönder",
         "form_sending": "Gönderiliyor...",
         "form_success": "Teşekkürler, talebin kaydedildi!",
@@ -1091,15 +1136,27 @@ def api_jeton_balance():
     })
 
 
+MAX_PHOTO_SIZE = 5 * 1024 * 1024
+
+
 @app.route("/api/mesaj", methods=["POST"])
 @limiter.limit("5 per hour")
 def api_message():
-    data = request.get_json(silent=True) or {}
+    data = request.form
     name = (data.get("name") or "").strip()
     email = (data.get("email") or "").strip()
     question = (data.get("question") or "").strip()
     if not name or not email or not question:
         return jsonify({"ok": False, "error": "missing_fields"}), 400
+
+    photo = request.files.get("photo")
+    photo_bytes = None
+    if photo and photo.filename:
+        if not (photo.mimetype or "").startswith("image/"):
+            return jsonify({"ok": False, "error": "invalid_photo_type"}), 400
+        photo_bytes = photo.read(MAX_PHOTO_SIZE + 1)
+        if len(photo_bytes) > MAX_PHOTO_SIZE:
+            return jsonify({"ok": False, "error": "photo_too_large"}), 400
 
     entry = {
         "name": name,
@@ -1112,6 +1169,7 @@ def api_message():
         "category": (data.get("category") or "").strip(),
         "service": (data.get("service") or "").strip(),
         "cost": data.get("cost"),
+        "hasPhoto": bool(photo_bytes),
         "lang": get_lang(),
         "createdAt": datetime.utcnow().isoformat(),
     }
@@ -1126,25 +1184,26 @@ def api_message():
     with open(MESSAGES_PATH, "w", encoding="utf-8") as f:
         json.dump(messages, f, ensure_ascii=False, indent=2)
 
-    send_email_async(
-        GMAIL_ADDRESS,
-        f"Nouvelle demande Rituams Tarot - {entry['name']}",
-        "\n".join([
-            f"Nom : {entry['name']}",
-            f"E-mail : {entry['email']}",
-            f"Prenom de la mere : {entry['motherName']}",
-            f"Date de naissance : {entry['birthDate']}",
-            f"Type de reponse souhaite : {entry['responseType']}",
-            f"Date de rendez-vous souhaitee : {entry['appointmentDate']}",
-            f"Categorie : {entry['category']}",
-            f"Service/rituel : {entry['service']}",
-            f"Cout : {entry['cost']}",
-            f"Langue : {entry['lang']}",
-            "",
-            "Question :",
-            entry["question"],
-        ]),
-    )
+    body = "\n".join([
+        f"Nom : {entry['name']}",
+        f"E-mail : {entry['email']}",
+        f"Prenom de la mere : {entry['motherName']}",
+        f"Date de naissance : {entry['birthDate']}",
+        f"Type de reponse souhaite : {entry['responseType']}",
+        f"Date de rendez-vous souhaitee : {entry['appointmentDate']}",
+        f"Categorie : {entry['category']}",
+        f"Service/rituel : {entry['service']}",
+        f"Cout : {entry['cost']}",
+        f"Langue : {entry['lang']}",
+        "",
+        "Question :",
+        entry["question"],
+    ])
+    subject = f"Nouvelle demande Rituams Tarot - {entry['name']}"
+    if photo_bytes:
+        send_email_with_attachment_async(GMAIL_ADDRESS, subject, body, photo_bytes, photo.filename, photo.mimetype)
+    else:
+        send_email_async(GMAIL_ADDRESS, subject, body)
 
     return jsonify({"ok": True})
 

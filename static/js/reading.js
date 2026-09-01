@@ -219,21 +219,22 @@
                 return;
             }
             formStatus.textContent = i18n.formSending;
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('email', email);
+            formData.append('question', question);
+            formData.append('motherName', document.getElementById('fMother').value.trim());
+            formData.append('birthDate', document.getElementById('fBirth').value);
+            formData.append('responseType', document.getElementById('fResponseType').value);
+            formData.append('appointmentDate', document.getElementById('fAppointment').value);
+            formData.append('category', document.getElementById('fCategory').value);
+            formData.append('service', document.getElementById('fService').value);
+            formData.append('cost', document.getElementById('fCost').value);
+            const photoFile = document.getElementById('fPhoto').files[0];
+            if (photoFile) formData.append('photo', photoFile);
             fetch('/api/mesaj', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name,
-                    email,
-                    question,
-                    motherName: document.getElementById('fMother').value.trim(),
-                    birthDate: document.getElementById('fBirth').value,
-                    responseType: document.getElementById('fResponseType').value,
-                    appointmentDate: document.getElementById('fAppointment').value,
-                    category: document.getElementById('fCategory').value,
-                    service: document.getElementById('fService').value,
-                    cost: document.getElementById('fCost').value,
-                }),
+                body: formData,
             })
                 .then((r) => r.json())
                 .then((d) => {
