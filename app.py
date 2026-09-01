@@ -719,9 +719,12 @@ def register_page():
             flash("error_email_taken", "error")
         else:
             account = accounts_store.create_account(email, password, nickname)
-            session["email"] = account["email"]
-            session["nickname"] = account["nickname"]
-            return redirect(url_for("reading_page"))
+            if not account:
+                flash("error_email_taken", "error")
+            else:
+                session["email"] = account["email"]
+                session["nickname"] = account["nickname"]
+                return redirect(url_for("reading_page"))
     return render_template("register.html")
 
 
@@ -880,7 +883,7 @@ def google_callback():
         return redirect(url_for("login_page"))
 
     email = (userinfo.get("email") or "").strip().lower()
-    if not email:
+    if not email or not userinfo.get("email_verified"):
         flash("error_google_not_configured", "error")
         return redirect(url_for("login_page"))
 
