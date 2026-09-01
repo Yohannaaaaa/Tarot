@@ -151,9 +151,22 @@ UI = {
         "nav_home": "Accueil",
         "nav_cards": "Les Cartes",
         "nav_reading": "Tirage",
+        "nav_about": "À propos",
         "home_title": "Rituams Tarot",
         "cta_reading": "Faire un tirage",
         "cta_cards": "Explorer les cartes",
+        "home_about_teaser_title": "Qui suis-je ?",
+        "home_about_teaser_text": "Svetlana, 18 ans d'expérience en tarot, spécialisée en amour et rituels.",
+        "home_about_teaser_link": "En savoir plus →",
+        "about_title": "À propos de moi",
+        "about_name": "Svetlana",
+        "about_years": "18 ans d'expérience en lecture de tarot",
+        "about_specialties_label": "Spécialités :",
+        "about_specialties": "Amour · Rituels",
+        "about_bio_1": "Bonjour, je suis Svetlana. Je pratique le tarot depuis 18 ans, en me spécialisant dans les tirages autour de l'amour et les rituels de guidance.",
+        "about_bio_2": "Je combine mon intuition avec le langage des cartes pour t'offrir des réponses claires, honnêtes et sincères. Chaque consultation est personnalisée : j'écoute ta situation avant de tirer les cartes.",
+        "about_bio_3": "Si tu traverses une période de doute, de questionnement amoureux ou que tu cherches simplement à y voir plus clair, je suis là pour t'accompagner avec bienveillance.",
+        "about_cta": "Prendre rendez-vous",
         "search_placeholder": "Rechercher une carte...",
         "filter_all": "Toutes",
         "filter_major": "Arcanes majeurs",
@@ -312,9 +325,22 @@ UI = {
         "nav_home": "Ana Sayfa",
         "nav_cards": "Kartlar",
         "nav_reading": "Açılım",
+        "nav_about": "Hakkımda",
         "home_title": "Rituams Tarot",
         "cta_reading": "Açılım yap",
         "cta_cards": "Kartları keşfet",
+        "home_about_teaser_title": "Ben kimim?",
+        "home_about_teaser_text": "Svetlana, 18 yıllık tarot deneyimi, aşk ve ritüeller konusunda uzman.",
+        "home_about_teaser_link": "Devamını oku →",
+        "about_title": "Hakkımda",
+        "about_name": "Svetlana",
+        "about_years": "18 yıllık tarot okuma deneyimi",
+        "about_specialties_label": "Uzmanlık alanlarım:",
+        "about_specialties": "Aşk · Ritüeller",
+        "about_bio_1": "Merhaba, ben Svetlana. 18 yıldır tarot kartlarıyla insanlara rehberlik ediyorum; özellikle aşk açılımları ve ritüeller konusunda derinlemesine çalışıyorum.",
+        "about_bio_2": "Sezgilerimi kartların diliyle birleştirerek sana net, dürüst ve içten yanıtlar sunmaya çalışıyorum. Her danışanımı tek tek dinler, senin özel durumuna göre bir okuma yaparım.",
+        "about_bio_3": "Bir kararsızlık, aşk konusunda bir soru işareti ya da sadece biraz netlik arıyorsan, sana içtenlikle eşlik etmek için buradayım.",
+        "about_cta": "Randevu Al",
         "search_placeholder": "Bir kart ara...",
         "filter_all": "Tümü",
         "filter_major": "Majör Arkana",
@@ -668,6 +694,11 @@ def draw_spread(spread_key, lang):
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/hakkimda")
+def about_page():
+    return render_template("about.html")
 
 
 @app.route("/gizlilik-politikasi")

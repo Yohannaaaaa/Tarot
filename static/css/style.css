@@ -630,6 +630,60 @@ main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; widt
 .auth-card h1 { color: var(--gold-soft); margin: 0 0 6px; }
 .auth-subtitle { color: var(--text-dim); margin: 0 0 22px; line-height: 1.5; }
 .auth-form { display: flex; flex-direction: column; gap: 12px; text-align: left; }
+
+/* About page */
+.about-page { display: flex; justify-content: center; padding: 20px 0 60px; }
+.about-card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 28px;
+    text-align: center;
+}
+.about-photo {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--gold);
+    margin-bottom: 16px;
+}
+.about-card h1 { color: var(--gold-soft); margin: 0 0 6px; }
+.about-years { color: var(--text-dim); margin: 0 0 10px; }
+.about-specialties { color: var(--gold-soft); margin: 0 0 20px; }
+.about-bio { text-align: left; line-height: 1.7; color: var(--text); margin-bottom: 24px; }
+.about-bio p { margin: 0 0 14px; }
+
+/* Homepage "who am I" teaser */
+.home-about-teaser { display: flex; justify-content: center; padding: 10px 0 40px; }
+.home-about-teaser-link {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    max-width: 480px;
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 22px;
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color .2s;
+}
+.home-about-teaser-link:hover { border-color: var(--gold); }
+.home-about-teaser-link img {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--gold);
+    flex-shrink: 0;
+}
+.home-about-teaser-link h2 { color: var(--gold-soft); margin: 0 0 4px; font-size: 1.05em; }
+.home-about-teaser-link p { color: var(--text-dim); margin: 0 0 6px; font-size: .92em; line-height: 1.4; }
+.home-about-teaser-cta { color: var(--gold); font-size: .88em; font-weight: 600; }
 .auth-form input, .auth-form textarea {
     padding: 12px 14px;
     border-radius: 10px;
