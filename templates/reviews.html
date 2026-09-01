@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ t.reviews_title }} · {{ t.site_title }}{% endblock %}
+{% block structured_data %}
+{% if reviews %}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": {{ t.site_title|tojson }},
+    "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": {{ avg_rating|tojson }},
+        "reviewCount": {{ reviews|length|tojson }}
+    },
+    "review": [
+        {% for r in reviews %}
+        {
+            "@type": "Review",
+            "author": {"@type": "Person", "name": {{ r.name|tojson }}},
+            "reviewRating": {"@type": "Rating", "ratingValue": {{ r.rating|tojson }}, "bestRating": "5"},
+            "reviewBody": {{ r.text|tojson }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]
+}
+</script>
+{% endif %}
+{% endblock %}
+{% block content %}
+<section class="legal-page reviews-page">
+    <h1>{{ t.reviews_title }}</h1>
+    <p class="auth-subtitle">{{ t.reviews_subtitle }}</p>
+
+    {% if reviews %}
+    <p class="reviews-avg">{{ t.reviews_avg_label }} <b>{{ avg_rating }}/5</b> ⭐ ({{ reviews|length }})</p>
+    <div class="review-list">
+        {% for r in reviews %}
+        <div class="review-item">
+            <div class="review-stars">{{ "⭐" * r.rating }}{{ "☆" * (5 - r.rating) }}</div>
+            <p class="review-text">"{{ r.text }}"</p>
+            <p class="review-name">— {{ r.name }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="admin-empty">{{ t.reviews_empty }}</p>
+    {% endif %}
+</section>
+{% endblock %}

@@ -18,3 +18,4 @@ data/accounts.json
 data/appointments.json
 data/blocked_dates.json
 data/processed_payments.json
+data/reviews.json
