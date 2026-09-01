@@ -40,6 +40,7 @@
                     <th>Telefon</th>
                     <th>E-posta</th>
                     <th>Açılım</th>
+                    <th>Detay</th>
                     <th>Not</th>
                     <th>Alındı</th>
                 </tr>
@@ -53,7 +54,12 @@
                            target="_blank" rel="noopener">{{ a.phone }} 💬</a>
                     </td>
                     <td>{{ a.email }}</td>
-                    <td>{{ a.category|default('-') }}{% if a.categoryCost %} ({{ a.categoryCost }} 🪙){% endif %}</td>
+                    <td>{{ a.categoryLabel or a.category or '-' }}{% if a.categoryCost %} ({{ a.categoryCost }} 🪙){% endif %}{% if a.hasPhoto %} 📷{% endif %}</td>
+                    <td>
+                        {% if a.motherName %}Anne: {{ a.motherName }}<br>{% endif %}
+                        {% if a.birthDate %}Doğum: {{ a.birthDate }}<br>{% endif %}
+                        {% if a.responseType %}Yanıt: {{ a.responseType }}{% endif %}
+                    </td>
                     <td>{{ a.note }}</td>
                     <td>{{ a.createdAt[:16] }}</td>
                 </tr>

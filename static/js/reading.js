@@ -163,20 +163,6 @@
         btn.addEventListener('click', () => draw(btn.dataset.spread));
     });
 
-    // ---------- Services / rituals "select & send" ----------
-    const contactForm = document.getElementById('contactForm');
-    const formStatus = document.getElementById('formStatus');
-
-    document.querySelectorAll('.btn-select:not(.btn-buy-pack)').forEach((btn) => {
-        btn.addEventListener('click', () => {
-            document.getElementById('fCategory').value = btn.dataset.category;
-            document.getElementById('fService').value = btn.dataset.name;
-            document.getElementById('fCost').value = btn.dataset.cost;
-            contactForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            formStatus.textContent = `${btn.dataset.name} — 🪙 ${btn.dataset.cost}`;
-        });
-    });
-
     // ---------- Jeton pack purchase (Stripe Checkout) ----------
     document.querySelectorAll('.btn-buy-pack').forEach((btn) => {
         btn.addEventListener('click', () => {
@@ -207,43 +193,4 @@
                 });
         });
     });
-
-    if (contactForm) {
-        contactForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const name = document.getElementById('fName').value.trim();
-            const email = document.getElementById('fEmail').value.trim();
-            const question = document.getElementById('fQuestion').value.trim();
-            if (!name || !email || !question) {
-                formStatus.textContent = i18n.formNeedFields;
-                return;
-            }
-            formStatus.textContent = i18n.formSending;
-            const formData = new FormData();
-            formData.append('name', name);
-            formData.append('email', email);
-            formData.append('question', question);
-            formData.append('motherName', document.getElementById('fMother').value.trim());
-            formData.append('birthDate', document.getElementById('fBirth').value);
-            formData.append('responseType', document.getElementById('fResponseType').value);
-            formData.append('appointmentDate', document.getElementById('fAppointment').value);
-            formData.append('category', document.getElementById('fCategory').value);
-            formData.append('service', document.getElementById('fService').value);
-            formData.append('cost', document.getElementById('fCost').value);
-            const photoFile = document.getElementById('fPhoto').files[0];
-            if (photoFile) formData.append('photo', photoFile);
-            fetch('/api/mesaj', {
-                method: 'POST',
-                body: formData,
-            })
-                .then((r) => r.json())
-                .then((d) => {
-                    formStatus.textContent = d.ok ? i18n.formSuccess : i18n.formError;
-                    if (d.ok) contactForm.reset();
-                })
-                .catch(() => {
-                    formStatus.textContent = i18n.formError;
-                });
-        });
-    }
 })();

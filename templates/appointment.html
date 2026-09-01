@@ -11,12 +11,17 @@
         <div class="field-group">
             <label for="appointmentCategorySelect">{{ t.field_appointment_category }}</label>
             <select name="category" id="appointmentCategorySelect" form="appointmentForm" required>
-                <option value="" disabled selected>—</option>
-                <option value="love">{{ t.appointment_category_love }} — {{ category_costs.love }} 🪙</option>
-                <option value="money">{{ t.appointment_category_money }} — {{ category_costs.money }} 🪙</option>
-                <option value="job">{{ t.appointment_category_job }} — {{ category_costs.job }} 🪙</option>
-                <option value="three_questions">{{ t.appointment_category_three_questions }} — {{ category_costs.three_questions }} 🪙</option>
-                <option value="one_question">{{ t.appointment_category_one_question }} — {{ category_costs.one_question }} 🪙</option>
+                <option value="" disabled {{ 'selected' if not preselected_category else '' }}>{{ t.appointment_category_placeholder }}</option>
+                <optgroup label="{{ t.tab_services }}">
+                    {% for c in categories if c.group == 'service' %}
+                    <option value="{{ c.id }}" {{ 'selected' if c.id == preselected_category else '' }}>{{ c.name }} — {{ c.cost }} 🪙</option>
+                    {% endfor %}
+                </optgroup>
+                <optgroup label="{{ t.tab_rituals }}">
+                    {% for c in categories if c.group == 'ritual' %}
+                    <option value="{{ c.id }}" {{ 'selected' if c.id == preselected_category else '' }}>{{ c.name }} — {{ c.cost }} 🪙</option>
+                    {% endfor %}
+                </optgroup>
             </select>
         </div>
 
@@ -51,12 +56,21 @@
             </select>
         </div>
 
-        <form method="post" class="auth-form" id="appointmentForm">
+        <form method="post" class="auth-form" id="appointmentForm" enctype="multipart/form-data">
             <input type="hidden" name="appointment_date" id="appointmentDateInput">
             <input type="text" name="name" placeholder="{{ t.field_name }}" required>
             <input type="tel" name="phone" placeholder="{{ t.field_phone }}" required>
             <input type="email" name="email" placeholder="{{ t.field_email }}">
+            <input type="text" name="motherName" placeholder="{{ t.field_mother }}">
+            <input type="date" name="birthDate" title="{{ t.field_birthdate }}">
+            <select name="responseType">
+                <option value="mail">{{ t.opt_mail }}</option>
+                <option value="voice">{{ t.opt_voice }}</option>
+                <option value="pdf">{{ t.opt_pdf }}</option>
+            </select>
             <textarea name="note" placeholder="{{ t.field_note }}" rows="4"></textarea>
+            <label class="form-photo-label" for="appointmentPhoto">{{ t.field_photo }}</label>
+            <input type="file" name="photo" id="appointmentPhoto" accept="image/*">
             <button type="submit" class="btn btn-primary full">{{ t.appointment_submit }}</button>
         </form>
     </div>
