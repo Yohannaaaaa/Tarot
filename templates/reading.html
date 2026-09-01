@@ -14,6 +14,7 @@
         {% if logged_in %}
             <span class="jeton-user">👤 {{ current_nickname }}</span>
             <span class="jeton-balance">💰 <span id="jetonBalance">—</span> {{ t.jeton_unit }}</span>
+            <button type="button" id="buyJetonShortcut" class="btn-buy-jeton-shortcut">+ {{ t.buy_jeton_shortcut }}</button>
         {% else %}
             <span class="jeton-login-prompt">🔒 {{ t.login_required_reading }}</span>
             <a class="btn btn-primary btn-small" href="{{ url_for('login_page') }}">{{ t.nav_login }}</a>
