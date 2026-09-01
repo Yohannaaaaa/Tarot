@@ -38,6 +38,7 @@
             {% if logged_in %}
                 {% if is_admin %}
                     <a href="{{ url_for('admin_appointments') }}">📅 Admin</a>
+                    <a href="{{ url_for('admin_reviews') }}">⭐ Admin</a>
                 {% endif %}
                 <a href="{{ url_for('account_page') }}" class="auth-greeting">👤 {{ current_nickname }}</a>
                 <a href="{{ url_for('logout') }}">{{ t.nav_logout }}</a>
@@ -67,6 +68,8 @@
     <footer class="site-footer">
         <p>{{ t.footer_note }}</p>
         <p class="footer-links">
+            <a href="{{ url_for('reviews_page') }}">{{ t.footer_reviews }}</a>
+            <span>·</span>
             <a href="{{ url_for('faq_page') }}">{{ t.footer_faq }}</a>
             <span>·</span>
             <a href="{{ url_for('privacy_page') }}">{{ t.footer_privacy }}</a>

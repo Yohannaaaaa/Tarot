@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Yorumlar (Admin) · {{ t.site_title }}{% endblock %}
+{% block content %}
+<section class="admin-page">
+    <h1>⭐ Müşteri Yorumları</h1>
+
+    <div class="admin-block">
+        <h2>Yeni yorum ekle</h2>
+        <form method="post" class="admin-inline-form">
+            <input type="hidden" name="action" value="add">
+            <input type="text" name="name" placeholder="İsim" required>
+            <select name="rating" required>
+                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                <option value="4">⭐⭐⭐⭐ (4)</option>
+                <option value="3">⭐⭐⭐ (3)</option>
+                <option value="2">⭐⭐ (2)</option>
+                <option value="1">⭐ (1)</option>
+            </select>
+            <textarea name="text" placeholder="Yorum metni" rows="3" required></textarea>
+            <button type="submit" class="btn btn-secondary btn-small">Ekle</button>
+        </form>
+    </div>
+
+    <div class="admin-block">
+        <h2>Yayındaki yorumlar ({{ reviews|length }})</h2>
+        {% if not reviews %}
+        <p class="admin-empty">Henüz yorum yok.</p>
+        {% else %}
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <tr>
+                    <th>İsim</th>
+                    <th>Puan</th>
+                    <th>Yorum</th>
+                    <th>Tarih</th>
+                    <th></th>
+                </tr>
+                {% for r in reviews %}
+                <tr>
+                    <td>{{ r.name }}</td>
+                    <td>{{ "⭐" * r.rating }}</td>
+                    <td>{{ r.text }}</td>
+                    <td>{{ r.createdAt[:10] }}</td>
+                    <td>
+                        <form method="post">
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="review_id" value="{{ r.id }}">
+                            <button type="submit" title="Sil">✕</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

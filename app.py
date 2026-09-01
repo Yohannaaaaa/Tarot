@@ -28,6 +28,7 @@ from werkzeug.utils import secure_filename
 import accounts_store
 import db
 import jeton_store
+import reviews_store
 
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
@@ -247,6 +248,11 @@ UI = {
         "footer_privacy": "Confidentialité",
         "footer_terms": "Conditions d'utilisation",
         "footer_faq": "FAQ",
+        "footer_reviews": "Avis",
+        "reviews_title": "Avis de nos clients",
+        "reviews_subtitle": "Ce que nos clients disent de leurs consultations.",
+        "reviews_empty": "Pas encore d'avis, reviens bientôt !",
+        "reviews_avg_label": "Note moyenne :",
         "faq_title": "Questions fréquentes",
         "faq_q1": "Comment ça marche ?",
         "faq_a1": "Tu crées un compte, tu reçois 500 jetons gratuits, et tu peux faire des tirages instantanés ou prendre rendez-vous pour une consultation en direct. Chaque tirage ou rendez-vous coûte un nombre de jetons fixe, affiché avant de valider.",
@@ -427,6 +433,11 @@ UI = {
         "footer_privacy": "Gizlilik",
         "footer_terms": "Kullanım Şartları",
         "footer_faq": "SSS",
+        "footer_reviews": "Yorumlar",
+        "reviews_title": "Müşteri Yorumları",
+        "reviews_subtitle": "Danışanlarımızın bakımlarımız hakkındaki yorumları.",
+        "reviews_empty": "Henüz yorum yok, yakında burada olacak!",
+        "reviews_avg_label": "Ortalama puan:",
         "faq_title": "Sık Sorulan Sorular",
         "faq_q1": "Sistem nasıl çalışıyor?",
         "faq_a1": "Hesap oluşturursun, 500 jeton hediye edilir; anlık kart açılımı yapabilir ya da canlı bir bakım için randevu alabilirsin. Her açılım/randevu sabit bir jeton miktarına mal olur, onaylamadan önce sana gösterilir.",
@@ -808,7 +819,7 @@ def robots_txt():
     return Response("\n".join(lines), mimetype="text/plain")
 
 
-SITEMAP_ENDPOINTS = ["index", "about_page", "faq_page", "privacy_page", "terms_page", "cards_page", "reading_page"]
+SITEMAP_ENDPOINTS = ["index", "about_page", "faq_page", "reviews_page", "privacy_page", "terms_page", "cards_page", "reading_page"]
 
 
 @app.route("/sitemap.xml")
@@ -1376,6 +1387,40 @@ def admin_appointments():
     appointments = sorted(load_appointments(), key=lambda a: a.get("appointmentDate", ""))
     blocked_dates = load_blocked_dates()
     return render_template("admin_appointments.html", appointments=appointments, blocked_dates=blocked_dates)
+
+
+@app.route("/yorumlar")
+def reviews_page():
+    reviews = reviews_store.list_reviews()
+    avg_rating = round(sum(r["rating"] for r in reviews) / len(reviews), 1) if reviews else None
+    return render_template("reviews.html", reviews=reviews, avg_rating=avg_rating)
+
+
+@app.route("/admin/yorumlar", methods=["GET", "POST"])
+@limiter.limit("30 per hour", methods=["POST"])
+def admin_reviews():
+    if not is_admin():
+        return redirect(url_for("login_page"))
+
+    if request.method == "POST":
+        action = request.form.get("action")
+        if action == "add":
+            name = (request.form.get("name") or "").strip()
+            text = (request.form.get("text") or "").strip()
+            try:
+                rating = int(request.form.get("rating", 0))
+            except ValueError:
+                rating = 0
+            if name and text and 1 <= rating <= 5:
+                reviews_store.add_review(name, rating, text)
+        elif action == "delete":
+            try:
+                reviews_store.delete_review(int(request.form.get("review_id", "")))
+            except ValueError:
+                pass
+        return redirect(url_for("admin_reviews"))
+
+    return render_template("admin_reviews.html", reviews=reviews_store.list_reviews())
 
 
 @app.route("/api/jeton/checkout", methods=["POST"])

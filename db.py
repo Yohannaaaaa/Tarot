@@ -62,6 +62,15 @@ def init_schema():
                     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
                 )
             """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS tarot_reviews (
+                    id SERIAL PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    rating INTEGER NOT NULL,
+                    review_text TEXT NOT NULL,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+                )
+            """)
         conn.commit()
     finally:
         put_conn(conn)
