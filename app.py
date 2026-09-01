@@ -6,6 +6,7 @@ import random
 import re
 import secrets
 import smtplib
+import threading
 from datetime import datetime, timedelta, timezone
 from email.mime.text import MIMEText
 from pathlib import Path
@@ -124,6 +125,10 @@ def send_email(to_addr, subject, body):
     except (smtplib.SMTPException, OSError) as exc:
         print(f"[send_email] FAILED to {to_addr!r} subject={subject!r}: {exc!r}", flush=True)
         return False
+
+
+def send_email_async(to_addr, subject, body):
+    threading.Thread(target=send_email, args=(to_addr, subject, body), daemon=True).start()
 
 
 DATA_PATH = Path(__file__).resolve().parent / "data" / "cards.json"
@@ -1016,7 +1021,7 @@ def api_message():
     with open(MESSAGES_PATH, "w", encoding="utf-8") as f:
         json.dump(messages, f, ensure_ascii=False, indent=2)
 
-    send_email(
+    send_email_async(
         GMAIL_ADDRESS,
         f"Nouvelle demande Rituams Tarot - {entry['name']}",
         "\n".join([
@@ -1065,7 +1070,7 @@ def appointment_page():
             appointments.append(entry)
             save_appointments(appointments)
 
-            send_email(
+            send_email_async(
                 GMAIL_ADDRESS,
                 f"Nouvelle demande de rendez-vous - {name}",
                 "\n".join([
