@@ -287,6 +287,7 @@ UI = {
         "appointment_submit": "Envoyer la demande de rendez-vous",
         "error_appointment_missing_fields": "Renseigne au moins ton prénom, ton téléphone, la date souhaitée et le type de consultation.",
         "error_appointment_insufficient_funds": "Tu n'as pas assez de jetons pour ce type de consultation. Achète des jetons sur la page Tirage.",
+        "error_appointment_date_taken": "Cette date vient d'être réservée par quelqu'un d'autre. Choisis-en une autre.",
         "success_appointment_sent": "Ta demande de rendez-vous a été reçue, nous te contacterons bientôt !",
         "appointment_select_date_prompt": "Choisis d'abord une date et une heure dans le calendrier.",
         "field_appointment_category": "Type de consultation",
@@ -446,6 +447,7 @@ UI = {
         "appointment_submit": "Randevu Talebi Gönder",
         "error_appointment_missing_fields": "En azından isim, telefon numarası, istenen tarih ve açılım türünü doldur.",
         "error_appointment_insufficient_funds": "Bu açılım için yeterli jetonun yok. Kartlar sayfasından jeton satın alabilirsin.",
+        "error_appointment_date_taken": "Bu tarih az önce başkası tarafından alındı. Başka bir tarih seç.",
         "success_appointment_sent": "Randevu talebin alındı, en kısa sürede seninle iletişime geçeceğiz!",
         "appointment_select_date_prompt": "Önce takvimden bir tarih ve saat seç.",
         "field_appointment_category": "Açılım Türü",
@@ -1085,9 +1087,14 @@ def appointment_page():
         note = (request.form.get("note") or "").strip()
         category = (request.form.get("category") or "").strip()
         cost = APPOINTMENT_CATEGORY_COST.get(category)
+        requested_day = appointment_date.split("T")[0]
+        busy_days = {a["appointmentDate"].split("T")[0] for a in load_appointments() if a.get("appointmentDate")}
+        busy_days.update(load_blocked_dates())
 
         if not name or not phone or not appointment_date or not cost:
             flash("error_appointment_missing_fields", "error")
+        elif requested_day in busy_days:
+            flash("error_appointment_date_taken", "error")
         elif not is_admin() and not jeton_store.deduct(user_email, cost)[0]:
             flash("error_appointment_insufficient_funds", "error")
         else:
