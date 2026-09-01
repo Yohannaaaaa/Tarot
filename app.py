@@ -111,6 +111,7 @@ def send_email(to_addr, subject, body):
     if not GMAIL_APP_PASSWORD:
         print("[send_email] SKIPPED: GMAIL_APP_PASSWORD is not set", flush=True)
         return False
+    subject = subject.replace("\r", " ").replace("\n", " ")
     msg = MIMEText(body, "plain", "utf-8")
     msg["Subject"] = subject
     msg["From"] = GMAIL_ADDRESS
@@ -122,7 +123,7 @@ def send_email(to_addr, subject, body):
             server.sendmail(GMAIL_ADDRESS, [to_addr], msg.as_string())
         print(f"[send_email] OK to {to_addr!r} subject={subject!r}", flush=True)
         return True
-    except (smtplib.SMTPException, OSError) as exc:
+    except Exception as exc:
         print(f"[send_email] FAILED to {to_addr!r} subject={subject!r}: {exc!r}", flush=True)
         return False
 
