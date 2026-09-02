@@ -28,6 +28,14 @@
     </div>
 
     <div class="admin-block">
+        <h2>Jeton bonusu</h2>
+        <form method="post" class="admin-inline-form" onsubmit="return confirm('Kayıtlı tüm hesaplara +500 jeton eklenecek. Emin misin?');">
+            <input type="hidden" name="action" value="grant_bonus">
+            <button type="submit" class="btn btn-secondary btn-small">Tüm kullanıcılara +500 jeton ver</button>
+        </form>
+    </div>
+
+    <div class="admin-block">
         <h2>Gelen talepler ({{ appointments|length }})</h2>
         {% if not appointments %}
         <p class="admin-empty">Henüz randevu talebi yok.</p>
