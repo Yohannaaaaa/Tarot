@@ -62,7 +62,7 @@ def is_admin():
 
 
 WHATSAPP_NUMBER = os.environ.get("WHATSAPP_NUMBER", "")
-INSTAGRAM_URL = "https://www.instagram.com/iam____svetlana/"
+INSTAGRAM_URL = "https://www.instagram.com/rituams.tarot/"
 TIKTOK_URL = "https://www.tiktok.com/@svetlanaquinn"
 
 CRON_SECRET = os.environ.get("CRON_SECRET", "")
