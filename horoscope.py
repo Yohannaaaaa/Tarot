@@ -224,6 +224,168 @@ CATEGORY_TEMPLATES = {
 
 CATEGORIES = ["love", "work", "general"]
 
+ZODIAC_PROFILES = {
+    "aries": {
+        "element": {"fr": "Feu", "tr": "Ateş"},
+        "quality": {"fr": "Cardinal", "tr": "Öncü"},
+        "planet": {"fr": "Mars", "tr": "Mars"},
+        "strengths": {"fr": ["Courageux", "Direct", "Plein d'initiative"],
+                      "tr": ["Cesur", "Dobra", "Girişimci"]},
+        "weaknesses": {"fr": ["Impatient", "Impulsif"], "tr": ["Sabırsız", "Aceleci"]},
+        "compatible": ["leo", "sagittarius", "gemini"],
+        "description": {
+            "fr": "Premier signe du zodiaque, le Bélier fonce tête baissée vers ce qu'il désire, porté par une énergie de feu qui ne demande qu'à s'exprimer.",
+            "tr": "Zodyağın ilk burcu olan Koç, ifade edilmeyi bekleyen ateşli bir enerjiyle istediğine doğru cesurca ilerler."},
+    },
+    "taurus": {
+        "element": {"fr": "Terre", "tr": "Toprak"},
+        "quality": {"fr": "Fixe", "tr": "Sabit"},
+        "planet": {"fr": "Vénus", "tr": "Venüs"},
+        "strengths": {"fr": ["Fiable", "Patient", "Sensuel"], "tr": ["Güvenilir", "Sabırlı", "Duyusal"]},
+        "weaknesses": {"fr": ["Têtu", "Possessif"], "tr": ["İnatçı", "Sahiplenici"]},
+        "compatible": ["virgo", "capricorn", "cancer"],
+        "description": {
+            "fr": "Signe de terre gouverné par Vénus, le Taureau cherche la stabilité et le plaisir des sens, avec une patience à toute épreuve.",
+            "tr": "Venüs'ün yönettiği bir toprak burcu olan Boğa, tükenmez bir sabırla istikrar ve duyusal zevkler arar."},
+    },
+    "gemini": {
+        "element": {"fr": "Air", "tr": "Hava"},
+        "quality": {"fr": "Mutable", "tr": "Değişken"},
+        "planet": {"fr": "Mercure", "tr": "Merkür"},
+        "strengths": {"fr": ["Curieux", "Communicatif", "Adaptable"], "tr": ["Meraklı", "İletişimci", "Uyumlu"]},
+        "weaknesses": {"fr": ["Dispersé", "Changeant"], "tr": ["Dağınık", "Değişken"]},
+        "compatible": ["libra", "aquarius", "aries"],
+        "description": {
+            "fr": "Signe d'air régi par Mercure, les Gémeaux ont l'esprit vif et le besoin constant d'échanger, d'apprendre et de se réinventer.",
+            "tr": "Merkür'ün yönettiği bir hava burcu olan İkizler, çevik bir zihne ve sürekli paylaşma, öğrenme, kendini yenileme ihtiyacına sahiptir."},
+    },
+    "cancer": {
+        "element": {"fr": "Eau", "tr": "Su"},
+        "quality": {"fr": "Cardinal", "tr": "Öncü"},
+        "planet": {"fr": "Lune", "tr": "Ay"},
+        "strengths": {"fr": ["Loyal", "Intuitif", "Protecteur"], "tr": ["Sadık", "Sezgisel", "Koruyucu"]},
+        "weaknesses": {"fr": ["Susceptible", "Craintif"], "tr": ["Alıngan", "Endişeli"]},
+        "compatible": ["scorpio", "pisces", "taurus"],
+        "description": {
+            "fr": "Signe d'eau gouverné par la Lune, le Cancer vit au rythme de ses émotions et veille sur ceux qu'il aime avec une tendresse discrète.",
+            "tr": "Ay'ın yönettiği bir su burcu olan Yengeç, duygularının ritmiyle yaşar ve sevdiklerini sessiz bir şefkatle kollar."},
+    },
+    "leo": {
+        "element": {"fr": "Feu", "tr": "Ateş"},
+        "quality": {"fr": "Fixe", "tr": "Sabit"},
+        "planet": {"fr": "Soleil", "tr": "Güneş"},
+        "strengths": {"fr": ["Généreux", "Charismatique", "Loyal"], "tr": ["Cömert", "Karizmatik", "Sadık"]},
+        "weaknesses": {"fr": ["Orgueilleux", "Autoritaire"], "tr": ["Gururlu", "Otoriter"]},
+        "compatible": ["aries", "sagittarius", "gemini"],
+        "description": {
+            "fr": "Signe de feu gouverné par le Soleil, le Lion aime rayonner et être reconnu, tout en restant d'une grande générosité envers son entourage.",
+            "tr": "Güneş'in yönettiği bir ateş burcu olan Aslan, parlamayı ve takdir görmeyi sever, çevresine karşı da son derece cömerttir."},
+    },
+    "virgo": {
+        "element": {"fr": "Terre", "tr": "Toprak"},
+        "quality": {"fr": "Mutable", "tr": "Değişken"},
+        "planet": {"fr": "Mercure", "tr": "Merkür"},
+        "strengths": {"fr": ["Méthodique", "Serviable", "Analytique"], "tr": ["Düzenli", "Yardımsever", "Analitik"]},
+        "weaknesses": {"fr": ["Perfectionniste", "Anxieux"], "tr": ["Mükemmeliyetçi", "Kaygılı"]},
+        "compatible": ["taurus", "capricorn", "cancer"],
+        "description": {
+            "fr": "Signe de terre régi par Mercure, la Vierge observe, analyse et perfectionne avec un sens du service rarement égalé.",
+            "tr": "Merkür'ün yönettiği bir toprak burcu olan Başak, ender rastlanan bir hizmet anlayışıyla gözlemler, analiz eder ve mükemmelleştirir."},
+    },
+    "libra": {
+        "element": {"fr": "Air", "tr": "Hava"},
+        "quality": {"fr": "Cardinal", "tr": "Öncü"},
+        "planet": {"fr": "Vénus", "tr": "Venüs"},
+        "strengths": {"fr": ["Diplomate", "Élégant", "Sociable"], "tr": ["Diplomatik", "Zarif", "Sosyal"]},
+        "weaknesses": {"fr": ["Indécis", "Conflit-phobe"], "tr": ["Kararsız", "Çatışmadan kaçan"]},
+        "compatible": ["gemini", "aquarius", "leo"],
+        "description": {
+            "fr": "Signe d'air gouverné par Vénus, la Balance recherche l'harmonie en toute chose et déploie un sens esthétique très marqué.",
+            "tr": "Venüs'ün yönettiği bir hava burcu olan Terazi, her şeyde uyum arar ve belirgin bir estetik anlayışa sahiptir."},
+    },
+    "scorpio": {
+        "element": {"fr": "Eau", "tr": "Su"},
+        "quality": {"fr": "Fixe", "tr": "Sabit"},
+        "planet": {"fr": "Pluton / Mars", "tr": "Plüton / Mars"},
+        "strengths": {"fr": ["Déterminé", "Intense", "Loyal"], "tr": ["Kararlı", "Yoğun", "Sadık"]},
+        "weaknesses": {"fr": ["Jaloux", "Méfiant"], "tr": ["Kıskanç", "Güvensiz"]},
+        "compatible": ["cancer", "pisces", "virgo"],
+        "description": {
+            "fr": "Signe d'eau gouverné par Pluton, le Scorpion vit tout avec intensité et cache une force de volonté redoutable sous des dehors calmes.",
+            "tr": "Plüton'un yönettiği bir su burcu olan Akrep, her şeyi yoğun yaşar ve sakin görünüşünün altında güçlü bir irade saklar."},
+    },
+    "sagittarius": {
+        "element": {"fr": "Feu", "tr": "Ateş"},
+        "quality": {"fr": "Mutable", "tr": "Değişken"},
+        "planet": {"fr": "Jupiter", "tr": "Jüpiter"},
+        "strengths": {"fr": ["Optimiste", "Aventurier", "Franc"], "tr": ["İyimser", "Maceracı", "Dürüst"]},
+        "weaknesses": {"fr": ["Sans-tact", "Instable"], "tr": ["Patavatsız", "İstikrarsız"]},
+        "compatible": ["aries", "leo", "aquarius"],
+        "description": {
+            "fr": "Signe de feu gouverné par Jupiter, le Sagittaire a soif de grands espaces, de vérité et de sens à donner à sa vie.",
+            "tr": "Jüpiter'in yönettiği bir ateş burcu olan Yay, geniş ufuklara, gerçeğe ve hayatına anlam katmaya susamıştır."},
+    },
+    "capricorn": {
+        "element": {"fr": "Terre", "tr": "Toprak"},
+        "quality": {"fr": "Cardinal", "tr": "Öncü"},
+        "planet": {"fr": "Saturne", "tr": "Satürn"},
+        "strengths": {"fr": ["Discipliné", "Ambitieux", "Responsable"], "tr": ["Disiplinli", "Hırslı", "Sorumlu"]},
+        "weaknesses": {"fr": ["Pessimiste", "Rigide"], "tr": ["Karamsar", "Katı"]},
+        "compatible": ["taurus", "virgo", "pisces"],
+        "description": {
+            "fr": "Signe de terre gouverné par Saturne, le Capricorne construit patiemment sa réussite, pierre après pierre, avec un sérieux à toute épreuve.",
+            "tr": "Satürn'ün yönettiği bir toprak burcu olan Oğlak, tükenmez bir ciddiyetle başarısını taş taş, sabırla inşa eder."},
+    },
+    "aquarius": {
+        "element": {"fr": "Air", "tr": "Hava"},
+        "quality": {"fr": "Fixe", "tr": "Sabit"},
+        "planet": {"fr": "Uranus", "tr": "Uranüs"},
+        "strengths": {"fr": ["Indépendant", "Visionnaire", "Humaniste"], "tr": ["Bağımsız", "Vizyoner", "İnsancıl"]},
+        "weaknesses": {"fr": ["Détaché", "Imprévisible"], "tr": ["Mesafeli", "Öngörülemez"]},
+        "compatible": ["gemini", "libra", "sagittarius"],
+        "description": {
+            "fr": "Signe d'air gouverné par Uranus, le Verseau pense en avance sur son temps et défend ses idées avec une indépendance farouche.",
+            "tr": "Uranüs'ün yönettiği bir hava burcu olan Kova, çağının ötesinde düşünür ve fikirlerini yılmaz bir bağımsızlıkla savunur."},
+    },
+    "pisces": {
+        "element": {"fr": "Eau", "tr": "Su"},
+        "quality": {"fr": "Mutable", "tr": "Değişken"},
+        "planet": {"fr": "Neptune", "tr": "Neptün"},
+        "strengths": {"fr": ["Empathique", "Créatif", "Intuitif"], "tr": ["Empatik", "Yaratıcı", "Sezgisel"]},
+        "weaknesses": {"fr": ["Évasif", "Influençable"], "tr": ["Kaçıngan", "Kolay etkilenen"]},
+        "compatible": ["cancer", "scorpio", "capricorn"],
+        "description": {
+            "fr": "Dernier signe du zodiaque, gouverné par Neptune, les Poissons nagent entre rêve et réalité avec une sensibilité artistique hors norme.",
+            "tr": "Neptün'ün yönettiği zodyağın son burcu olan Balık, olağanüstü bir sanatsal duyarlılıkla hayal ile gerçek arasında yüzer."},
+    },
+}
+
+
+def zodiac_profile(sign_id, lang):
+    sign = next(s for s in ZODIAC_SIGNS if s["id"] == sign_id)
+    profile = ZODIAC_PROFILES[sign_id]
+    compatible_names = [
+        next(s for s in ZODIAC_SIGNS if s["id"] == cid)["name"][lang]
+        for cid in profile["compatible"]
+    ]
+    return {
+        "id": sign_id,
+        "symbol": sign["symbol"],
+        "name": sign["name"][lang],
+        "dates": sign["dates"][lang],
+        "element": profile["element"][lang],
+        "quality": profile["quality"][lang],
+        "planet": profile["planet"][lang],
+        "strengths": profile["strengths"][lang],
+        "weaknesses": profile["weaknesses"][lang],
+        "compatible": compatible_names,
+        "description": profile["description"][lang],
+    }
+
+
+def zodiac_profiles(lang):
+    return [zodiac_profile(sign["id"], lang) for sign in ZODIAC_SIGNS]
+
 
 def _seed(*parts):
     digest = hashlib.md5("|".join(parts).encode("utf-8")).hexdigest()

@@ -22,6 +22,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.utils import secure_filename
 
 import accounts_store
+import ascendant
 import db
 import horoscope
 import jeton_store
@@ -369,12 +370,38 @@ UI = {
         "change_password_submit": "Mettre à jour le mot de passe",
         "not_found_message": "Cette page n'existe pas ou a été déplacée.",
         "back_to_home": "← Retour à l'accueil",
-        "nav_horoscope": "Horoscope",
+        "nav_horoscope": "Astrologie",
+        "zodiac_hub_title": "Astrologie",
+        "zodiac_hub_subtitle": "Choisis ce que tu veux découvrir.",
+        "zodiac_hub_horoscope": "Horoscope du jour",
+        "zodiac_hub_horoscope_desc": "Amour, travail et général pour les 12 signes, mis à jour chaque jour.",
+        "zodiac_hub_character": "Caractère du signe",
+        "zodiac_hub_character_desc": "Élément, planète, forces et faiblesses de chaque signe.",
+        "zodiac_hub_ascendant": "Signe ascendant",
+        "zodiac_hub_ascendant_desc": "Calcule ton ascendant à partir de ta date, heure et ville de naissance.",
         "horoscope_title": "Horoscope du jour",
         "horoscope_subtitle": "Mis à jour chaque jour pour les 12 signes.",
         "horoscope_love": "💕 Amour",
         "horoscope_work": "💼 Travail & Argent",
         "horoscope_general": "✨ Général",
+        "zodiac_character_title": "Caractère des signes",
+        "zodiac_character_subtitle": "Élément, planète et traits de personnalité des 12 signes.",
+        "zodiac_element_label": "Élément",
+        "zodiac_quality_label": "Qualité",
+        "zodiac_planet_label": "Planète maîtresse",
+        "zodiac_strengths_label": "Forces",
+        "zodiac_weaknesses_label": "Faiblesses",
+        "zodiac_compatible_label": "Bonne entente avec",
+        "ascendant_title": "Calcule ton ascendant",
+        "ascendant_subtitle": "Entre ta date, ton heure et ta ville de naissance.",
+        "ascendant_field_date": "Date de naissance",
+        "ascendant_field_time": "Heure de naissance",
+        "ascendant_field_city": "Ville de naissance",
+        "ascendant_city_placeholder": "Choisis une ville",
+        "ascendant_submit": "Calculer mon ascendant",
+        "ascendant_result_label": "Ton ascendant est :",
+        "ascendant_error": "Merci de vérifier la date, l'heure et la ville renseignées.",
+        "ascendant_disclaimer": "Calcul astronomique approximatif, à visée de réflexion et de divertissement.",
         "nav_appointment": "Rendez-vous",
         "appointment_title": "Prendre rendez-vous",
         "appointment_subtitle": "Réserve un créneau pour une consultation, on te recontacte pour confirmer.",
@@ -564,12 +591,38 @@ UI = {
         "change_password_submit": "Şifreyi Güncelle",
         "not_found_message": "Bu sayfa mevcut değil ya da taşınmış.",
         "back_to_home": "← Ana sayfaya dön",
-        "nav_horoscope": "Burç Yorumu",
+        "nav_horoscope": "Burçlar",
+        "zodiac_hub_title": "Burçlar",
+        "zodiac_hub_subtitle": "Ne öğrenmek istersin?",
+        "zodiac_hub_horoscope": "Günlük Burç Yorumu",
+        "zodiac_hub_horoscope_desc": "12 burç için aşk, iş-para ve genel yorumlar, her gün otomatik güncellenir.",
+        "zodiac_hub_character": "Burç Karakteri",
+        "zodiac_hub_character_desc": "Her burcun elementi, gezegeni, güçlü ve zayıf yönleri.",
+        "zodiac_hub_ascendant": "Yükselen Burç",
+        "zodiac_hub_ascendant_desc": "Doğum tarihin, saatin ve yerinden yükselen burcunu hesapla.",
         "horoscope_title": "Günlük Burç Yorumu",
         "horoscope_subtitle": "12 burç için her gün otomatik güncellenir.",
         "horoscope_love": "💕 Aşk",
         "horoscope_work": "💼 İş & Para",
         "horoscope_general": "✨ Genel",
+        "zodiac_character_title": "Burç Karakterleri",
+        "zodiac_character_subtitle": "12 burcun elementi, gezegeni ve kişilik özellikleri.",
+        "zodiac_element_label": "Element",
+        "zodiac_quality_label": "Nitelik",
+        "zodiac_planet_label": "Yönetici Gezegen",
+        "zodiac_strengths_label": "Güçlü Yönler",
+        "zodiac_weaknesses_label": "Zayıf Yönler",
+        "zodiac_compatible_label": "Uyumlu Olduğu Burçlar",
+        "ascendant_title": "Yükselen Burcunu Hesapla",
+        "ascendant_subtitle": "Doğum tarihini, saatini ve yerini gir.",
+        "ascendant_field_date": "Doğum Tarihi",
+        "ascendant_field_time": "Doğum Saati",
+        "ascendant_field_city": "Doğum Yeri",
+        "ascendant_city_placeholder": "Bir şehir seç",
+        "ascendant_submit": "Yükselen Burcumu Hesapla",
+        "ascendant_result_label": "Yükselen burcun:",
+        "ascendant_error": "Girdiğin tarih, saat ve şehri kontrol eder misin.",
+        "ascendant_disclaimer": "Yaklaşık bir astronomik hesaplamadır, yansıma ve eğlence amaçlıdır.",
         "nav_appointment": "Randevu Al",
         "appointment_title": "Randevu Al",
         "appointment_subtitle": "Bir bakım için randevu talebinde bulun, seninle iletişime geçip onaylayalım.",
@@ -856,7 +909,7 @@ def robots_txt():
     return Response("\n".join(lines), mimetype="text/plain")
 
 
-SITEMAP_ENDPOINTS = ["index", "about_page", "faq_page", "reviews_page", "privacy_page", "terms_page", "cards_page", "reading_page", "horoscope_page"]
+SITEMAP_ENDPOINTS = ["index", "about_page", "faq_page", "reviews_page", "privacy_page", "terms_page", "cards_page", "reading_page", "zodiac_hub", "horoscope_page", "zodiac_character_page", "ascendant_page"]
 
 
 @app.route("/sitemap.xml")
@@ -1461,11 +1514,51 @@ def reviews_page():
     return render_template("reviews.html", reviews=reviews, avg_rating=avg_rating)
 
 
+@app.route("/burclar")
+def zodiac_hub():
+    return render_template("zodiac_hub.html")
+
+
 @app.route("/burc-yorumu")
 def horoscope_page():
     lang = get_lang()
     signs = horoscope.daily_horoscopes(lang)
     return render_template("horoscope.html", signs=signs, today=datetime.now().strftime("%d/%m/%Y"))
+
+
+@app.route("/burc-karakteri")
+def zodiac_character_page():
+    lang = get_lang()
+    profiles = horoscope.zodiac_profiles(lang)
+    return render_template("zodiac_character.html", profiles=profiles)
+
+
+@app.route("/yukselen-burc", methods=["GET", "POST"])
+@limiter.limit("20 per hour", methods=["POST"])
+def ascendant_page():
+    lang = get_lang()
+    result = None
+    error = False
+    form_values = {"birth_date": "", "birth_time": "", "city": ""}
+    if request.method == "POST":
+        form_values["birth_date"] = request.form.get("birth_date", "")
+        form_values["birth_time"] = request.form.get("birth_time", "")
+        form_values["city"] = request.form.get("city", "")
+        city = ascendant.find_city(form_values["city"])
+        try:
+            if not city:
+                raise ValueError("invalid city")
+            birth_date = datetime.strptime(form_values["birth_date"], "%Y-%m-%d").date()
+            birth_time = datetime.strptime(form_values["birth_time"], "%H:%M").time()
+            index, _ = ascendant.ascendant_sign_index(birth_date, birth_time, city)
+            sign = horoscope.ZODIAC_SIGNS[index]
+            result = {"symbol": sign["symbol"], "name": sign["name"][lang]}
+        except (ValueError, KeyError):
+            error = True
+    cities = [{"id": c["id"], "name": c["name"][lang]} for c in ascendant.CITIES]
+    return render_template(
+        "ascendant.html", cities=cities, result=result, error=error, form_values=form_values
+    )
 
 
 @app.route("/admin/yorumlar", methods=["GET", "POST"])

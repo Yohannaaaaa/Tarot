@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{{ t.zodiac_hub_title }} · {{ t.site_title }}{% endblock %}
+{% block content %}
+<section class="legal-page zodiac-hub-page">
+    <h1>{{ t.zodiac_hub_title }}</h1>
+    <p class="auth-subtitle">{{ t.zodiac_hub_subtitle }}</p>
+
+    <div class="zodiac-hub-grid">
+        <a class="zodiac-hub-card" href="{{ url_for('horoscope_page') }}">
+            <span class="zodiac-hub-icon">🔮</span>
+            <div class="zodiac-hub-name">{{ t.zodiac_hub_horoscope }}</div>
+            <p class="zodiac-hub-desc">{{ t.zodiac_hub_horoscope_desc }}</p>
+        </a>
+        <a class="zodiac-hub-card" href="{{ url_for('zodiac_character_page') }}">
+            <span class="zodiac-hub-icon">♈</span>
+            <div class="zodiac-hub-name">{{ t.zodiac_hub_character }}</div>
+            <p class="zodiac-hub-desc">{{ t.zodiac_hub_character_desc }}</p>
+        </a>
+        <a class="zodiac-hub-card" href="{{ url_for('ascendant_page') }}">
+            <span class="zodiac-hub-icon">🌅</span>
+            <div class="zodiac-hub-name">{{ t.zodiac_hub_ascendant }}</div>
+            <p class="zodiac-hub-desc">{{ t.zodiac_hub_ascendant_desc }}</p>
+        </a>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ t.zodiac_character_title }} · {{ t.site_title }}{% endblock %}
+{% block content %}
+<section class="legal-page horoscope-page">
+    <h1>{{ t.zodiac_character_title }}</h1>
+    <p class="auth-subtitle">{{ t.zodiac_character_subtitle }}</p>
+
+    <div class="horoscope-grid">
+        {% for p in profiles %}
+        <div class="horoscope-card zodiac-character-card">
+            <div class="horoscope-card-head">
+                <span class="horoscope-symbol">{{ p.symbol }}</span>
+                <div>
+                    <div class="horoscope-name">{{ p.name }}</div>
+                    <div class="horoscope-dates">{{ p.dates }}</div>
+                </div>
+            </div>
+            <p class="zodiac-char-meta">{{ t.zodiac_element_label }}: <b>{{ p.element }}</b> · {{ t.zodiac_quality_label }}: <b>{{ p.quality }}</b> · {{ t.zodiac_planet_label }}: <b>{{ p.planet }}</b></p>
+            <p class="horoscope-line">{{ p.description }}</p>
+            <p class="horoscope-line"><b>{{ t.zodiac_strengths_label }}</b> — {{ p.strengths|join(', ') }}</p>
+            <p class="horoscope-line"><b>{{ t.zodiac_weaknesses_label }}</b> — {{ p.weaknesses|join(', ') }}</p>
+            <p class="horoscope-line"><b>{{ t.zodiac_compatible_label }}</b> — {{ p.compatible|join(', ') }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
