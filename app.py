@@ -285,6 +285,9 @@ UI = {
         "tab_instant": "🤖 Tirage Instantané",
         "tab_packs": "🪙 Packs de Jetons",
         "buy_jeton_shortcut": "Acheter des jetons",
+        "daily_wheel_title": "Roue quotidienne",
+        "daily_wheel_spin": "Tourner !",
+        "daily_wheel_come_back": "Reviens demain",
         "trust_title": "Système de confiance :",
         "trust_desc": "ta demande est enregistrée et sera étudiée personnellement. Une réponse te sera envoyée par le moyen que tu choisis.",
         "th_service": "Service",
@@ -471,6 +474,9 @@ UI = {
         "tab_instant": "🤖 Anında Açılım",
         "tab_packs": "🪙 Jeton Paketleri",
         "buy_jeton_shortcut": "Jeton Al",
+        "daily_wheel_title": "Günlük Çark",
+        "daily_wheel_spin": "Çevir!",
+        "daily_wheel_come_back": "Yarın tekrar gel",
         "trust_title": "Güven sistemi:",
         "trust_desc": "talebin kaydedilir ve kişisel olarak incelenir. Seçtiğin yöntemle sana geri dönüş yapılır.",
         "th_service": "Hizmet",
@@ -1211,6 +1217,31 @@ def api_jeton_balance():
         "ok": True,
         "balance": jeton_store.get_balance(email),
         "nickname": session.get("nickname"),
+    })
+
+
+@app.route("/api/gunluk-carki/durum")
+def api_daily_wheel_status():
+    email = session.get("email")
+    if not email:
+        return jsonify({"ok": False, "error": "login_required"}), 401
+    return jsonify({"ok": True, "can_spin": jeton_store.daily_bonus_available(email)})
+
+
+@app.route("/api/gunluk-carki/cevir", methods=["POST"])
+@limiter.limit("20 per hour")
+def api_daily_wheel_spin():
+    email = session.get("email")
+    if not email:
+        return jsonify({"ok": False, "error": "login_required"}), 401
+    won, amount, index, balance = jeton_store.claim_daily_bonus(email)
+    if not won:
+        return jsonify({"ok": False, "error": "already_spun", "balance": "∞" if is_admin() else balance}), 409
+    return jsonify({
+        "ok": True,
+        "amount": amount,
+        "index": index,
+        "balance": "∞" if is_admin() else balance,
     })
 
 
