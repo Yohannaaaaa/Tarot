@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ t.ascendant_title }} · {{ t.site_title }}{% endblock %}
+{% block content %}
+<section class="auth-page">
+    <div class="auth-card">
+        <h1>{{ t.ascendant_title }}</h1>
+        <p class="auth-subtitle">{{ t.ascendant_subtitle }}</p>
+
+        {% if result %}
+        <p class="ascendant-result">{{ t.ascendant_result_label }} <span class="ascendant-result-sign">{{ result.symbol }} {{ result.name }}</span></p>
+        {% endif %}
+        {% if error %}
+        <p class="flash-message flash-error">{{ t.ascendant_error }}</p>
+        {% endif %}
+
+        <form method="post" class="auth-form">
+            <div class="field-group">
+                <label for="ascBirthDate">{{ t.ascendant_field_date }}</label>
+                <input type="date" name="birth_date" id="ascBirthDate" value="{{ form_values.birth_date }}" required>
+            </div>
+            <div class="field-group">
+                <label for="ascBirthTime">{{ t.ascendant_field_time }}</label>
+                <input type="time" name="birth_time" id="ascBirthTime" value="{{ form_values.birth_time }}" required>
+            </div>
+            <div class="field-group">
+                <label for="ascCity">{{ t.ascendant_field_city }}</label>
+                <select name="city" id="ascCity" required>
+                    <option value="" disabled {{ 'selected' if not form_values.city else '' }}>{{ t.ascendant_city_placeholder }}</option>
+                    {% for c in cities %}
+                    <option value="{{ c.id }}" {{ 'selected' if c.id == form_values.city else '' }}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary full">{{ t.ascendant_submit }}</button>
+        </form>
+        <p class="account-note">{{ t.ascendant_disclaimer }}</p>
+    </div>
+</section>
+{% endblock %}
