@@ -997,6 +997,11 @@ def register_page():
             if not account:
                 flash("error_email_taken", "error")
             else:
+                send_email_async(
+                    GMAIL_ADDRESS,
+                    "Yeni üye kaydı - Rituams Tarot",
+                    f"Yeni bir kullanıcı kayıt oldu.\n\nRumuz: {account['nickname']}\nE-posta: {account['email']}",
+                )
                 session["email"] = account["email"]
                 session["nickname"] = account["nickname"]
                 return redirect(url_for("reading_page"))
@@ -1163,7 +1168,14 @@ def google_callback():
         return redirect(url_for("login_page"))
 
     name = userinfo.get("name") or email.split("@")[0]
+    is_new_account = not accounts_store.email_exists(email)
     account = accounts_store.upsert_google_account(email, userinfo.get("sub"), name)
+    if is_new_account:
+        send_email_async(
+            GMAIL_ADDRESS,
+            "Yeni üye kaydı - Rituams Tarot",
+            f"Yeni bir kullanıcı Google ile kayıt oldu.\n\nRumuz: {account['nickname']}\nE-posta: {account['email']}",
+        )
     session["email"] = account["email"]
     session["nickname"] = account["nickname"]
     return redirect(url_for("reading_page"))
