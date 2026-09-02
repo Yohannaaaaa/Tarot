@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 """Soldes de jetons : PostgreSQL si DATABASE_URL est definie, sinon fichier JSON."""
 import json
+import random
 import threading
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 
 import db
@@ -14,6 +15,15 @@ PROCESSED_PAYMENTS_PATH = Path(__file__).resolve().parent / "data" / "processed_
 STARTING_BALANCE = 1000
 SPREAD_COST = 200
 INSTANT_COST = 50
+
+# Ordre des cases de la roue quotidienne (doit correspondre a l'ordre affiche en JS).
+DAILY_WHEEL_SEGMENTS = [20, 100, 50, 300, 30, 200]
+DAILY_WHEEL_WEIGHTS = [30, 15, 20, 3, 25, 7]
+
+
+def _pick_daily_bonus():
+    index = random.choices(range(len(DAILY_WHEEL_SEGMENTS)), weights=DAILY_WHEEL_WEIGHTS, k=1)[0]
+    return index, DAILY_WHEEL_SEGMENTS[index]
 
 _lock = threading.Lock()
 
@@ -158,6 +168,79 @@ def grant_bonus_to_all(amount):
             count = cur.rowcount
         conn.commit()
         return count
+    finally:
+        db.put_conn(conn)
+
+
+def _json_daily_bonus_available(username):
+    with _lock:
+        users = _json_load()
+        user = users.get(_key(username))
+        if not user or not user.get("daily_bonus_date"):
+            return True
+        return user["daily_bonus_date"] != date.today().isoformat()
+
+
+def _json_claim_daily_bonus(username):
+    with _lock:
+        users = _json_load()
+        key = _key(username)
+        user = users.setdefault(key, {"display": username, "balance": STARTING_BALANCE})
+        today = date.today().isoformat()
+        if user.get("daily_bonus_date") == today:
+            return False, None, None, user["balance"]
+        index, amount = _pick_daily_bonus()
+        user["balance"] += amount
+        user["daily_bonus_date"] = today
+        user["display"] = username
+        user["updated_at"] = datetime.utcnow().isoformat()
+        _json_save(users)
+        return True, amount, index, user["balance"]
+
+
+def daily_bonus_available(username):
+    """Indique si l'utilisateur peut encore tourner la roue aujourd'hui."""
+    if not db.has_db():
+        return _json_daily_bonus_available(username)
+    conn = db.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT last_bonus FROM tarot_jetons WHERE username=%s", (_key(username),))
+            row = cur.fetchone()
+            if not row or row[0] is None:
+                return True
+            return row[0] != date.today()
+    finally:
+        db.put_conn(conn)
+
+
+def claim_daily_bonus(username):
+    """Fait tourner la roue une fois par jour et par compte.
+    Retourne (gagne, montant, index_case, nouveau_solde)."""
+    if not db.has_db():
+        return _json_claim_daily_bonus(username)
+    key = _key(username)
+    conn = db.get_conn()
+    try:
+        with conn.cursor() as cur:
+            _ensure_row(cur, key)
+            cur.execute(
+                "UPDATE tarot_jetons SET last_bonus = CURRENT_DATE, updated_at = now() "
+                "WHERE username = %s AND (last_bonus IS NULL OR last_bonus <> CURRENT_DATE) "
+                "RETURNING balance",
+                (key,),
+            )
+            row = cur.fetchone()
+            if row is None:
+                cur.execute("SELECT balance FROM tarot_jetons WHERE username=%s", (key,))
+                balance = cur.fetchone()[0]
+                conn.commit()
+                return False, None, None, balance
+            index, amount = _pick_daily_bonus()
+            balance = row[0] + amount
+            cur.execute("UPDATE tarot_jetons SET balance=%s WHERE username=%s", (balance, key))
+        conn.commit()
+        return True, amount, index, balance
     finally:
         db.put_conn(conn)
 
