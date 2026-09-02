@@ -1,19 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import base64
 import hmac
 import json
 import os
 import random
 import re
 import secrets
-import smtplib
-import socket
 import threading
 from datetime import datetime, timedelta, timezone
-from email.mime.application import MIMEApplication
-from email.mime.image import MIMEImage
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from pathlib import Path
 from urllib.parse import urlencode
 
@@ -51,7 +46,8 @@ def get_paypal_access_token():
     return resp.json()["access_token"]
 
 GMAIL_ADDRESS = "tarot.clairvoyance.rituels@gmail.com"
-GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "").replace(" ", "")
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY", "")
+BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
 
 ADMIN_EMAILS = {
     e.strip().lower()
@@ -127,43 +123,42 @@ def get_serializer():
     return URLSafeTimedSerializer(app.secret_key)
 
 
-def _connect_smtp_ipv4():
-    """Render n'a pas de route sortante IPv6 ; forcer la resolution en IPv4
-    pour eviter l'erreur 'Network is unreachable' de smtplib."""
-    original_getaddrinfo = socket.getaddrinfo
-
-    def ipv4_only(host, port, family=0, type=0, proto=0, flags=0):
-        return original_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
-
-    socket.getaddrinfo = ipv4_only
+def _send_brevo(payload, to_addr, subject):
+    """Render bloque les ports SMTP sortants (25/465/587) sur le plan gratuit ;
+    on envoie donc via l'API HTTP de Brevo (port 443) a la place de smtplib."""
     try:
-        return smtplib.SMTP("smtp.gmail.com", 587, timeout=15)
-    finally:
-        socket.getaddrinfo = original_getaddrinfo
-
-
-def _send_mime(msg, to_addr):
-    try:
-        with _connect_smtp_ipv4() as server:
-            server.starttls()
-            server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
-            server.sendmail(GMAIL_ADDRESS, [to_addr], msg.as_string())
-        print(f"[send_email] OK to {to_addr!r} subject={msg['Subject']!r}", flush=True)
+        resp = requests.post(
+            BREVO_API_URL,
+            json=payload,
+            headers={
+                "api-key": BREVO_API_KEY,
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            timeout=15,
+        )
+        if resp.status_code >= 300:
+            print(f"[send_email] FAILED to {to_addr!r} subject={subject!r}: {resp.status_code} {resp.text}", flush=True)
+            return False
+        print(f"[send_email] OK to {to_addr!r} subject={subject!r}", flush=True)
         return True
     except Exception as exc:
-        print(f"[send_email] FAILED to {to_addr!r} subject={msg['Subject']!r}: {exc!r}", flush=True)
+        print(f"[send_email] FAILED to {to_addr!r} subject={subject!r}: {exc!r}", flush=True)
         return False
 
 
 def send_email(to_addr, subject, body):
-    if not GMAIL_APP_PASSWORD:
-        print("[send_email] SKIPPED: GMAIL_APP_PASSWORD is not set", flush=True)
+    if not BREVO_API_KEY:
+        print("[send_email] SKIPPED: BREVO_API_KEY is not set", flush=True)
         return False
-    msg = MIMEText(body, "plain", "utf-8")
-    msg["Subject"] = subject.replace("\r", " ").replace("\n", " ")
-    msg["From"] = GMAIL_ADDRESS
-    msg["To"] = to_addr
-    return _send_mime(msg, to_addr)
+    subject = subject.replace("\r", " ").replace("\n", " ")
+    payload = {
+        "sender": {"name": "Rituams Tarot", "email": GMAIL_ADDRESS},
+        "to": [{"email": to_addr}],
+        "subject": subject,
+        "textContent": body,
+    }
+    return _send_brevo(payload, to_addr, subject)
 
 
 def send_email_async(to_addr, subject, body):
@@ -171,22 +166,23 @@ def send_email_async(to_addr, subject, body):
 
 
 def send_email_with_attachment(to_addr, subject, body, attachment_bytes, attachment_filename, attachment_content_type):
-    if not GMAIL_APP_PASSWORD:
-        print("[send_email] SKIPPED: GMAIL_APP_PASSWORD is not set", flush=True)
+    if not BREVO_API_KEY:
+        print("[send_email] SKIPPED: BREVO_API_KEY is not set", flush=True)
         return False
-    msg = MIMEMultipart()
-    msg["Subject"] = subject.replace("\r", " ").replace("\n", " ")
-    msg["From"] = GMAIL_ADDRESS
-    msg["To"] = to_addr
-    msg.attach(MIMEText(body, "plain", "utf-8"))
-    maintype, _, subtype = (attachment_content_type or "application/octet-stream").partition("/")
-    if maintype == "image":
-        part = MIMEImage(attachment_bytes, _subtype=subtype or "jpeg")
-    else:
-        part = MIMEApplication(attachment_bytes)
-    part.add_header("Content-Disposition", "attachment", filename=secure_filename(attachment_filename) or "photo.jpg")
-    msg.attach(part)
-    return _send_mime(msg, to_addr)
+    subject = subject.replace("\r", " ").replace("\n", " ")
+    payload = {
+        "sender": {"name": "Rituams Tarot", "email": GMAIL_ADDRESS},
+        "to": [{"email": to_addr}],
+        "subject": subject,
+        "textContent": body,
+        "attachment": [
+            {
+                "content": base64.b64encode(attachment_bytes).decode("ascii"),
+                "name": secure_filename(attachment_filename) or "photo.jpg",
+            }
+        ],
+    }
+    return _send_brevo(payload, to_addr, subject)
 
 
 def send_email_with_attachment_async(to_addr, subject, body, attachment_bytes, attachment_filename, attachment_content_type):
