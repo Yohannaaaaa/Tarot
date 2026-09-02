@@ -7,6 +7,7 @@ import random
 import re
 import secrets
 import smtplib
+import socket
 import threading
 from datetime import datetime, timedelta, timezone
 from email.mime.application import MIMEApplication
@@ -126,9 +127,24 @@ def get_serializer():
     return URLSafeTimedSerializer(app.secret_key)
 
 
+def _connect_smtp_ipv4():
+    """Render n'a pas de route sortante IPv6 ; forcer la resolution en IPv4
+    pour eviter l'erreur 'Network is unreachable' de smtplib."""
+    original_getaddrinfo = socket.getaddrinfo
+
+    def ipv4_only(host, port, family=0, type=0, proto=0, flags=0):
+        return original_getaddrinfo(host, port, socket.AF_INET, type, proto, flags)
+
+    socket.getaddrinfo = ipv4_only
+    try:
+        return smtplib.SMTP("smtp.gmail.com", 587, timeout=15)
+    finally:
+        socket.getaddrinfo = original_getaddrinfo
+
+
 def _send_mime(msg, to_addr):
     try:
-        with smtplib.SMTP("smtp.gmail.com", 587, timeout=15) as server:
+        with _connect_smtp_ipv4() as server:
             server.starttls()
             server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
             server.sendmail(GMAIL_ADDRESS, [to_addr], msg.as_string())
