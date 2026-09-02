@@ -11,7 +11,7 @@ import db
 STORE_PATH = Path(__file__).resolve().parent / "data" / "users.json"
 PROCESSED_PAYMENTS_PATH = Path(__file__).resolve().parent / "data" / "processed_payments.json"
 
-STARTING_BALANCE = 500
+STARTING_BALANCE = 1000
 SPREAD_COST = 200
 INSTANT_COST = 50
 
@@ -132,6 +132,32 @@ def credit(username, amount):
             cur.execute("UPDATE tarot_jetons SET balance=%s, updated_at=now() WHERE username=%s", (balance, key))
         conn.commit()
         return balance
+    finally:
+        db.put_conn(conn)
+
+
+def _json_grant_bonus_to_all(amount):
+    with _lock:
+        users = _json_load()
+        for user in users.values():
+            user["balance"] = user.get("balance", STARTING_BALANCE) + amount
+            user["updated_at"] = datetime.utcnow().isoformat()
+        _json_save(users)
+        return len(users)
+
+
+def grant_bonus_to_all(amount):
+    """Ajoute un bonus ponctuel a tous les comptes ayant deja un solde enregistre.
+    Retourne le nombre de comptes credites."""
+    if not db.has_db():
+        return _json_grant_bonus_to_all(amount)
+    conn = db.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE tarot_jetons SET balance = balance + %s, updated_at = now()", (amount,))
+            count = cur.rowcount
+        conn.commit()
+        return count
     finally:
         db.put_conn(conn)
 

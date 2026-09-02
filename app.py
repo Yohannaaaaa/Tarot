@@ -269,7 +269,7 @@ UI = {
         "reviews_avg_label": "Note moyenne :",
         "faq_title": "Questions fréquentes",
         "faq_q1": "Comment ça marche ?",
-        "faq_a1": "Tu crées un compte, tu reçois 500 jetons gratuits, et tu peux faire des tirages instantanés ou prendre rendez-vous pour une consultation en direct. Chaque tirage ou rendez-vous coûte un nombre de jetons fixe, affiché avant de valider.",
+        "faq_a1": "Tu crées un compte, tu reçois 1000 jetons gratuits, et tu peux faire des tirages instantanés ou prendre rendez-vous pour une consultation en direct. Chaque tirage ou rendez-vous coûte un nombre de jetons fixe, affiché avant de valider.",
         "faq_q2": "Les paiements sont-ils sécurisés ?",
         "faq_a2": "Oui. Les achats de jetons passent par Stripe ou PayPal, deux plateformes de paiement reconnues. Nous ne stockons jamais tes coordonnées bancaires.",
         "faq_q3": "Comment annuler ou changer mon rendez-vous ?",
@@ -455,7 +455,7 @@ UI = {
         "reviews_avg_label": "Ortalama puan:",
         "faq_title": "Sık Sorulan Sorular",
         "faq_q1": "Sistem nasıl çalışıyor?",
-        "faq_a1": "Hesap oluşturursun, 500 jeton hediye edilir; anlık kart açılımı yapabilir ya da canlı bir bakım için randevu alabilirsin. Her açılım/randevu sabit bir jeton miktarına mal olur, onaylamadan önce sana gösterilir.",
+        "faq_a1": "Hesap oluşturursun, 1000 jeton hediye edilir; anlık kart açılımı yapabilir ya da canlı bir bakım için randevu alabilirsin. Her açılım/randevu sabit bir jeton miktarına mal olur, onaylamadan önce sana gösterilir.",
         "faq_q2": "Ödemeler güvenli mi?",
         "faq_a2": "Evet. Jeton satın alımları Stripe veya PayPal üzerinden yapılır, ikisi de tanınmış ödeme platformlarıdır. Kart bilgilerini asla saklamayız.",
         "faq_q3": "Randevumu nasıl iptal ederim / değiştiririm?",
@@ -1400,6 +1400,9 @@ def admin_appointments():
             if date_str in blocked:
                 blocked.remove(date_str)
                 save_blocked_dates(blocked)
+        elif action == "grant_bonus":
+            count = jeton_store.grant_bonus_to_all(500)
+            flash(f"{count} hesaba +500 jeton eklendi.")
         return redirect(url_for("admin_appointments"))
 
     appointments = sorted(load_appointments(), key=lambda a: a.get("appointmentDate", ""))
