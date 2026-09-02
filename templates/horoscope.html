@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ t.horoscope_title }} · {{ t.site_title }}{% endblock %}
+{% block content %}
+<section class="legal-page horoscope-page">
+    <h1>{{ t.horoscope_title }}</h1>
+    <p class="auth-subtitle">{{ t.horoscope_subtitle }} — {{ today }}</p>
+
+    <div class="horoscope-grid">
+        {% for s in signs %}
+        <div class="horoscope-card">
+            <div class="horoscope-card-head">
+                <span class="horoscope-symbol">{{ s.symbol }}</span>
+                <div>
+                    <div class="horoscope-name">{{ s.name }}</div>
+                    <div class="horoscope-dates">{{ s.dates }}</div>
+                </div>
+            </div>
+            <p class="horoscope-line"><b>{{ t.horoscope_love }}</b> — {{ s.love }}</p>
+            <p class="horoscope-line"><b>{{ t.horoscope_work }}</b> — {{ s.work }}</p>
+            <p class="horoscope-line"><b>{{ t.horoscope_general }}</b> — {{ s.general }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
