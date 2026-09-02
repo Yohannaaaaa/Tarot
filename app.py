@@ -23,6 +23,7 @@ from werkzeug.utils import secure_filename
 
 import accounts_store
 import db
+import horoscope
 import jeton_store
 import reviews_store
 
@@ -368,6 +369,12 @@ UI = {
         "change_password_submit": "Mettre à jour le mot de passe",
         "not_found_message": "Cette page n'existe pas ou a été déplacée.",
         "back_to_home": "← Retour à l'accueil",
+        "nav_horoscope": "Horoscope",
+        "horoscope_title": "Horoscope du jour",
+        "horoscope_subtitle": "Mis à jour chaque jour pour les 12 signes.",
+        "horoscope_love": "💕 Amour",
+        "horoscope_work": "💼 Travail & Argent",
+        "horoscope_general": "✨ Général",
         "nav_appointment": "Rendez-vous",
         "appointment_title": "Prendre rendez-vous",
         "appointment_subtitle": "Réserve un créneau pour une consultation, on te recontacte pour confirmer.",
@@ -557,6 +564,12 @@ UI = {
         "change_password_submit": "Şifreyi Güncelle",
         "not_found_message": "Bu sayfa mevcut değil ya da taşınmış.",
         "back_to_home": "← Ana sayfaya dön",
+        "nav_horoscope": "Burç Yorumu",
+        "horoscope_title": "Günlük Burç Yorumu",
+        "horoscope_subtitle": "12 burç için her gün otomatik güncellenir.",
+        "horoscope_love": "💕 Aşk",
+        "horoscope_work": "💼 İş & Para",
+        "horoscope_general": "✨ Genel",
         "nav_appointment": "Randevu Al",
         "appointment_title": "Randevu Al",
         "appointment_subtitle": "Bir bakım için randevu talebinde bulun, seninle iletişime geçip onaylayalım.",
@@ -843,7 +856,7 @@ def robots_txt():
     return Response("\n".join(lines), mimetype="text/plain")
 
 
-SITEMAP_ENDPOINTS = ["index", "about_page", "faq_page", "reviews_page", "privacy_page", "terms_page", "cards_page", "reading_page"]
+SITEMAP_ENDPOINTS = ["index", "about_page", "faq_page", "reviews_page", "privacy_page", "terms_page", "cards_page", "reading_page", "horoscope_page"]
 
 
 @app.route("/sitemap.xml")
@@ -1446,6 +1459,13 @@ def reviews_page():
     reviews = reviews_store.list_reviews()
     avg_rating = round(sum(r["rating"] for r in reviews) / len(reviews), 1) if reviews else None
     return render_template("reviews.html", reviews=reviews, avg_rating=avg_rating)
+
+
+@app.route("/burc-yorumu")
+def horoscope_page():
+    lang = get_lang()
+    signs = horoscope.daily_horoscopes(lang)
+    return render_template("horoscope.html", signs=signs, today=datetime.now().strftime("%d/%m/%Y"))
 
 
 @app.route("/admin/yorumlar", methods=["GET", "POST"])

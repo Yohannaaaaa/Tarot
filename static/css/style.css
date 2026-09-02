@@ -371,6 +371,26 @@ main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; widt
 .review-stars { font-size: 1.1em; margin-bottom: 6px; }
 .review-text { margin: 0 0 8px; line-height: 1.5; }
 .review-name { margin: 0; color: var(--text-dim); font-size: .9em; text-align: right; }
+/* Horoscope */
+.horoscope-page { max-width: 1040px; }
+.horoscope-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+.horoscope-card {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 18px;
+}
+.horoscope-card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.horoscope-symbol { font-size: 1.8em; color: var(--gold); line-height: 1; }
+.horoscope-name { color: var(--gold-soft); font-weight: 700; }
+.horoscope-dates { color: var(--text-dim); font-size: .8em; }
+.horoscope-line { margin: 0 0 8px; font-size: .92em; line-height: 1.5; }
+.horoscope-line b { color: var(--gold-soft); }
 .admin-blocked-title { color: var(--text-dim); font-size: .85em; margin: 16px 0 6px; }
 .admin-blocked-list { display: flex; gap: 8px; flex-wrap: wrap; }
 .admin-blocked-chip {
