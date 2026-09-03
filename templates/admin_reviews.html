@@ -22,7 +22,7 @@
     </div>
 
     <div class="admin-block">
-        <h2>Yayındaki yorumlar ({{ reviews|length }})</h2>
+        <h2>Yayındaki yorumlar ({{ total_reviews }})</h2>
         {% if not reviews %}
         <p class="admin-empty">Henüz yorum yok.</p>
         {% else %}
@@ -34,13 +34,29 @@
                     <input type="hidden" name="review_id" value="{{ r.id }}">
                     <button type="submit" title="Sil">✕</button>
                 </form>
-                <div class="review-card-stars">{{ "⭐" * r.rating }}</div>
-                <p class="review-card-text">{{ r.text }}</p>
-                <p class="review-card-name">— {{ r.name }}</p>
-                <p class="review-card-date">{{ r.createdAt[:10] }}</p>
+                <form method="post" class="review-card-edit-form">
+                    <input type="hidden" name="action" value="edit">
+                    <input type="hidden" name="review_id" value="{{ r.id }}">
+                    <input type="text" name="name" value="{{ r.name }}" required>
+                    <select name="rating" required>
+                        {% for n in [5, 4, 3, 2, 1] %}
+                        <option value="{{ n }}" {{ 'selected' if n == r.rating else '' }}>{{ "⭐" * n }} ({{ n }})</option>
+                        {% endfor %}
+                    </select>
+                    <textarea name="text" rows="3" required>{{ r.text }}</textarea>
+                    <p class="review-card-date">{{ r.createdAt[:10] }}</p>
+                    <button type="submit" class="btn btn-secondary btn-small">Güncelle</button>
+                </form>
             </div>
             {% endfor %}
         </div>
+        {% if total_pages > 1 %}
+        <div class="pagination">
+            {% for p in range(1, total_pages + 1) %}
+            <a href="{{ url_for('admin_reviews', page=p) }}" class="pagination-link {{ 'active' if p == page else '' }}">{{ p }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
         {% endif %}
     </div>
 </section>

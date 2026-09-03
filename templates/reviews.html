@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ t.reviews_title }} · {{ t.site_title }}{% endblock %}
 {% block structured_data %}
-{% if reviews %}
+{% if all_reviews %}
 <script type="application/ld+json">
 {
     "@context": "https://schema.org",
@@ -10,10 +10,10 @@
     "aggregateRating": {
         "@type": "AggregateRating",
         "ratingValue": {{ avg_rating|tojson }},
-        "reviewCount": {{ reviews|length|tojson }}
+        "reviewCount": {{ total_reviews|tojson }}
     },
     "review": [
-        {% for r in reviews %}
+        {% for r in all_reviews %}
         {
             "@type": "Review",
             "author": {"@type": "Person", "name": {{ r.name|tojson }}},
@@ -30,9 +30,14 @@
 <section class="legal-page reviews-page">
     <h1>{{ t.reviews_title }}</h1>
     <p class="auth-subtitle">{{ t.reviews_subtitle }}</p>
+    {% if is_admin %}
+    <p style="text-align:center;margin:-10px 0 20px;">
+        <a href="{{ url_for('admin_reviews') }}" class="btn btn-secondary btn-small">+ Yorum Ekle</a>
+    </p>
+    {% endif %}
 
     {% if reviews %}
-    <p class="reviews-avg">{{ t.reviews_avg_label }} <b>{{ avg_rating }}/5</b> ⭐ ({{ reviews|length }})</p>
+    <p class="reviews-avg">{{ t.reviews_avg_label }} <b>{{ avg_rating }}/5</b> ⭐ ({{ total_reviews }})</p>
     <div class="review-list">
         {% for r in reviews %}
         <div class="review-item">
@@ -42,6 +47,13 @@
         </div>
         {% endfor %}
     </div>
+    {% if total_pages > 1 %}
+    <div class="pagination">
+        {% for p in range(1, total_pages + 1) %}
+        <a href="{{ url_for('reviews_page', page=p) }}" class="pagination-link {{ 'active' if p == page else '' }}">{{ p }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
     {% else %}
     <p class="admin-empty">{{ t.reviews_empty }}</p>
     {% endif %}

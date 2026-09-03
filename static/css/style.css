@@ -461,6 +461,34 @@ main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; widt
     color: var(--text-dim);
 }
 .ascendant-result-sign { color: var(--gold-soft); font-weight: 800; font-size: 1.2em; }
+.pagination {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 20px;
+}
+.pagination-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: .9em;
+}
+.pagination-link:hover { border-color: var(--gold); color: var(--gold-soft); }
+.pagination-link.active {
+    background: linear-gradient(180deg, var(--gold-soft), var(--gold));
+    color: #1a1200;
+    border-color: var(--gold);
+}
+
 /* Review cards (admin) */
 .review-card-grid {
     display: grid;
@@ -478,7 +506,26 @@ main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; widt
 .review-card-stars { font-size: .95em; margin-bottom: 8px; }
 .review-card-text { margin: 0 0 10px; font-size: .88em; line-height: 1.5; color: var(--text); }
 .review-card-name { margin: 0; color: var(--gold-soft); font-weight: 700; font-size: .85em; }
-.review-card-date { margin: 2px 0 0; color: var(--text-dim); font-size: .75em; }
+.review-card-date { margin: 4px 0 8px; color: var(--text-dim); font-size: .75em; }
+.review-card-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 20px;
+}
+.review-card-edit-form input[type="text"],
+.review-card-edit-form select,
+.review-card-edit-form textarea {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 8px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: .85em;
+    width: 100%;
+}
+.review-card-edit-form textarea { resize: vertical; }
 .review-card-delete {
     position: absolute;
     top: 8px;
