@@ -69,6 +69,7 @@ INSTAGRAM_URL = "https://www.instagram.com/rituams.tarot/"
 TIKTOK_URL = "https://www.tiktok.com/@svetlanaquinn"
 
 CRON_SECRET = os.environ.get("CRON_SECRET", "")
+ADMIN_API_SECRET = os.environ.get("ADMIN_API_SECRET", "")
 ISTANBUL_TZ = timezone(timedelta(hours=3))
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
@@ -1456,6 +1457,21 @@ def cron_appointment_reminder():
     return jsonify({"ok": True, "reminded": reminded})
 
 
+@app.route("/api/admin/jeton-ekle", methods=["POST"])
+def api_admin_add_jeton():
+    if not ADMIN_API_SECRET or not hmac.compare_digest(request.args.get("secret", ""), ADMIN_API_SECRET):
+        return jsonify({"ok": False, "error": "forbidden"}), 403
+    email = (request.form.get("email") or "").strip().lower()
+    try:
+        amount = int(request.form.get("amount", "0"))
+    except ValueError:
+        amount = 0
+    if not email or amount <= 0 or not accounts_store.email_exists(email):
+        return jsonify({"ok": False, "error": "invalid"}), 400
+    balance = jeton_store.credit(email, amount)
+    return jsonify({"ok": True, "balance": balance})
+
+
 @app.route("/admin/randevular", methods=["GET", "POST"])
 @limiter.limit("30 per hour", methods=["POST"])
 def admin_appointments():
@@ -1474,6 +1490,19 @@ def admin_appointments():
         elif action == "grant_bonus":
             count = jeton_store.grant_bonus_to_all(500)
             flash(f"{count} hesaba +500 jeton eklendi.")
+        elif action == "grant_user":
+            target_email = (request.form.get("target_email") or "").strip().lower()
+            try:
+                amount = int(request.form.get("amount", "0"))
+            except ValueError:
+                amount = 0
+            if not target_email or not accounts_store.email_exists(target_email):
+                flash("Bu e-posta ile kayıtlı kullanıcı bulunamadı.", "error")
+            elif amount <= 0:
+                flash("Geçerli bir jeton miktarı gir.", "error")
+            else:
+                new_balance = jeton_store.credit(target_email, amount)
+                flash(f"{target_email} hesabına {amount} jeton eklendi (yeni bakiye: {new_balance}).")
         return redirect(url_for("admin_appointments"))
 
     appointments = sorted(appointments_store.list_appointments(), key=lambda a: a.get("appointmentDate", ""))
