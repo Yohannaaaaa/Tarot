@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ t.account_deletion_page_title }}{% endblock %}
+{% block content %}
+<section class="auth-page">
+    <div class="auth-card account-deletion-page">
+        <h1>{{ t.delete_account_title }}</h1>
+        <p>{{ t.account_deletion_intro }}</p>
+
+        <h2>{{ t.account_deletion_steps_title }}</h2>
+        <ol>
+            <li>{{ t.account_deletion_step1 }}</li>
+            <li>{{ t.account_deletion_step2 }}</li>
+            <li>{{ t.account_deletion_step3 }}</li>
+        </ol>
+
+        <h2>{{ t.account_deletion_data_title }}</h2>
+        <p>{{ t.account_deletion_data_text }}</p>
+
+        <h2>{{ t.account_deletion_retained_title }}</h2>
+        <p>{{ t.account_deletion_retained_text }}</p>
+
+        <h2>{{ t.account_deletion_no_login_title }}</h2>
+        <p>{{ t.account_deletion_no_login_text }}<br><strong>{{ contact_email }}</strong></p>
+
+        <p style="margin-top:28px;">
+            <a href="{{ url_for('login_page') }}" class="btn btn-primary">{{ t.account_deletion_login_link }}</a>
+        </p>
+    </div>
+</section>
+{% endblock %}

@@ -30,6 +30,20 @@
             <input type="password" name="new_password2" placeholder="{{ t.field_new_password_confirm }}" required autocomplete="new-password">
             <button type="submit" class="btn btn-primary full">{{ t.change_password_submit }}</button>
         </form>
+
+        <div class="auth-divider"><span>{{ t.delete_account_title }}</span></div>
+        <p class="account-note">{{ t.delete_account_warning }}</p>
+        <form method="post" class="auth-form" onsubmit="return confirm({{ t.delete_account_confirm_js|tojson }});">
+            <input type="hidden" name="action" value="delete_account">
+            {% if account.password_hash %}
+            <input type="password" name="delete_current_password" placeholder="{{ t.field_current_password }}" required autocomplete="current-password">
+            {% endif %}
+            <label class="account-checkbox-label">
+                <input type="checkbox" name="confirm_delete" value="1" required>
+                {{ t.delete_account_confirm_checkbox }}
+            </label>
+            <button type="submit" class="btn btn-secondary full">{{ t.delete_account_submit }}</button>
+        </form>
     </div>
 </section>
 {% endblock %}
