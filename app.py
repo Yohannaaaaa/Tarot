@@ -945,6 +945,20 @@ def robots_txt():
     return Response("\n".join(lines), mimetype="text/plain")
 
 
+@app.route("/.well-known/assetlinks.json")
+def asset_links():
+    return jsonify([{
+        "relation": ["delegate_permission/common.handle_all_urls"],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "com.rituams.tarot",
+            "sha256_cert_fingerprints": [
+                "B0:5D:9B:F0:C2:9C:0A:9F:8E:E4:47:B9:7C:9C:41:7B:66:E4:86:42:79:7E:EF:F3:62:64:1F:72:57:FD:8A:99"
+            ]
+        }
+    }])
+
+
 SITEMAP_ENDPOINTS = ["index", "about_page", "faq_page", "reviews_page", "privacy_page", "terms_page", "cards_page", "reading_page", "zodiac_hub", "horoscope_page", "zodiac_character_page", "ascendant_page"]
 
 
