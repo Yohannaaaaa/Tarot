@@ -6,6 +6,13 @@
     <meta name="description" content="{{ t.meta_description }}">
     <meta name="google-site-verification" content="RpP7Qh4u8pIBnKvtzYxTNTI49eg9NvSdfNNMf4wFlBU" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%94%AE</text></svg>">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+    <meta name="theme-color" content="#0a0806">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Rituams">
     <title>{% block title %}{{ t.site_title }}{% endblock %}</title>
     {% if canonical_url %}<link rel="canonical" href="{{ canonical_url }}">{% endif %}
     {% if hreflang_fr %}<link rel="alternate" hreflang="fr" href="{{ hreflang_fr }}">{% endif %}
@@ -118,5 +125,12 @@
         };
     </script>
     <script src="{{ url_for('static', filename='js/daily-wheel.js') }}"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw.js').catch(() => {});
+            });
+        }
+    </script>
 </body>
 </html>
