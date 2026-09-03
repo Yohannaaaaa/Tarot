@@ -56,6 +56,17 @@ def _json_delete_review(review_id):
         _json_save(reviews)
 
 
+def _json_update_review(review_id, name, rating, text):
+    with _lock:
+        reviews = _json_load()
+        for r in reviews:
+            if r["id"] == review_id:
+                r["name"] = name
+                r["rating"] = rating
+                r["text"] = text
+        _json_save(reviews)
+
+
 # ---------- Backend PostgreSQL ----------
 
 def list_reviews():
@@ -95,6 +106,21 @@ def delete_review(review_id):
     try:
         with conn.cursor() as cur:
             cur.execute("DELETE FROM tarot_reviews WHERE id=%s", (review_id,))
+        conn.commit()
+    finally:
+        db.put_conn(conn)
+
+
+def update_review(review_id, name, rating, text):
+    if not db.has_db():
+        return _json_update_review(review_id, name, rating, text)
+    conn = db.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE tarot_reviews SET name=%s, rating=%s, review_text=%s WHERE id=%s",
+                (name, rating, text, review_id),
+            )
         conn.commit()
     finally:
         db.put_conn(conn)

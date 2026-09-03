@@ -1542,11 +1542,34 @@ def admin_stats():
     return render_template("admin_stats.html", stats=stats)
 
 
+REVIEWS_PER_PAGE = 9
+
+
+def paginate(items, page_param="page", per_page=REVIEWS_PER_PAGE):
+    try:
+        page = int(request.args.get(page_param, 1))
+    except ValueError:
+        page = 1
+    total_pages = max((len(items) + per_page - 1) // per_page, 1)
+    page = min(max(page, 1), total_pages)
+    start = (page - 1) * per_page
+    return items[start:start + per_page], page, total_pages
+
+
 @app.route("/yorumlar")
 def reviews_page():
     reviews = reviews_store.list_reviews()
     avg_rating = round(sum(r["rating"] for r in reviews) / len(reviews), 1) if reviews else None
-    return render_template("reviews.html", reviews=reviews, avg_rating=avg_rating)
+    page_reviews, page, total_pages = paginate(reviews)
+    return render_template(
+        "reviews.html",
+        reviews=page_reviews,
+        all_reviews=reviews,
+        avg_rating=avg_rating,
+        total_reviews=len(reviews),
+        page=page,
+        total_pages=total_pages,
+    )
 
 
 @app.route("/burclar")
@@ -1618,9 +1641,28 @@ def admin_reviews():
                 reviews_store.delete_review(int(request.form.get("review_id", "")))
             except ValueError:
                 pass
-        return redirect(url_for("admin_reviews"))
+        elif action == "edit":
+            name = (request.form.get("name") or "").strip()
+            text = (request.form.get("text") or "").strip()
+            try:
+                rating = int(request.form.get("rating", 0))
+                review_id = int(request.form.get("review_id", ""))
+            except ValueError:
+                rating = 0
+                review_id = None
+            if review_id and name and text and 1 <= rating <= 5:
+                reviews_store.update_review(review_id, name, rating, text)
+        return redirect(url_for("admin_reviews", page=request.args.get("page", 1)))
 
-    return render_template("admin_reviews.html", reviews=reviews_store.list_reviews())
+    all_reviews = reviews_store.list_reviews()
+    page_reviews, page, total_pages = paginate(all_reviews)
+    return render_template(
+        "admin_reviews.html",
+        reviews=page_reviews,
+        total_reviews=len(all_reviews),
+        page=page,
+        total_pages=total_pages,
+    )
 
 
 @app.route("/api/jeton/checkout", methods=["POST"])
