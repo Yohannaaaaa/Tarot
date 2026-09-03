@@ -22,6 +22,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.utils import secure_filename
 
 import accounts_store
+import appointments_store
 import ascendant
 import db
 import horoscope
@@ -287,6 +288,7 @@ UI = {
         "tab_instant": "🤖 Tirage Instantané",
         "tab_packs": "🪙 Packs de Jetons",
         "buy_jeton_shortcut": "Acheter des jetons",
+        "online_status_line": "en attente",
         "daily_wheel_title": "Roue quotidienne",
         "daily_wheel_spin": "Tourner !",
         "daily_wheel_come_back": "Reviens demain",
@@ -508,6 +510,7 @@ UI = {
         "tab_instant": "🤖 Anında Açılım",
         "tab_packs": "🪙 Jeton Paketleri",
         "buy_jeton_shortcut": "Jeton Al",
+        "online_status_line": "bekleniyor",
         "daily_wheel_title": "Günlük Çark",
         "daily_wheel_spin": "Çevir!",
         "daily_wheel_come_back": "Yarın tekrar gel",
@@ -1182,30 +1185,6 @@ def google_callback():
 
 
 MAJOR_CARDS = [c for c in CARDS if c["arcana"] == "major"]
-APPOINTMENTS_PATH = Path(__file__).resolve().parent / "data" / "appointments.json"
-BLOCKED_DATES_PATH = Path(__file__).resolve().parent / "data" / "blocked_dates.json"
-
-
-def load_appointments():
-    try:
-        with open(APPOINTMENTS_PATH, encoding="utf-8") as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
-
-
-def load_blocked_dates():
-    try:
-        with open(BLOCKED_DATES_PATH, encoding="utf-8") as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
-
-
-def save_blocked_dates(dates):
-    BLOCKED_DATES_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(BLOCKED_DATES_PATH, "w", encoding="utf-8") as f:
-        json.dump(dates, f, ensure_ascii=False, indent=2)
 
 
 @app.route("/tirage")
@@ -1359,8 +1338,8 @@ def appointment_page():
         category = (request.form.get("category") or "").strip()
         cost = REQUEST_CATEGORY_COST.get(category)
         requested_day = appointment_date.split("T")[0]
-        busy_days = {a["appointmentDate"].split("T")[0] for a in load_appointments() if a.get("appointmentDate")}
-        busy_days.update(load_blocked_dates())
+        busy_days = {a["appointmentDate"].split("T")[0] for a in appointments_store.list_appointments() if a.get("appointmentDate")}
+        busy_days.update(appointments_store.list_blocked_dates())
         try:
             appt_dt = datetime.fromisoformat(appointment_date) if appointment_date else None
         except ValueError:
@@ -1396,9 +1375,7 @@ def appointment_page():
                 "lang": lang,
                 "createdAt": datetime.utcnow().isoformat(),
             }
-            appointments = load_appointments()
-            appointments.append(entry)
-            save_appointments(appointments)
+            appointments_store.add_appointment(entry)
 
             body = "\n".join([
                 f"Nom : {name}",
@@ -1433,20 +1410,14 @@ def appointment_page():
 
 @app.route("/api/randevu/dolu-tarihler")
 def api_busy_dates():
-    appointments = load_appointments()
+    appointments = appointments_store.list_appointments()
     busy_dates = {
         a["appointmentDate"].split("T")[0]
         for a in appointments
         if a.get("appointmentDate")
     }
-    busy_dates.update(load_blocked_dates())
+    busy_dates.update(appointments_store.list_blocked_dates())
     return jsonify({"ok": True, "busy_dates": sorted(busy_dates)})
-
-
-def save_appointments(appointments):
-    APPOINTMENTS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(APPOINTMENTS_PATH, "w", encoding="utf-8") as f:
-        json.dump(appointments, f, ensure_ascii=False, indent=2)
 
 
 @app.route("/api/cron/randevu-hatirlat")
@@ -1454,10 +1425,9 @@ def cron_appointment_reminder():
     if not CRON_SECRET or not hmac.compare_digest(request.args.get("secret", ""), CRON_SECRET):
         return jsonify({"ok": False, "error": "forbidden"}), 403
 
-    appointments = load_appointments()
+    appointments = appointments_store.list_appointments()
     now = datetime.now(ISTANBUL_TZ).replace(tzinfo=None)
     reminded = 0
-    changed = False
 
     for appt in appointments:
         if appt.get("reminded"):
@@ -1480,12 +1450,8 @@ def cron_appointment_reminder():
                 f"WhatsApp'tan yaz: {wa_link}",
             ]
             send_email(GMAIL_ADDRESS, f"Randevu hatırlatma - {appt.get('name', '')}", "\n".join(body_lines))
-            appt["reminded"] = True
-            changed = True
+            appointments_store.mark_reminded(appt["id"])
             reminded += 1
-
-    if changed:
-        save_appointments(appointments)
 
     return jsonify({"ok": True, "reminded": reminded})
 
@@ -1498,25 +1464,53 @@ def admin_appointments():
 
     if request.method == "POST":
         action = request.form.get("action")
-        blocked = load_blocked_dates()
         if action == "block":
             date_str = (request.form.get("block_date") or "").strip()
-            if date_str and date_str not in blocked:
-                blocked.append(date_str)
-                save_blocked_dates(sorted(blocked))
+            if date_str:
+                appointments_store.add_blocked_date(date_str)
         elif action == "unblock":
             date_str = (request.form.get("date") or "").strip()
-            if date_str in blocked:
-                blocked.remove(date_str)
-                save_blocked_dates(blocked)
+            appointments_store.remove_blocked_date(date_str)
         elif action == "grant_bonus":
             count = jeton_store.grant_bonus_to_all(500)
             flash(f"{count} hesaba +500 jeton eklendi.")
         return redirect(url_for("admin_appointments"))
 
-    appointments = sorted(load_appointments(), key=lambda a: a.get("appointmentDate", ""))
-    blocked_dates = load_blocked_dates()
+    appointments = sorted(appointments_store.list_appointments(), key=lambda a: a.get("appointmentDate", ""))
+    blocked_dates = appointments_store.list_blocked_dates()
     return render_template("admin_appointments.html", appointments=appointments, blocked_dates=blocked_dates)
+
+
+@app.route("/admin/istatistikler")
+def admin_stats():
+    if not is_admin():
+        return redirect(url_for("login_page"))
+
+    appointments = appointments_store.list_appointments()
+    reviews = reviews_store.list_reviews()
+
+    category_counts = {}
+    for appt in appointments:
+        label = appt.get("categoryLabel") or appt.get("category") or "?"
+        category_counts[label] = category_counts.get(label, 0) + 1
+    top_categories = sorted(category_counts.items(), key=lambda kv: kv[1], reverse=True)[:8]
+
+    signups_by_day = accounts_store.count_registrations_by_day(7)
+    max_signups = max((c for _, c in signups_by_day), default=0) or 1
+
+    stats = {
+        "total_users": accounts_store.count_accounts(),
+        "total_jetons": jeton_store.total_balance(),
+        "total_payments": jeton_store.count_processed_payments(),
+        "total_appointments": len(appointments),
+        "jetons_spent_on_requests": sum(a.get("categoryCost", 0) or 0 for a in appointments),
+        "total_reviews": len(reviews),
+        "avg_rating": round(sum(r["rating"] for r in reviews) / len(reviews), 1) if reviews else None,
+        "signups_by_day": signups_by_day,
+        "max_signups": max_signups,
+        "top_categories": top_categories,
+    }
+    return render_template("admin_stats.html", stats=stats)
 
 
 @app.route("/yorumlar")

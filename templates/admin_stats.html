@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}İstatistikler (Admin) · {{ t.site_title }}{% endblock %}
+{% block content %}
+<section class="admin-page">
+    <h1>📊 İstatistikler</h1>
+
+    <div class="stat-grid">
+        <div class="stat-tile">
+            <div class="stat-value">{{ stats.total_users }}</div>
+            <div class="stat-label">Kayıtlı Kullanıcı</div>
+        </div>
+        <div class="stat-tile">
+            <div class="stat-value">{{ stats.total_jetons }}</div>
+            <div class="stat-label">Dolaşımdaki Jeton</div>
+        </div>
+        <div class="stat-tile">
+            <div class="stat-value">{{ stats.total_payments }}</div>
+            <div class="stat-label">Tamamlanan Jeton Satın Alma</div>
+        </div>
+        <div class="stat-tile">
+            <div class="stat-value">{{ stats.total_appointments }}</div>
+            <div class="stat-label">Toplam Randevu/Talep</div>
+        </div>
+        <div class="stat-tile">
+            <div class="stat-value">{{ stats.jetons_spent_on_requests }}</div>
+            <div class="stat-label">Randevulara Harcanan Jeton</div>
+        </div>
+        <div class="stat-tile">
+            <div class="stat-value">{{ stats.total_reviews }}{% if stats.avg_rating %} · {{ stats.avg_rating }}⭐{% endif %}</div>
+            <div class="stat-label">Yorum Sayısı</div>
+        </div>
+    </div>
+
+    <div class="admin-block">
+        <h2>Son 7 Gün Kayıt</h2>
+        <div class="signup-chart">
+            {% for day, count in stats.signups_by_day %}
+            <div class="signup-bar-wrap">
+                <div class="signup-bar" style="height: {{ (count / stats.max_signups * 100)|round(0, 'floor')|int }}%;">
+                    {% if count %}<span>{{ count }}</span>{% endif %}
+                </div>
+                <div class="signup-day-label">{{ day[5:] }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="admin-block">
+        <h2>En Çok Talep Edilen Hizmetler/Ritüeller</h2>
+        {% if not stats.top_categories %}
+        <p class="admin-empty">Henüz talep yok.</p>
+        {% else %}
+        <table class="admin-table">
+            <tr><th>Hizmet / Ritüel</th><th>Adet</th></tr>
+            {% for label, count in stats.top_categories %}
+            <tr><td>{{ label }}</td><td>{{ count }}</td></tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
