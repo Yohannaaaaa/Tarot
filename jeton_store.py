@@ -245,6 +245,36 @@ def claim_daily_bonus(username):
         db.put_conn(conn)
 
 
+def total_balance():
+    """Somme des jetons actuellement en circulation sur tous les comptes."""
+    if not db.has_db():
+        users = _json_load()
+        return sum(u.get("balance", STARTING_BALANCE) for u in users.values())
+    conn = db.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT COALESCE(sum(balance), 0) FROM tarot_jetons")
+            return cur.fetchone()[0]
+    finally:
+        db.put_conn(conn)
+
+
+def count_processed_payments():
+    if not db.has_db():
+        try:
+            with open(PROCESSED_PAYMENTS_PATH, encoding="utf-8") as f:
+                return len(json.load(f))
+        except (FileNotFoundError, json.JSONDecodeError):
+            return 0
+    conn = db.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT count(*) FROM tarot_processed_payments")
+            return cur.fetchone()[0]
+    finally:
+        db.put_conn(conn)
+
+
 def _json_mark_payment_processed(ref):
     with _lock:
         try:

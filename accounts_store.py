@@ -3,7 +3,7 @@
 """Comptes utilisateurs : PostgreSQL si DATABASE_URL est definie, sinon fichier JSON."""
 import json
 import threading
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -191,6 +191,39 @@ def set_password(email, new_password):
         return updated
     finally:
         db.put_conn(conn)
+
+
+def count_accounts():
+    if not db.has_db():
+        return len(_json_load())
+    conn = db.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT count(*) FROM tarot_accounts")
+            return cur.fetchone()[0]
+    finally:
+        db.put_conn(conn)
+
+
+def count_registrations_by_day(days=7):
+    """Retourne [(date_iso, count), ...] pour les `days` derniers jours (aujourd'hui inclus)."""
+    today = datetime.utcnow().date()
+    date_range = [today - timedelta(days=i) for i in range(days - 1, -1, -1)]
+    if not db.has_db():
+        counts = {}
+        for account in _json_load().values():
+            created = (account.get("created_at") or "")[:10]
+            if created:
+                counts[created] = counts.get(created, 0) + 1
+    else:
+        conn = db.get_conn()
+        try:
+            with conn.cursor() as cur:
+                cur.execute("SELECT created_at::date, count(*) FROM tarot_accounts GROUP BY 1")
+                counts = {d.isoformat(): c for d, c in cur.fetchall()}
+        finally:
+            db.put_conn(conn)
+    return [(d.isoformat(), counts.get(d.isoformat(), 0)) for d in date_range]
 
 
 def upsert_google_account(email, google_id, name):

@@ -71,6 +71,18 @@ def init_schema():
                     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
                 )
             """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS tarot_appointments (
+                    id SERIAL PRIMARY KEY,
+                    data JSONB NOT NULL,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+                )
+            """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS tarot_blocked_dates (
+                    date_str TEXT PRIMARY KEY
+                )
+            """)
         conn.commit()
     finally:
         put_conn(conn)
