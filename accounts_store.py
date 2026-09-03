@@ -82,6 +82,17 @@ def _json_set_password(email, new_password):
         return True
 
 
+def _json_delete_account(email):
+    with _lock:
+        accounts = _json_load()
+        key = _key(email)
+        if key not in accounts:
+            return False
+        del accounts[key]
+        _json_save(accounts)
+        return True
+
+
 def _json_upsert_google_account(email, google_id, name):
     with _lock:
         accounts = _json_load()
@@ -189,6 +200,20 @@ def set_password(email, new_password):
             updated = cur.rowcount > 0
         conn.commit()
         return updated
+    finally:
+        db.put_conn(conn)
+
+
+def delete_account(email):
+    if not db.has_db():
+        return _json_delete_account(email)
+    conn = db.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM tarot_accounts WHERE email_key=%s", (_key(email),))
+            deleted = cur.rowcount > 0
+        conn.commit()
+        return deleted
     finally:
         db.put_conn(conn)
 

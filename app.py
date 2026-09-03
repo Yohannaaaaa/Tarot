@@ -383,6 +383,26 @@ UI = {
         "account_no_password_note": "Tu t'es connecté(e) avec Google et n'as pas encore de mot de passe. Tu peux en définir un ci-dessous.",
         "field_current_password": "Mot de passe actuel",
         "change_password_submit": "Mettre à jour le mot de passe",
+        "delete_account_title": "Supprimer mon compte",
+        "delete_account_warning": "Cette action est définitive : ton adresse e-mail, ton pseudo et ton mot de passe seront supprimés. Ton solde de jetons sera perdu. L'historique de tes rendez-vous et avis peut être conservé de façon anonymisée à des fins comptables et légales.",
+        "delete_account_confirm_checkbox": "Je comprends que cette action est irréversible.",
+        "delete_account_submit": "Supprimer définitivement mon compte",
+        "delete_account_confirm_js": "Ton compte va être supprimé définitivement. Continuer ?",
+        "error_delete_account_confirm": "Merci de cocher la case de confirmation.",
+        "success_account_deleted": "Ton compte a été supprimé.",
+        "account_deletion_page_title": "Suppression de compte - Rituams Tarot",
+        "account_deletion_intro": "Rituams Tarot te permet de supprimer ton compte et tes données personnelles à tout moment.",
+        "account_deletion_steps_title": "Comment supprimer ton compte",
+        "account_deletion_step1": "Connecte-toi sur ton compte Rituams Tarot.",
+        "account_deletion_step2": "Va dans « Mon compte ».",
+        "account_deletion_step3": "Clique sur « Supprimer définitivement mon compte » en bas de page et confirme.",
+        "account_deletion_data_title": "Données supprimées",
+        "account_deletion_data_text": "Ton adresse e-mail, ton pseudo, ton mot de passe (ou lien Google) et ton solde de jetons sont supprimés immédiatement et définitivement.",
+        "account_deletion_retained_title": "Données conservées",
+        "account_deletion_retained_text": "Pour des raisons légales et comptables, l'historique des paiements et des rendez-vous déjà effectués peut être conservé de façon anonymisée (sans lien avec ton identité) pendant la durée requise par la loi.",
+        "account_deletion_no_login_title": "Tu ne peux plus te connecter ?",
+        "account_deletion_no_login_text": "Écris-nous à l'adresse ci-dessous depuis l'e-mail de ton compte, en précisant que tu souhaites supprimer ton compte Rituams Tarot.",
+        "account_deletion_login_link": "Se connecter pour supprimer mon compte",
         "not_found_message": "Cette page n'existe pas ou a été déplacée.",
         "back_to_home": "← Retour à l'accueil",
         "nav_horoscope": "Astrologie",
@@ -615,6 +635,26 @@ UI = {
         "account_no_password_note": "Google ile giriş yaptın ve henüz bir şifren yok. Aşağıdan bir şifre belirleyebilirsin.",
         "field_current_password": "Mevcut şifre",
         "change_password_submit": "Şifreyi Güncelle",
+        "delete_account_title": "Hesabımı Sil",
+        "delete_account_warning": "Bu işlem kalıcıdır: e-posta adresin, kullanıcı adın ve şifren silinir. Jeton bakiyen kaybolur. Randevu ve yorum geçmişin, muhasebe ve yasal zorunluluklar gereği anonim şekilde saklanabilir.",
+        "delete_account_confirm_checkbox": "Bu işlemin geri alınamayacağını anlıyorum.",
+        "delete_account_submit": "Hesabımı Kalıcı Olarak Sil",
+        "delete_account_confirm_js": "Hesabın kalıcı olarak silinecek. Devam edilsin mi?",
+        "error_delete_account_confirm": "Lütfen onay kutusunu işaretle.",
+        "success_account_deleted": "Hesabın silindi.",
+        "account_deletion_page_title": "Hesap Silme - Rituams Tarot",
+        "account_deletion_intro": "Rituams Tarot, hesabını ve kişisel verilerini istediğin zaman silmene olanak tanır.",
+        "account_deletion_steps_title": "Hesabını nasıl silersin",
+        "account_deletion_step1": "Rituams Tarot hesabına giriş yap.",
+        "account_deletion_step2": "\"Hesabım\" sayfasına git.",
+        "account_deletion_step3": "Sayfanın altındaki \"Hesabımı Kalıcı Olarak Sil\" butonuna tıkla ve onayla.",
+        "account_deletion_data_title": "Silinen veriler",
+        "account_deletion_data_text": "E-posta adresin, kullanıcı adın, şifren (veya Google bağlantın) ve jeton bakiyen hemen ve kalıcı olarak silinir.",
+        "account_deletion_retained_title": "Saklanan veriler",
+        "account_deletion_retained_text": "Yasal ve muhasebe zorunlulukları nedeniyle, daha önce yapılmış ödeme ve randevu kayıtları kimliğinden arındırılmış (anonim) şekilde, yasanın gerektirdiği süre boyunca saklanabilir.",
+        "account_deletion_no_login_title": "Artık giriş yapamıyor musun?",
+        "account_deletion_no_login_text": "Hesabındaki e-posta adresinden bize yazarak Rituams Tarot hesabını silmek istediğini belirt.",
+        "account_deletion_login_link": "Hesabımı silmek için giriş yap",
         "not_found_message": "Bu sayfa mevcut değil ya da taşınmış.",
         "back_to_home": "← Ana sayfaya dön",
         "nav_horoscope": "Burçlar",
@@ -959,7 +999,7 @@ def asset_links():
     }])
 
 
-SITEMAP_ENDPOINTS = ["index", "about_page", "faq_page", "reviews_page", "privacy_page", "terms_page", "cards_page", "reading_page", "zodiac_hub", "horoscope_page", "zodiac_character_page", "ascendant_page"]
+SITEMAP_ENDPOINTS = ["index", "about_page", "faq_page", "reviews_page", "privacy_page", "terms_page", "cards_page", "reading_page", "zodiac_hub", "horoscope_page", "zodiac_character_page", "ascendant_page", "account_deletion_info_page"]
 
 
 @app.route("/sitemap.xml")
@@ -1088,22 +1128,41 @@ def account_page():
     account = accounts_store.get_account(email)
 
     if request.method == "POST":
-        current_password = request.form.get("current_password") or ""
-        new_password = request.form.get("new_password") or ""
-        new_password2 = request.form.get("new_password2") or ""
-        if account.get("password_hash") and not accounts_store.verify_password(email, current_password):
-            flash("error_invalid_credentials", "error")
-        elif len(new_password) < 6:
-            flash("error_password_short", "error")
-        elif new_password != new_password2:
-            flash("error_passwords_mismatch", "error")
+        action = request.form.get("action") or "change_password"
+        if action == "delete_account":
+            current_password = request.form.get("delete_current_password") or ""
+            confirm = request.form.get("confirm_delete")
+            if account.get("password_hash") and not accounts_store.verify_password(email, current_password):
+                flash("error_invalid_credentials", "error")
+            elif not confirm:
+                flash("error_delete_account_confirm", "error")
+            else:
+                accounts_store.delete_account(email)
+                session.clear()
+                flash("success_account_deleted", "success")
+                return redirect(url_for("index"))
         else:
-            accounts_store.set_password(email, new_password)
-            flash("success_password_reset", "success")
-            account = accounts_store.get_account(email)
+            current_password = request.form.get("current_password") or ""
+            new_password = request.form.get("new_password") or ""
+            new_password2 = request.form.get("new_password2") or ""
+            if account.get("password_hash") and not accounts_store.verify_password(email, current_password):
+                flash("error_invalid_credentials", "error")
+            elif len(new_password) < 6:
+                flash("error_password_short", "error")
+            elif new_password != new_password2:
+                flash("error_passwords_mismatch", "error")
+            else:
+                accounts_store.set_password(email, new_password)
+                flash("success_password_reset", "success")
+                account = accounts_store.get_account(email)
 
     balance = "∞" if is_admin() else jeton_store.get_balance(email)
     return render_template("account.html", account=account, balance=balance)
+
+
+@app.route("/hesap-silme")
+def account_deletion_info_page():
+    return render_template("account_deletion.html", contact_email=GMAIL_ADDRESS)
 
 
 @app.route("/mot-de-passe-oublie", methods=["GET", "POST"])
