@@ -99,7 +99,7 @@ app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["MAX_CONTENT_LENGTH"] = 8 * 1024 * 1024
 db.init_schema()
 
-limiter = Limiter(get_remote_address, app=app, default_limits=[])
+limiter = Limiter(get_remote_address, app=app, default_limits=["300 per hour", "60 per minute"])
 
 
 @app.errorhandler(429)
@@ -108,6 +108,16 @@ def ratelimit_handler(e):
         return jsonify({"ok": False, "error": "rate_limited"}), 429
     flash("error_rate_limited", "error")
     return redirect(request.referrer or url_for("index"))
+
+
+@app.after_request
+def set_security_headers(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    if os.environ.get("RENDER"):
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
 
 
 @app.errorhandler(413)
