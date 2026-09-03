@@ -44,15 +44,9 @@
         <div class="time-picker-wrap" id="timePickerWrap" hidden>
             <label for="appointmentTimeSelect">{{ t.field_appointment_time }}</label>
             <select id="appointmentTimeSelect">
-                <option value="00:00">00:00</option>
-                <option value="00:30">00:30</option>
-                <option value="01:00">01:00</option>
-                <option value="01:30">01:30</option>
-                <option value="02:00">02:00</option>
-                <option value="02:30">02:30</option>
-                <option value="03:00">03:00</option>
-                <option value="03:30">03:30</option>
-                <option value="04:00">04:00</option>
+                {% for slot in time_slots %}
+                <option value="{{ slot }}">{{ slot }}</option>
+                {% endfor %}
             </select>
         </div>
 

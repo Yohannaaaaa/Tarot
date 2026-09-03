@@ -14,12 +14,27 @@
     if (!grid) return;
 
     let busyDates = new Set();
+    let busySlots = {};
     const current = new Date();
     current.setDate(1);
     let selectedDateStr = null;
 
     function pad(n) { return n < 10 ? '0' + n : '' + n; }
     function toDateStr(y, m, d) { return `${y}-${pad(m + 1)}-${pad(d)}`; }
+
+    function refreshTimeOptions(dateStr) {
+        const taken = new Set(busySlots[dateStr] || []);
+        let firstFree = null;
+        Array.from(timeSelect.options).forEach((opt) => {
+            const isTaken = taken.has(opt.value);
+            opt.disabled = isTaken;
+            opt.textContent = isTaken ? `${opt.value} (dolu)` : opt.value;
+            if (!isTaken && firstFree === null) firstFree = opt.value;
+        });
+        if (timeSelect.selectedOptions[0] && timeSelect.selectedOptions[0].disabled && firstFree !== null) {
+            timeSelect.value = firstFree;
+        }
+    }
 
     (i18n.weekdays || []).forEach((label) => {
         const el = document.createElement('span');
@@ -39,6 +54,7 @@
         cell.classList.add('cal-selected');
         timeWrap.hidden = false;
         if (warning) warning.hidden = true;
+        refreshTimeOptions(dateStr);
         updateHiddenInput();
     }
 
@@ -103,7 +119,10 @@
     fetch('/api/randevu/dolu-tarihler')
         .then((r) => r.json())
         .then((d) => {
-            if (d.ok) busyDates = new Set(d.busy_dates);
+            if (d.ok) {
+                busyDates = new Set(d.busy_dates);
+                busySlots = d.busy_slots || {};
+            }
         })
         .catch(() => {})
         .finally(render);

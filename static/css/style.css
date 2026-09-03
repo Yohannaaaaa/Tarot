@@ -484,6 +484,7 @@ main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; widt
     color: var(--text-dim);
 }
 .ascendant-result-sign { color: var(--gold-soft); font-weight: 800; font-size: 1.2em; }
+.ascendant-result-meaning { margin: 10px 0 0; line-height: 1.5; color: var(--text); font-size: .92em; }
 .pagination {
     display: flex;
     flex-wrap: wrap;
