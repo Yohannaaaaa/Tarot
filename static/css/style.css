@@ -404,6 +404,29 @@ main { flex: 1; max-width: 1200px; margin: 0 auto; padding: 32px 20px 60px; widt
 .review-stars { font-size: 1.1em; margin-bottom: 6px; }
 .review-text { margin: 0 0 8px; line-height: 1.5; }
 .review-name { margin: 0; color: var(--text-dim); font-size: .9em; text-align: right; }
+.review-own-edit-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+.review-own-edit-form select,
+.review-own-edit-form textarea {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 8px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: .9em;
+    width: 100%;
+}
+.review-own-actions { display: flex; justify-content: flex-end; }
+.review-own-delete-form { margin: 0 0 8px; text-align: right; }
+.review-own-delete-btn {
+    background: rgba(255, 80, 80, .1);
+    border: 1px solid rgba(255, 80, 80, .4);
+    color: var(--text-dim);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: .78em;
+    cursor: pointer;
+}
 /* Horoscope */
 .horoscope-page { max-width: 1040px; }
 .horoscope-grid {
