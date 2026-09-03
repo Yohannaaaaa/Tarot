@@ -34,6 +34,25 @@
     <p style="text-align:center;margin:-10px 0 20px;">
         <a href="{{ url_for('admin_reviews') }}" class="btn btn-secondary btn-small">+ Yorum Ekle</a>
     </p>
+    {% elif logged_in %}
+    <div class="admin-block review-write-block">
+        <h2>{{ t.reviews_write_title }}</h2>
+        <form method="post" class="admin-inline-form">
+            <select name="rating" required>
+                <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                <option value="4">⭐⭐⭐⭐ (4)</option>
+                <option value="3">⭐⭐⭐ (3)</option>
+                <option value="2">⭐⭐ (2)</option>
+                <option value="1">⭐ (1)</option>
+            </select>
+            <textarea name="text" rows="3" required></textarea>
+            <button type="submit" class="btn btn-primary btn-small">{{ t.reviews_submit }}</button>
+        </form>
+    </div>
+    {% else %}
+    <p class="auth-subtitle" style="margin-top:-10px;">
+        {{ t.reviews_login_to_write }} <a href="{{ url_for('login_page') }}">{{ t.nav_login }}</a>
+    </p>
     {% endif %}
 
     {% if reviews %}
@@ -42,7 +61,28 @@
         {% for r in reviews %}
         <div class="review-item">
             <div class="review-stars">{{ "⭐" * r.rating }}{{ "☆" * (5 - r.rating) }}</div>
+            {% if current_email and r.email == current_email %}
+            <form method="post" class="review-own-edit-form">
+                <input type="hidden" name="action" value="edit_own">
+                <input type="hidden" name="review_id" value="{{ r.id }}">
+                <select name="rating" required>
+                    {% for n in [5, 4, 3, 2, 1] %}
+                    <option value="{{ n }}" {{ 'selected' if n == r.rating else '' }}>{{ "⭐" * n }} ({{ n }})</option>
+                    {% endfor %}
+                </select>
+                <textarea name="text" rows="2" required>{{ r.text }}</textarea>
+                <div class="review-own-actions">
+                    <button type="submit" class="btn btn-secondary btn-small">{{ t.reviews_update_own }}</button>
+                </div>
+            </form>
+            <form method="post" onsubmit="return confirm('{{ t.reviews_delete_confirm }}');" class="review-own-delete-form">
+                <input type="hidden" name="action" value="delete_own">
+                <input type="hidden" name="review_id" value="{{ r.id }}">
+                <button type="submit" class="review-own-delete-btn">{{ t.reviews_delete_own }}</button>
+            </form>
+            {% else %}
             <p class="review-text">"{{ r.text }}"</p>
+            {% endif %}
             <p class="review-name">— {{ r.name }}</p>
         </div>
         {% endfor %}

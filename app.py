@@ -421,6 +421,13 @@ UI = {
         "error_photo_invalid_type": "Le fichier joint doit être une image.",
         "error_photo_too_large": "La photo est trop lourde (5 Mo maximum).",
         "success_appointment_sent": "Ta demande de rendez-vous a été reçue, nous te contacterons bientôt !",
+        "success_review_sent": "Merci pour ton avis !",
+        "reviews_write_title": "Laisse ton avis",
+        "reviews_login_to_write": "Connecte-toi pour laisser un avis.",
+        "reviews_submit": "Envoyer",
+        "reviews_update_own": "Mettre à jour",
+        "reviews_delete_own": "Supprimer mon avis",
+        "reviews_delete_confirm": "Supprimer ton avis ?",
         "appointment_select_date_prompt": "Choisis d'abord une date et une heure dans le calendrier.",
         "field_appointment_category": "Type de consultation",
         "appointment_category_placeholder": "Choisis un service ou un rituel",
@@ -643,6 +650,13 @@ UI = {
         "error_photo_invalid_type": "Eklenen dosya bir resim olmalı.",
         "error_photo_too_large": "Fotoğraf çok büyük (en fazla 5 MB).",
         "success_appointment_sent": "Randevu talebin alındı, en kısa sürede seninle iletişime geçeceğiz!",
+        "success_review_sent": "Yorumun için teşekkürler!",
+        "reviews_write_title": "Yorumunu yaz",
+        "reviews_login_to_write": "Yorum yazmak için giriş yap.",
+        "reviews_submit": "Gönder",
+        "reviews_update_own": "Güncelle",
+        "reviews_delete_own": "Yorumumu Sil",
+        "reviews_delete_confirm": "Yorumunu silmek istediğine emin misin?",
         "appointment_select_date_prompt": "Önce takvimden bir tarih ve saat seç.",
         "field_appointment_category": "Açılım Türü",
         "appointment_category_placeholder": "Bir hizmet ya da ritüel seç",
@@ -1556,8 +1570,44 @@ def paginate(items, page_param="page", per_page=REVIEWS_PER_PAGE):
     return items[start:start + per_page], page, total_pages
 
 
-@app.route("/yorumlar")
+@app.route("/yorumlar", methods=["GET", "POST"])
+@limiter.limit("10 per hour", methods=["POST"])
 def reviews_page():
+    if request.method == "POST":
+        email = session.get("email")
+        if not email:
+            return redirect(url_for("login_page"))
+        action = request.form.get("action", "add")
+
+        if action == "add":
+            name = session.get("nickname") or email.split("@")[0]
+            text = (request.form.get("text") or "").strip()
+            try:
+                rating = int(request.form.get("rating", 0))
+            except ValueError:
+                rating = 0
+            if text and 1 <= rating <= 5:
+                reviews_store.add_review(name, rating, text, email=email)
+                flash("success_review_sent", "success")
+        elif action in ("edit_own", "delete_own"):
+            try:
+                review_id = int(request.form.get("review_id", ""))
+            except ValueError:
+                review_id = None
+            review = reviews_store.get_review(review_id) if review_id else None
+            if review and review.get("email") == email:
+                if action == "delete_own":
+                    reviews_store.delete_review(review_id)
+                else:
+                    text = (request.form.get("text") or "").strip()
+                    try:
+                        rating = int(request.form.get("rating", 0))
+                    except ValueError:
+                        rating = 0
+                    if text and 1 <= rating <= 5:
+                        reviews_store.update_review(review_id, review["name"], rating, text)
+        return redirect(url_for("reviews_page"))
+
     reviews = reviews_store.list_reviews()
     avg_rating = round(sum(r["rating"] for r in reviews) / len(reviews), 1) if reviews else None
     page_reviews, page, total_pages = paginate(reviews)
@@ -1569,6 +1619,7 @@ def reviews_page():
         total_reviews=len(reviews),
         page=page,
         total_pages=total_pages,
+        current_email=session.get("email"),
     )
 
 

@@ -71,6 +71,7 @@ def init_schema():
                     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
                 )
             """)
+            cur.execute("ALTER TABLE tarot_reviews ADD COLUMN IF NOT EXISTS email TEXT")
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS tarot_appointments (
                     id SERIAL PRIMARY KEY,

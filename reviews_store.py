@@ -36,7 +36,7 @@ def _json_list_reviews():
     return sorted(reviews, key=lambda r: r["createdAt"], reverse=True)
 
 
-def _json_add_review(name, rating, text):
+def _json_add_review(name, rating, text, email=None):
     with _lock:
         reviews = _json_load()
         next_id = (max((r["id"] for r in reviews), default=0)) + 1
@@ -45,6 +45,7 @@ def _json_add_review(name, rating, text):
             "name": name,
             "rating": rating,
             "text": text,
+            "email": email,
             "createdAt": datetime.utcnow().isoformat(),
         })
         _json_save(reviews)
@@ -75,24 +76,28 @@ def list_reviews():
     conn = db.get_conn()
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT id, name, rating, review_text, created_at FROM tarot_reviews ORDER BY created_at DESC")
+            cur.execute("SELECT id, name, rating, review_text, created_at, email FROM tarot_reviews ORDER BY created_at DESC")
             return [
-                {"id": row[0], "name": row[1], "rating": row[2], "text": row[3], "createdAt": row[4].isoformat()}
+                {"id": row[0], "name": row[1], "rating": row[2], "text": row[3], "createdAt": row[4].isoformat(), "email": row[5]}
                 for row in cur.fetchall()
             ]
     finally:
         db.put_conn(conn)
 
 
-def add_review(name, rating, text):
+def get_review(review_id):
+    return next((r for r in list_reviews() if r["id"] == review_id), None)
+
+
+def add_review(name, rating, text, email=None):
     if not db.has_db():
-        return _json_add_review(name, rating, text)
+        return _json_add_review(name, rating, text, email)
     conn = db.get_conn()
     try:
         with conn.cursor() as cur:
             cur.execute(
-                "INSERT INTO tarot_reviews (name, rating, review_text) VALUES (%s, %s, %s)",
-                (name, rating, text),
+                "INSERT INTO tarot_reviews (name, rating, review_text, email) VALUES (%s, %s, %s, %s)",
+                (name, rating, text, email),
             )
         conn.commit()
     finally:
