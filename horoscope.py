@@ -420,3 +420,59 @@ def daily_horoscope_for_sign(sign, lang, day=None):
 
 def daily_horoscopes(lang, day=None):
     return [daily_horoscope_for_sign(sign, lang, day) for sign in ZODIAC_SIGNS]
+
+
+ASCENDANT_MEANINGS = {
+    "aries": {
+        "fr": "Avec un ascendant Bélier, tu dégages dès le premier contact une énergie directe et dynamique. On te perçoit comme quelqu'un de spontané, impatient d'agir et naturellement compétitif.",
+        "tr": "Yükselen burcun Koç olunca ilk izlenimin enerjik ve doğrudan oluyor. Çevrendekiler seni girişken, harekete geçmekten çekinmeyen ve doğal olarak rekabetçi biri olarak görüyor.",
+    },
+    "taurus": {
+        "fr": "Avec un ascendant Taureau, tu inspires calme et stabilité dès la première rencontre. Ton allure posée et ton besoin de confort rassurent naturellement ceux qui t'approchent.",
+        "tr": "Yükselen burcun Boğa olunca ilk tanışmada sakinlik ve istikrar hissi veriyorsun. Ağırbaşlı duruşun ve konfor arayışın çevrendekileri doğal olarak rahatlatıyor.",
+    },
+    "gemini": {
+        "fr": "Avec un ascendant Gémeaux, tu donnes immédiatement une image vive, curieuse et bavarde. Les gens te trouvent facile d'approche, spirituel et toujours prêt à échanger.",
+        "tr": "Yükselen burcun İkizler olunca ilk anda canlı, meraklı ve konuşkan bir izlenim bırakıyorsun. Çevrendekiler seni yaklaşılması kolay, esprili ve her zaman sohbete açık biri olarak buluyor.",
+    },
+    "cancer": {
+        "fr": "Avec un ascendant Cancer, ton allure dégage une douceur protectrice dès le premier regard. On te perçoit comme quelqu'un de sensible, attentionné, parfois réservé tant qu'on ne te connaît pas.",
+        "tr": "Yükselen burcun Yengeç olunca ilk bakışta koruyucu bir yumuşaklık yansıtıyorsun. Çevrendekiler seni duyarlı, ilgili ama tanınana kadar biraz mesafeli biri olarak algılıyor.",
+    },
+    "leo": {
+        "fr": "Avec un ascendant Lion, tu attires naturellement l'attention par ta prestance chaleureuse et confiante. Les autres te voient comme charismatique, généreux et fait pour être remarqué.",
+        "tr": "Yükselen burcun Aslan olunca sıcak ve özgüvenli duruşunla doğal olarak dikkat çekiyorsun. Çevrendekiler seni karizmatik, cömert ve fark edilmeye değer biri olarak görüyor.",
+    },
+    "virgo": {
+        "fr": "Avec un ascendant Vierge, tu projettes une image soignée, discrète et posée dès le premier contact. On te perçoit comme quelqu'un de sérieux, attentif aux détails et serviable.",
+        "tr": "Yükselen burcun Başak olunca ilk izlenimin derli toplu, mütevazı ve ölçülü oluyor. Çevrendekiler seni ciddi, detaylara dikkat eden ve yardımsever biri olarak görüyor.",
+    },
+    "libra": {
+        "fr": "Avec un ascendant Balance, tu dégages d'emblée charme, élégance et sens du contact. Les gens te trouvent aimable, diplomate et agréable à côtoyer.",
+        "tr": "Yükselen burcun Terazi olunca ilk anda zarafet ve kolay iletişim kuran bir hava yayıyorsun. Çevrendekiler seni sevimli, diplomatik ve arkadaş canlısı biri olarak buluyor.",
+    },
+    "scorpio": {
+        "fr": "Avec un ascendant Scorpion, ta présence intense et mystérieuse marque dès la première rencontre. On te perçoit comme magnétique, déterminé et difficile à cerner complètement.",
+        "tr": "Yükselen burcun Akrep olunca ilk tanışmada yoğun ve gizemli bir hava bırakıyorsun. Çevrendekiler seni manyetik, kararlı ve tam olarak çözülmesi zor biri olarak algılıyor.",
+    },
+    "sagittarius": {
+        "fr": "Avec un ascendant Sagittaire, tu donnes une impression optimiste, ouverte et aventureuse dès le premier échange. Les autres te voient comme franc, enthousiaste et épris de liberté.",
+        "tr": "Yükselen burcun Yay olunca ilk temasta iyimser, açık ve maceracı bir izlenim bırakıyorsun. Çevrendekiler seni dürüst, hevesli ve özgürlüğüne düşkün biri olarak görüyor.",
+    },
+    "capricorn": {
+        "fr": "Avec un ascendant Capricorne, tu affiches d'emblée sérieux, retenue et sens des responsabilités. On te perçoit comme fiable, ambitieux et un peu réservé au premier abord.",
+        "tr": "Yükselen burcun Oğlak olunca ilk izlenimin ciddi, ölçülü ve sorumluluk sahibi oluyor. Çevrendekiler seni güvenilir, hırslı ve ilk başta biraz mesafeli biri olarak görüyor.",
+    },
+    "aquarius": {
+        "fr": "Avec un ascendant Verseau, ton originalité et ton indépendance se remarquent dès le premier contact. Les gens te trouvent différent, ouvert d'esprit et parfois imprévisible.",
+        "tr": "Yükselen burcun Kova olunca ilk anda özgünlüğün ve bağımsızlığın dikkat çekiyor. Çevrendekiler seni farklı, açık fikirli ve bazen öngörülmesi zor biri olarak buluyor.",
+    },
+    "pisces": {
+        "fr": "Avec un ascendant Poissons, tu dégages une douceur rêveuse et empathique dès la première rencontre. On te perçoit comme sensible, artiste dans l'âme et facilement touché par les autres.",
+        "tr": "Yükselen burcun Balık olunca ilk tanışmada hayalperest ve empatik bir yumuşaklık yansıtıyorsun. Çevrendekiler seni duyarlı, ruhen sanatçı ve başkalarından kolay etkilenen biri olarak görüyor.",
+    },
+}
+
+
+def ascendant_meaning(sign_id, lang):
+    return ASCENDANT_MEANINGS[sign_id][lang]

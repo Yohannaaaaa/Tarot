@@ -71,6 +71,18 @@ TIKTOK_URL = "https://www.tiktok.com/@svetlanaquinn"
 CRON_SECRET = os.environ.get("CRON_SECRET", "")
 ADMIN_API_SECRET = os.environ.get("ADMIN_API_SECRET", "")
 ISTANBUL_TZ = timezone(timedelta(hours=3))
+APPOINTMENT_TIME_SLOTS = ["00:00", "00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30", "04:00"]
+
+
+def _booked_times_by_day(appointments):
+    times_by_day = {}
+    for a in appointments:
+        appt_date = a.get("appointmentDate")
+        if not appt_date or "T" not in appt_date:
+            continue
+        day, time_str = appt_date.split("T")
+        times_by_day.setdefault(day, set()).add(time_str)
+    return times_by_day
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET", "")
@@ -1359,8 +1371,11 @@ def appointment_page():
         category = (request.form.get("category") or "").strip()
         cost = REQUEST_CATEGORY_COST.get(category)
         requested_day = appointment_date.split("T")[0]
-        busy_days = {a["appointmentDate"].split("T")[0] for a in appointments_store.list_appointments() if a.get("appointmentDate")}
-        busy_days.update(appointments_store.list_blocked_dates())
+        existing_appointments = appointments_store.list_appointments()
+        times_by_day = _booked_times_by_day(existing_appointments)
+        blocked_days = set(appointments_store.list_blocked_dates())
+        day_fully_booked = requested_day in blocked_days or len(times_by_day.get(requested_day, ())) >= len(APPOINTMENT_TIME_SLOTS)
+        slot_taken = appointment_date in {a["appointmentDate"] for a in existing_appointments if a.get("appointmentDate")}
         try:
             appt_dt = datetime.fromisoformat(appointment_date) if appointment_date else None
         except ValueError:
@@ -1373,7 +1388,7 @@ def appointment_page():
             flash(photo_error, "error")
         elif appt_dt < datetime.now(ISTANBUL_TZ).replace(tzinfo=None):
             flash("error_appointment_past", "error")
-        elif requested_day in busy_days:
+        elif day_fully_booked or slot_taken:
             flash("error_appointment_date_taken", "error")
         elif not is_admin() and not jeton_store.deduct(user_email, cost)[0]:
             flash("error_appointment_insufficient_funds", "error")
@@ -1426,19 +1441,22 @@ def appointment_page():
         balance=balance,
         categories=localized_request_categories(),
         preselected_category=request.args.get("category", ""),
+        time_slots=APPOINTMENT_TIME_SLOTS,
     )
 
 
 @app.route("/api/randevu/dolu-tarihler")
 def api_busy_dates():
     appointments = appointments_store.list_appointments()
-    busy_dates = {
-        a["appointmentDate"].split("T")[0]
-        for a in appointments
-        if a.get("appointmentDate")
-    }
-    busy_dates.update(appointments_store.list_blocked_dates())
-    return jsonify({"ok": True, "busy_dates": sorted(busy_dates)})
+    times_by_day = _booked_times_by_day(appointments)
+    blocked_days = set(appointments_store.list_blocked_dates())
+
+    busy_dates = {day for day, times in times_by_day.items() if len(times) >= len(APPOINTMENT_TIME_SLOTS)}
+    busy_dates.update(blocked_days)
+
+    busy_slots = {day: sorted(times) for day, times in times_by_day.items() if day not in blocked_days}
+
+    return jsonify({"ok": True, "busy_dates": sorted(busy_dates), "busy_slots": busy_slots})
 
 
 @app.route("/api/cron/randevu-hatirlat")
@@ -1671,7 +1689,11 @@ def ascendant_page():
             birth_time = datetime.strptime(form_values["birth_time"], "%H:%M").time()
             index, _ = ascendant.ascendant_sign_index(birth_date, birth_time, city)
             sign = horoscope.ZODIAC_SIGNS[index]
-            result = {"symbol": sign["symbol"], "name": sign["name"][lang]}
+            result = {
+                "symbol": sign["symbol"],
+                "name": sign["name"][lang],
+                "meaning": horoscope.ascendant_meaning(sign["id"], lang),
+            }
         except (ValueError, KeyError):
             error = True
     cities = [{"id": c["id"], "name": c["name"][lang]} for c in ascendant.CITIES]
