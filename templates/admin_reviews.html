@@ -26,31 +26,20 @@
         {% if not reviews %}
         <p class="admin-empty">Henüz yorum yok.</p>
         {% else %}
-        <div class="admin-table-wrap">
-            <table class="admin-table">
-                <tr>
-                    <th>İsim</th>
-                    <th>Puan</th>
-                    <th>Yorum</th>
-                    <th>Tarih</th>
-                    <th></th>
-                </tr>
-                {% for r in reviews %}
-                <tr>
-                    <td>{{ r.name }}</td>
-                    <td>{{ "⭐" * r.rating }}</td>
-                    <td>{{ r.text }}</td>
-                    <td>{{ r.createdAt[:10] }}</td>
-                    <td>
-                        <form method="post">
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="review_id" value="{{ r.id }}">
-                            <button type="submit" title="Sil">✕</button>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </table>
+        <div class="review-card-grid">
+            {% for r in reviews %}
+            <div class="review-card-tile">
+                <form method="post" class="review-card-delete">
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="review_id" value="{{ r.id }}">
+                    <button type="submit" title="Sil">✕</button>
+                </form>
+                <div class="review-card-stars">{{ "⭐" * r.rating }}</div>
+                <p class="review-card-text">{{ r.text }}</p>
+                <p class="review-card-name">— {{ r.name }}</p>
+                <p class="review-card-date">{{ r.createdAt[:10] }}</p>
+            </div>
+            {% endfor %}
         </div>
         {% endif %}
     </div>
