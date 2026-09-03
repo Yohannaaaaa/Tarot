@@ -422,6 +422,9 @@ UI = {
         "error_photo_too_large": "La photo est trop lourde (5 Mo maximum).",
         "success_appointment_sent": "Ta demande de rendez-vous a été reçue, nous te contacterons bientôt !",
         "success_review_sent": "Merci pour ton avis !",
+        "success_review_updated": "Ton avis a été mis à jour.",
+        "success_review_deleted": "Ton avis a été supprimé.",
+        "error_review_not_found": "Avis introuvable ou tu n'es pas l'auteur de cet avis.",
         "reviews_write_title": "Laisse ton avis",
         "reviews_login_to_write": "Connecte-toi pour laisser un avis.",
         "reviews_submit": "Envoyer",
@@ -651,6 +654,9 @@ UI = {
         "error_photo_too_large": "Fotoğraf çok büyük (en fazla 5 MB).",
         "success_appointment_sent": "Randevu talebin alındı, en kısa sürede seninle iletişime geçeceğiz!",
         "success_review_sent": "Yorumun için teşekkürler!",
+        "success_review_updated": "Yorumun güncellendi.",
+        "success_review_deleted": "Yorumun silindi.",
+        "error_review_not_found": "Yorum bulunamadı ya da bu yorumun sahibi değilsin.",
         "reviews_write_title": "Yorumunu yaz",
         "reviews_login_to_write": "Yorum yazmak için giriş yap.",
         "reviews_submit": "Gönder",
@@ -1598,6 +1604,7 @@ def reviews_page():
             if review and review.get("email") == email:
                 if action == "delete_own":
                     reviews_store.delete_review(review_id)
+                    flash("success_review_deleted", "success")
                 else:
                     text = (request.form.get("text") or "").strip()
                     try:
@@ -1606,6 +1613,9 @@ def reviews_page():
                         rating = 0
                     if text and 1 <= rating <= 5:
                         reviews_store.update_review(review_id, review["name"], rating, text)
+                        flash("success_review_updated", "success")
+            else:
+                flash("error_review_not_found", "error")
         return redirect(url_for("reviews_page"))
 
     reviews = reviews_store.list_reviews()
@@ -1687,9 +1697,13 @@ def admin_reviews():
                 rating = 0
             if name and text and 1 <= rating <= 5:
                 reviews_store.add_review(name, rating, text)
+                flash("Yorum eklendi.")
+            else:
+                flash("İsim, puan ve yorum metni gerekli.", "error")
         elif action == "delete":
             try:
                 reviews_store.delete_review(int(request.form.get("review_id", "")))
+                flash("Yorum silindi.")
             except ValueError:
                 pass
         elif action == "edit":
@@ -1703,6 +1717,9 @@ def admin_reviews():
                 review_id = None
             if review_id and name and text and 1 <= rating <= 5:
                 reviews_store.update_review(review_id, name, rating, text)
+                flash("Yorum güncellendi.")
+            else:
+                flash("Güncelleme başarısız: isim, puan ve metin gerekli.", "error")
         return redirect(url_for("admin_reviews", page=request.args.get("page", 1)))
 
     all_reviews = reviews_store.list_reviews()
