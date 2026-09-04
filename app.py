@@ -24,6 +24,7 @@ from werkzeug.utils import secure_filename
 import accounts_store
 import appointments_store
 import ascendant
+import coffee_readings_store
 import db
 import horoscope
 import jeton_store
@@ -70,6 +71,10 @@ TIKTOK_URL = "https://www.tiktok.com/@svetlanaquinn"
 
 CRON_SECRET = os.environ.get("CRON_SECRET", "")
 ADMIN_API_SECRET = os.environ.get("ADMIN_API_SECRET", "")
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
+COFFEE_READING_MODEL = "claude-haiku-4-5-20251001"
+COFFEE_READING_DELAY_MINUTES = 60
 ISTANBUL_TZ = timezone(timedelta(hours=3))
 APPOINTMENT_TIME_SLOTS = ["00:00", "00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30", "04:00"]
 
@@ -215,6 +220,91 @@ def send_email_with_attachment_async(to_addr, subject, body, attachment_bytes, a
     threading.Thread(
         target=send_email_with_attachment,
         args=(to_addr, subject, body, attachment_bytes, attachment_filename, attachment_content_type),
+        daemon=True,
+    ).start()
+
+
+COFFEE_READING_PROMPTS = {
+    "tr": (
+        "Sen deneyimli, sıcak ve sezgisel bir Türk kahve falı bakıcısısın. "
+        "Sana gönderilen fincan fotoğrafındaki şekilleri, çizgileri ve desenleri yorumluyormuş gibi, "
+        "kişiye özel, akıcı ve içten bir kahve falı yaz. Danışanın adı: {name}. "
+        "Danışanın eklediği not/soru: \"{note}\". Bu notu varsa yorumuna doğal şekilde dahil et. "
+        "Metni doğrudan danışana hitaben yaz (\"Sevgili {name}\" gibi bir girişle başlayabilirsin), "
+        "3-5 kısa paragraf olsun, sıcak ve pozitif bir dil kullan, aşırı kesin/korkutucu ifadelerden kaçın. "
+        "Sonuna kısa bir kapanış cümlesi ekle. Sadece fal metnini yaz, başka açıklama ekleme."
+    ),
+    "fr": (
+        "Tu es une voyante expérimentée, chaleureuse et intuitive spécialisée dans la lecture du marc de café. "
+        "En observant la photo de la tasse envoyée, écris une lecture personnalisée et fluide, "
+        "comme si tu interprétais vraiment les formes et motifs. Prénom du consultant : {name}. "
+        "Note/question ajoutée par le consultant : \"{note}\". Intègre-la naturellement si elle existe. "
+        "Adresse-toi directement au consultant (tu peux commencer par \"Cher/Chère {name}\"), "
+        "3 à 5 courts paragraphes, ton chaleureux et positif, évite les affirmations trop catégoriques ou effrayantes. "
+        "Termine par une courte phrase de clôture. N'écris que le texte de la lecture, sans autre commentaire."
+    ),
+}
+
+
+def generate_coffee_reading(photo_bytes, mimetype, name, note, lang):
+    if not ANTHROPIC_API_KEY:
+        print("[coffee_reading] SKIPPED: ANTHROPIC_API_KEY is not set", flush=True)
+        return None
+    prompt_template = COFFEE_READING_PROMPTS.get(lang, COFFEE_READING_PROMPTS["tr"])
+    prompt = prompt_template.format(name=name or "", note=note or "")
+    payload = {
+        "model": COFFEE_READING_MODEL,
+        "max_tokens": 1024,
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": mimetype or "image/jpeg",
+                            "data": base64.b64encode(photo_bytes).decode("ascii"),
+                        },
+                    },
+                    {"type": "text", "text": prompt},
+                ],
+            }
+        ],
+    }
+    try:
+        resp = requests.post(
+            ANTHROPIC_API_URL,
+            headers={
+                "x-api-key": ANTHROPIC_API_KEY,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json",
+            },
+            json=payload,
+            timeout=45,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        return "".join(block.get("text", "") for block in data.get("content", []) if block.get("type") == "text").strip() or None
+    except Exception as exc:
+        print(f"[coffee_reading] ERROR: {exc}", flush=True)
+        return None
+
+
+def generate_and_queue_coffee_reading(photo_bytes, mimetype, name, note, lang, contact_email):
+    if not contact_email:
+        return
+    reading_text = generate_coffee_reading(photo_bytes, mimetype, name, note, lang)
+    if not reading_text:
+        return
+    send_at = datetime.utcnow() + timedelta(minutes=COFFEE_READING_DELAY_MINUTES)
+    coffee_readings_store.add_pending_reading(contact_email, name, lang, reading_text, send_at)
+
+
+def queue_coffee_reading_async(photo_bytes, mimetype, name, note, lang, contact_email):
+    threading.Thread(
+        target=generate_and_queue_coffee_reading,
+        args=(photo_bytes, mimetype, name, note, lang, contact_email),
         daemon=True,
     ).start()
 
@@ -1515,6 +1605,8 @@ def appointment_page():
                 send_email_with_attachment_async(GMAIL_ADDRESS, subject, body, photo_bytes, photo.filename, photo.mimetype)
             else:
                 send_email_async(GMAIL_ADDRESS, subject, body)
+            if category == "service:coffee" and photo_bytes and contact_email:
+                queue_coffee_reading_async(photo_bytes, photo.mimetype, name, note, lang, contact_email)
             flash("success_appointment_sent", "success")
             return redirect(url_for("appointment_page"))
 
@@ -1575,7 +1667,14 @@ def cron_appointment_reminder():
             appointments_store.mark_reminded(appt["id"])
             reminded += 1
 
-    return jsonify({"ok": True, "reminded": reminded})
+    sent_readings = 0
+    for reading in coffee_readings_store.list_due_readings(datetime.utcnow()):
+        subject = "Kahve Falın Hazır ☕" if reading["lang"] == "tr" else "Ta lecture de marc de café est prête ☕"
+        if send_email(reading["email"], subject, reading["reading_text"]):
+            coffee_readings_store.mark_sent(reading["id"])
+            sent_readings += 1
+
+    return jsonify({"ok": True, "reminded": reminded, "readings_sent": sent_readings})
 
 
 @app.route("/api/admin/jeton-ekle", methods=["POST"])

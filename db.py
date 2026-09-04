@@ -84,6 +84,18 @@ def init_schema():
                     date_str TEXT PRIMARY KEY
                 )
             """)
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS tarot_pending_readings (
+                    id SERIAL PRIMARY KEY,
+                    email TEXT NOT NULL,
+                    name TEXT,
+                    lang TEXT NOT NULL DEFAULT 'tr',
+                    reading_text TEXT NOT NULL,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+                    send_at TIMESTAMPTZ NOT NULL,
+                    sent BOOLEAN NOT NULL DEFAULT false
+                )
+            """)
         conn.commit()
     finally:
         put_conn(conn)
