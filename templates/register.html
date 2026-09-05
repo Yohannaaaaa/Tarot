@@ -10,6 +10,7 @@
         <div class="auth-divider"><span>{{ t.or_divider }}</span></div>
 
         <form method="post" class="auth-form">
+            <input type="text" name="site_web" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
             <input type="email" name="email" placeholder="{{ t.field_email }}" required autocomplete="email">
             <input type="text" name="nickname" placeholder="{{ t.field_nickname }}" autocomplete="nickname">
             <input type="password" name="password" placeholder="{{ t.field_password }}" required autocomplete="new-password">
