@@ -82,6 +82,7 @@ ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
 COFFEE_READING_MODEL = "claude-haiku-4-5-20251001"
 COFFEE_READING_DELAY_MINUTES = 60
+REFERRAL_BONUS = 300
 ISTANBUL_TZ = timezone(timedelta(hours=3))
 APPOINTMENT_TIME_SLOTS = ["00:00", "00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30", "04:00"]
 
@@ -501,6 +502,11 @@ UI = {
         "account_login_method_label": "Méthode de connexion",
         "login_method_password": "E-mail et mot de passe",
         "login_method_google": "Compte Google lié",
+        "referral_title": "Invite un(e) ami(e)",
+        "referral_desc": "Partage ton lien : quand un ami s'inscrit avec, vous recevez chacun 300 jetons gratuits.",
+        "referral_link_copy": "Copier le lien",
+        "referral_link_copied": "Lien copié !",
+        "referral_count_label": "Amis invités",
         "change_password_title": "Changer le mot de passe",
         "account_no_password_note": "Tu t'es connecté(e) avec Google et n'as pas encore de mot de passe. Tu peux en définir un ci-dessous.",
         "field_current_password": "Mot de passe actuel",
@@ -536,6 +542,14 @@ UI = {
         "zodiac_hub_character_desc": "Élément, planète, forces et faiblesses de chaque signe.",
         "zodiac_hub_ascendant": "Signe ascendant",
         "zodiac_hub_ascendant_desc": "Calcule ton ascendant à partir de ta date, heure et ville de naissance.",
+        "zodiac_hub_compatibility": "Compatibilité amoureuse",
+        "zodiac_hub_compatibility_desc": "Choisis deux signes et découvre leur pourcentage de compatibilité.",
+        "compatibility_title": "Compatibilité amoureuse",
+        "compatibility_subtitle": "Choisis deux signes pour découvrir leur compatibilité.",
+        "compatibility_sign1_label": "Premier signe",
+        "compatibility_sign2_label": "Deuxième signe",
+        "compatibility_submit": "Voir la compatibilité",
+        "compatibility_score_label": "Compatibilité",
         "horoscope_title": "Horoscope du jour",
         "horoscope_subtitle": "Mis à jour chaque jour pour les 12 signes.",
         "horoscope_love": "💕 Amour",
@@ -753,6 +767,11 @@ UI = {
         "account_login_method_label": "Giriş yöntemi",
         "login_method_password": "E-posta ve şifre",
         "login_method_google": "Google hesabı bağlı",
+        "referral_title": "Arkadaşını Davet Et",
+        "referral_desc": "Linkini paylaş: bir arkadaşın bu linkle kayıt olduğunda ikinize de 300 jeton hediye edilir.",
+        "referral_link_copy": "Linki Kopyala",
+        "referral_link_copied": "Link kopyalandı!",
+        "referral_count_label": "Davet Edilen Arkadaş",
         "change_password_title": "Şifre Değiştir",
         "account_no_password_note": "Google ile giriş yaptın ve henüz bir şifren yok. Aşağıdan bir şifre belirleyebilirsin.",
         "field_current_password": "Mevcut şifre",
@@ -788,6 +807,14 @@ UI = {
         "zodiac_hub_character_desc": "Her burcun elementi, gezegeni, güçlü ve zayıf yönleri.",
         "zodiac_hub_ascendant": "Yükselen Burç",
         "zodiac_hub_ascendant_desc": "Doğum tarihin, saatin ve yerinden yükselen burcunu hesapla.",
+        "zodiac_hub_compatibility": "Burç Uyumu",
+        "zodiac_hub_compatibility_desc": "İki burç seç, aşk uyumu yüzdesini öğren.",
+        "compatibility_title": "Burç Uyumu",
+        "compatibility_subtitle": "İki burç seç, uyumlarını gör.",
+        "compatibility_sign1_label": "Birinci burç",
+        "compatibility_sign2_label": "İkinci burç",
+        "compatibility_submit": "Uyumu Göster",
+        "compatibility_score_label": "Uyum",
         "horoscope_title": "Günlük Burç Yorumu",
         "horoscope_subtitle": "12 burç için her gün otomatik güncellenir.",
         "horoscope_love": "💕 Aşk",
@@ -1121,7 +1148,7 @@ def asset_links():
     }])
 
 
-SITEMAP_ENDPOINTS = ["index", "about_page", "faq_page", "reviews_page", "privacy_page", "terms_page", "cards_page", "reading_page", "zodiac_hub", "horoscope_page", "zodiac_character_page", "ascendant_page", "account_deletion_info_page"]
+SITEMAP_ENDPOINTS = ["index", "about_page", "faq_page", "reviews_page", "privacy_page", "terms_page", "cards_page", "reading_page", "zodiac_hub", "horoscope_page", "zodiac_character_page", "ascendant_page", "account_deletion_info_page", "compatibility_page"]
 
 
 @app.route("/sitemap.xml")
@@ -1190,6 +1217,7 @@ def card_detail(card_id):
 @app.route("/inscription", methods=["GET", "POST"])
 @limiter.limit("10 per hour", methods=["POST"])
 def register_page():
+    ref_code = (request.values.get("ref") or "").strip()
     if request.method == "POST":
         if is_honeypot_triggered():
             return redirect(url_for("index"))
@@ -1207,10 +1235,15 @@ def register_page():
         elif accounts_store.email_exists(email):
             flash("error_email_taken", "error")
         else:
-            account = accounts_store.create_account(email, password, nickname)
+            referrer = accounts_store.get_account_by_referral_code(ref_code) if ref_code else None
+            referrer_email = referrer["email"] if referrer and referrer["email"].lower() != email else None
+            account = accounts_store.create_account(email, password, nickname, referrer_email)
             if not account:
                 flash("error_email_taken", "error")
             else:
+                if referrer_email:
+                    jeton_store.credit(account["email"], REFERRAL_BONUS)
+                    jeton_store.credit(referrer_email, REFERRAL_BONUS)
                 send_email_async(
                     GMAIL_ADDRESS,
                     "Yeni üye kaydı - Rituams Tarot",
@@ -1219,7 +1252,7 @@ def register_page():
                 session["email"] = account["email"]
                 session["nickname"] = account["nickname"]
                 return redirect(url_for("reading_page"))
-    return render_template("register.html")
+    return render_template("register.html", ref_code=ref_code)
 
 
 @app.route("/connexion", methods=["GET", "POST"])
@@ -1281,7 +1314,13 @@ def account_page():
                 account = accounts_store.get_account(email)
 
     balance = "∞" if is_admin() else jeton_store.get_balance(email)
-    return render_template("account.html", account=account, balance=balance)
+    referral_code = accounts_store.ensure_referral_code(email)
+    referral_link = external_url("register_page", ref=referral_code) if referral_code else None
+    referral_count = accounts_store.count_referrals(email)
+    return render_template(
+        "account.html", account=account, balance=balance,
+        referral_link=referral_link, referral_count=referral_count,
+    )
 
 
 @app.route("/hesap-silme")
@@ -1927,6 +1966,21 @@ def ascendant_page():
     return render_template(
         "ascendant.html", cities=cities, result=result, error=error, form_values=form_values
     )
+
+
+@app.route("/burc-uyumu", methods=["GET", "POST"])
+@limiter.limit("30 per hour", methods=["POST"])
+def compatibility_page():
+    lang = get_lang()
+    signs = [{"id": s["id"], "name": s["name"][lang]} for s in horoscope.ZODIAC_SIGNS]
+    result = None
+    if request.method == "POST":
+        sign1 = request.form.get("sign1", "")
+        sign2 = request.form.get("sign2", "")
+        valid_ids = {s["id"] for s in signs}
+        if sign1 in valid_ids and sign2 in valid_ids:
+            result = horoscope.compatibility(sign1, sign2, lang)
+    return render_template("compatibility.html", signs=signs, result=result)
 
 
 @app.route("/admin/yorumlar", methods=["GET", "POST"])

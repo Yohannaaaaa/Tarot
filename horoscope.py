@@ -476,3 +476,101 @@ ASCENDANT_MEANINGS = {
 
 def ascendant_meaning(sign_id, lang):
     return ASCENDANT_MEANINGS[sign_id][lang]
+
+
+ELEMENT_KEY = {
+    "aries": "fire", "leo": "fire", "sagittarius": "fire",
+    "taurus": "earth", "virgo": "earth", "capricorn": "earth",
+    "gemini": "air", "libra": "air", "aquarius": "air",
+    "cancer": "water", "scorpio": "water", "pisces": "water",
+}
+
+ELEMENT_PAIR_SCORE = {
+    frozenset(["fire"]): 70,
+    frozenset(["earth"]): 70,
+    frozenset(["air"]): 70,
+    frozenset(["water"]): 70,
+    frozenset(["fire", "air"]): 85,
+    frozenset(["earth", "water"]): 85,
+    frozenset(["fire", "earth"]): 45,
+    frozenset(["fire", "water"]): 40,
+    frozenset(["earth", "air"]): 45,
+    frozenset(["water", "air"]): 50,
+}
+
+COMPATIBILITY_TEXTS = {
+    "high": {
+        "fr": [
+            "Entre {sign1} et {sign2}, l'harmonie est presque naturelle : vous vous complétez et vous vous comprenez facilement au quotidien.",
+            "{sign1} et {sign2} ont un vrai potentiel de complicité ; même vos différences finissent par vous attirer davantage.",
+            "L'énergie qui circule entre {sign1} et {sign2} crée une entente rare, capable de porter de beaux projets communs.",
+        ],
+        "tr": [
+            "{sign1} ve {sign2} arasında doğal bir uyum var; birbirinizin enerjisini tamamlıyor ve kolayca anlaşabiliyorsunuz.",
+            "{sign1} ile {sign2} güçlü bir bağ kurma potansiyeline sahip; farklılıklarınız bile birbirinizi çekici kılıyor.",
+            "{sign1} ve {sign2} arasında akan enerji nadir rastlanan bir uyum yaratıyor, birlikte güzel şeyler başarabilirsiniz.",
+        ],
+    },
+    "medium": {
+        "fr": [
+            "Entre {sign1} et {sign2}, le potentiel est là mais demande des efforts et de l'écoute mutuelle.",
+            "{sign1} et {sign2} n'ont pas toujours le même regard sur les choses, mais avec de la patience, un bel équilibre est possible.",
+            "{sign1} et {sign2} forment un duo qui a beaucoup à apprendre l'un de l'autre.",
+        ],
+        "tr": [
+            "{sign1} ve {sign2} arasında potansiyel var ama karşılıklı çaba ve anlayış gerektiriyor.",
+            "{sign1} ile {sign2} zaman zaman farklı bakış açılarına sahip olsa da, sabırla güzel bir denge kurabilir.",
+            "{sign1} ve {sign2} birbirinden öğrenecek çok şeyi olan, gelişmeye açık bir eşleşme.",
+        ],
+    },
+    "low": {
+        "fr": [
+            "{sign1} et {sign2} ont des énergies assez différentes ; cette relation demande patience et tolérance mutuelle.",
+            "Entre {sign1} et {sign2}, l'alchimie n'est pas automatique, mais un effort conscient peut créer une belle entente.",
+            "{sign1} et {sign2} forment un duo exigeant mais formateur, surtout si chacun accepte les différences de l'autre.",
+        ],
+        "tr": [
+            "{sign1} ve {sign2} oldukça farklı enerjilere sahip; bu ilişki sabır ve karşılıklı hoşgörü istiyor.",
+            "{sign1} ile {sign2} arasında doğal bir çekim yerine, bilinçli bir çaba ile kurulan bir uyum söz konusu.",
+            "{sign1} ve {sign2} zorlu ama öğretici bir eşleşme oluşturabilir, farklılıklarınızı kucaklarsanız güçlenebilirsiniz.",
+        ],
+    },
+}
+
+
+def compatibility_score(sign1_id, sign2_id):
+    e1, e2 = ELEMENT_KEY[sign1_id], ELEMENT_KEY[sign2_id]
+    base = ELEMENT_PAIR_SCORE[frozenset([e1, e2])]
+    profile1 = ZODIAC_PROFILES[sign1_id]
+    profile2 = ZODIAC_PROFILES[sign2_id]
+    bonus = 10 if (sign2_id in profile1["compatible"] or sign1_id in profile2["compatible"]) else 0
+    pair_key = "-".join(sorted([sign1_id, sign2_id]))
+    variance = (_seed(pair_key, "compat") % 11) - 5
+    return max(30, min(98, base + bonus + variance))
+
+
+def compatibility_tier(score):
+    if score >= 78:
+        return "high"
+    if score >= 55:
+        return "medium"
+    return "low"
+
+
+def compatibility(sign1_id, sign2_id, lang):
+    sign1 = next(s for s in ZODIAC_SIGNS if s["id"] == sign1_id)
+    sign2 = next(s for s in ZODIAC_SIGNS if s["id"] == sign2_id)
+    score = compatibility_score(sign1_id, sign2_id)
+    tier = compatibility_tier(score)
+    pair_key = "-".join(sorted([sign1_id, sign2_id]))
+    pool = COMPATIBILITY_TEXTS[tier][lang]
+    text = _pick(pool, _seed(pair_key, "compat_text")).format(
+        sign1=sign1["name"][lang], sign2=sign2["name"][lang]
+    )
+    return {
+        "sign1": {"id": sign1_id, "symbol": sign1["symbol"], "name": sign1["name"][lang]},
+        "sign2": {"id": sign2_id, "symbol": sign2["symbol"], "name": sign2["name"][lang]},
+        "score": score,
+        "tier": tier,
+        "text": text,
+    }

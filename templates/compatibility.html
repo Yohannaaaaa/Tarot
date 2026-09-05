@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ t.compatibility_title }} · {{ t.site_title }}{% endblock %}
+{% block content %}
+<section class="auth-page">
+    <div class="auth-card">
+        <h1>{{ t.compatibility_title }}</h1>
+        <p class="auth-subtitle">{{ t.compatibility_subtitle }}</p>
+
+        {% if result %}
+        <div class="ascendant-result compatibility-result">
+            <p class="compatibility-signs">
+                <span class="ascendant-result-sign">{{ result.sign1.symbol }} {{ result.sign1.name }}</span>
+                <span class="compatibility-plus">+</span>
+                <span class="ascendant-result-sign">{{ result.sign2.symbol }} {{ result.sign2.name }}</span>
+            </p>
+            <div class="compatibility-score-bar">
+                <div class="compatibility-score-fill compatibility-tier-{{ result.tier }}" style="width: {{ result.score }}%"></div>
+            </div>
+            <p class="compatibility-score-value">{{ t.compatibility_score_label }}: <strong>%{{ result.score }}</strong></p>
+            <p class="ascendant-result-meaning">{{ result.text }}</p>
+        </div>
+        {% endif %}
+
+        <form method="post" class="auth-form">
+            <div class="field-group">
+                <label for="compSign1">{{ t.compatibility_sign1_label }}</label>
+                <select name="sign1" id="compSign1" required>
+                    {% for s in signs %}
+                    <option value="{{ s.id }}" {{ 'selected' if result and result.sign1.id == s.id else '' }}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field-group">
+                <label for="compSign2">{{ t.compatibility_sign2_label }}</label>
+                <select name="sign2" id="compSign2" required>
+                    {% for s in signs %}
+                    <option value="{{ s.id }}" {{ 'selected' if result and result.sign2.id == s.id else '' }}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary full">{{ t.compatibility_submit }}</button>
+        </form>
+    </div>
+</section>
+{% endblock %}
