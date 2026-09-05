@@ -1762,6 +1762,24 @@ def admin_stats():
     return render_template("admin_stats.html", stats=stats)
 
 
+@app.route("/admin/kullanicilar")
+def admin_users():
+    if not is_admin():
+        return redirect(url_for("login_page"))
+    accounts = accounts_store.list_accounts()
+    users = []
+    for account in accounts:
+        email = account["email"]
+        users.append({
+            "nickname": account.get("nickname") or "",
+            "email": email,
+            "created_at": (account.get("created_at") or "")[:10],
+            "login_method": "google" if account.get("google_id") else "password",
+            "balance": jeton_store.get_balance(email),
+        })
+    return render_template("admin_users.html", users=users)
+
+
 REVIEWS_PER_PAGE = 9
 
 

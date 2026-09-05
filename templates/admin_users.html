@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Kullanıcılar (Admin) · {{ t.site_title }}{% endblock %}
+{% block content %}
+<section class="admin-page">
+    <h1>👥 Kayıtlı Kullanıcılar ({{ users|length }})</h1>
+
+    <div class="admin-block">
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Kullanıcı Adı</th>
+                        <th>E-posta</th>
+                        <th>Kayıt Tarihi</th>
+                        <th>Giriş Yöntemi</th>
+                        <th>Jeton</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.nickname }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.created_at }}</td>
+                        <td>{{ "Google" if user.login_method == "google" else "E-posta/Şifre" }}</td>
+                        <td>🪙 {{ user.balance }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

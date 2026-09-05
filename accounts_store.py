@@ -204,6 +204,22 @@ def set_password(email, new_password):
         db.put_conn(conn)
 
 
+def list_accounts():
+    if not db.has_db():
+        accounts = list(_json_load().values())
+        return sorted(accounts, key=lambda a: a.get("created_at") or "", reverse=True)
+    conn = db.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT email, password_hash, nickname, google_id, created_at "
+                "FROM tarot_accounts ORDER BY created_at DESC"
+            )
+            return [_row_to_account(row) for row in cur.fetchall()]
+    finally:
+        db.put_conn(conn)
+
+
 def delete_account(email):
     if not db.has_db():
         return _json_delete_account(email)

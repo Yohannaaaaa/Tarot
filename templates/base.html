@@ -49,6 +49,7 @@
                     <a href="{{ url_for('admin_appointments') }}">📅 Admin</a>
                     <a href="{{ url_for('admin_reviews') }}">⭐ Admin</a>
                     <a href="{{ url_for('admin_stats') }}">📊 İstatistik</a>
+                    <a href="{{ url_for('admin_users') }}">👥 Kullanıcılar</a>
                 {% endif %}
                 <a href="{{ url_for('account_page') }}" class="auth-greeting">👤 {{ current_nickname }}</a>
                 <a href="{{ url_for('logout') }}">{{ t.nav_logout }}</a>
