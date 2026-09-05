@@ -21,6 +21,11 @@
             <div class="zodiac-hub-name">{{ t.zodiac_hub_ascendant }}</div>
             <p class="zodiac-hub-desc">{{ t.zodiac_hub_ascendant_desc }}</p>
         </a>
+        <a class="zodiac-hub-card" href="{{ url_for('compatibility_page') }}">
+            <span class="zodiac-hub-icon">💞</span>
+            <div class="zodiac-hub-name">{{ t.zodiac_hub_compatibility }}</div>
+            <p class="zodiac-hub-desc">{{ t.zodiac_hub_compatibility_desc }}</p>
+        </a>
     </div>
 </section>
 {% endblock %}

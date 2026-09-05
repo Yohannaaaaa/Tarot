@@ -16,6 +16,19 @@
             </p>
         </div>
 
+        {% if referral_link %}
+        <div class="auth-divider"><span>{{ t.referral_title }}</span></div>
+        <p class="account-note">{{ t.referral_desc }}</p>
+        <div class="referral-box">
+            <input type="text" id="referralLinkInput" value="{{ referral_link }}" readonly>
+            <button type="button" class="btn btn-secondary" onclick="
+                navigator.clipboard.writeText(document.getElementById('referralLinkInput').value);
+                this.textContent = {{ t.referral_link_copied|tojson }};
+            ">{{ t.referral_link_copy }}</button>
+        </div>
+        <p class="account-note">{{ t.referral_count_label }}: <strong>{{ referral_count }}</strong></p>
+        {% endif %}
+
         <div class="auth-divider"><span>{{ t.change_password_title }}</span></div>
 
         {% if not account.password_hash %}

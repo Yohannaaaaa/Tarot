@@ -48,6 +48,12 @@ def init_schema():
                     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
                 )
             """)
+            cur.execute("ALTER TABLE tarot_accounts ADD COLUMN IF NOT EXISTS referral_code TEXT")
+            cur.execute("ALTER TABLE tarot_accounts ADD COLUMN IF NOT EXISTS referred_by_email TEXT")
+            cur.execute(
+                "CREATE UNIQUE INDEX IF NOT EXISTS tarot_accounts_referral_code_idx "
+                "ON tarot_accounts (referral_code) WHERE referral_code IS NOT NULL"
+            )
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS tarot_jetons (
                     username TEXT PRIMARY KEY,

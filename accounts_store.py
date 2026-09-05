@@ -2,13 +2,19 @@
 # -*- coding: utf-8 -*-
 """Comptes utilisateurs : PostgreSQL si DATABASE_URL est definie, sinon fichier JSON."""
 import json
+import secrets
 import threading
 from datetime import datetime, timedelta
 from pathlib import Path
 
+import psycopg2
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import db
+
+
+def _new_referral_code():
+    return secrets.token_hex(4)
 
 ACCOUNTS_PATH = Path(__file__).resolve().parent / "data" / "accounts.json"
 
@@ -45,18 +51,28 @@ def _json_email_exists(email):
     return _key(email) in _json_load()
 
 
-def _json_create_account(email, password, nickname):
+def _json_existing_referral_codes(accounts):
+    return {a["referral_code"] for a in accounts.values() if a.get("referral_code")}
+
+
+def _json_create_account(email, password, nickname, referred_by_email=None):
     with _lock:
         accounts = _json_load()
         key = _key(email)
         if key in accounts:
             return None
+        existing_codes = _json_existing_referral_codes(accounts)
+        code = _new_referral_code()
+        while code in existing_codes:
+            code = _new_referral_code()
         account = {
             "email": email.strip(),
             "password_hash": generate_password_hash(password),
             "nickname": nickname.strip() or email.split("@")[0],
             "google_id": None,
             "created_at": datetime.utcnow().isoformat(),
+            "referral_code": code,
+            "referred_by_email": referred_by_email,
         }
         accounts[key] = account
         _json_save(accounts)
@@ -101,30 +117,82 @@ def _json_upsert_google_account(email, google_id, name):
         if account:
             account["google_id"] = google_id
         else:
+            existing_codes = _json_existing_referral_codes(accounts)
+            code = _new_referral_code()
+            while code in existing_codes:
+                code = _new_referral_code()
             account = {
                 "email": email.strip(),
                 "password_hash": None,
                 "nickname": (name or email.split("@")[0]).strip(),
                 "google_id": google_id,
                 "created_at": datetime.utcnow().isoformat(),
+                "referral_code": code,
+                "referred_by_email": None,
             }
             accounts[key] = account
         _json_save(accounts)
         return account
 
 
+def _json_get_account_by_referral_code(code):
+    for account in _json_load().values():
+        if account.get("referral_code") == code:
+            return account
+    return None
+
+
+def _json_ensure_referral_code(email):
+    with _lock:
+        accounts = _json_load()
+        key = _key(email)
+        account = accounts.get(key)
+        if not account:
+            return None
+        if account.get("referral_code"):
+            return account["referral_code"]
+        existing_codes = _json_existing_referral_codes(accounts)
+        code = _new_referral_code()
+        while code in existing_codes:
+            code = _new_referral_code()
+        account["referral_code"] = code
+        _json_save(accounts)
+        return code
+
+
+def _json_set_referred_by(email, referrer_email):
+    with _lock:
+        accounts = _json_load()
+        key = _key(email)
+        account = accounts.get(key)
+        if not account or account.get("referred_by_email"):
+            return False
+        account["referred_by_email"] = referrer_email
+        _json_save(accounts)
+        return True
+
+
+def _json_count_referrals(email):
+    return sum(1 for a in _json_load().values() if a.get("referred_by_email") == email)
+
+
 # ---------- Backend PostgreSQL ----------
+
+ACCOUNT_COLUMNS = "email, password_hash, nickname, google_id, created_at, referral_code, referred_by_email"
+
 
 def _row_to_account(row):
     if not row:
         return None
-    email, password_hash, nickname, google_id, created_at = row
+    email, password_hash, nickname, google_id, created_at, referral_code, referred_by_email = row
     return {
         "email": email,
         "password_hash": password_hash,
         "nickname": nickname,
         "google_id": google_id,
         "created_at": created_at.isoformat() if created_at else None,
+        "referral_code": referral_code,
+        "referred_by_email": referred_by_email,
     }
 
 
@@ -135,11 +203,85 @@ def get_account(email):
     try:
         with conn.cursor() as cur:
             cur.execute(
-                "SELECT email, password_hash, nickname, google_id, created_at "
-                "FROM tarot_accounts WHERE email_key=%s",
+                f"SELECT {ACCOUNT_COLUMNS} FROM tarot_accounts WHERE email_key=%s",
                 (_key(email),),
             )
             return _row_to_account(cur.fetchone())
+    finally:
+        db.put_conn(conn)
+
+
+def get_account_by_referral_code(code):
+    if not code:
+        return None
+    if not db.has_db():
+        return _json_get_account_by_referral_code(code)
+    conn = db.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                f"SELECT {ACCOUNT_COLUMNS} FROM tarot_accounts WHERE referral_code=%s",
+                (code,),
+            )
+            return _row_to_account(cur.fetchone())
+    finally:
+        db.put_conn(conn)
+
+
+def ensure_referral_code(email):
+    """Retourne le code de parrainage du compte, en le generant s'il n'existe pas encore."""
+    if not db.has_db():
+        return _json_ensure_referral_code(email)
+    conn = db.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT referral_code FROM tarot_accounts WHERE email_key=%s", (_key(email),))
+            row = cur.fetchone()
+            if not row:
+                return None
+            if row[0]:
+                return row[0]
+            for _ in range(5):
+                code = _new_referral_code()
+                cur.execute(
+                    "UPDATE tarot_accounts SET referral_code=%s WHERE email_key=%s AND referral_code IS NULL",
+                    (code, _key(email)),
+                )
+                if cur.rowcount > 0:
+                    conn.commit()
+                    return code
+                conn.rollback()
+        return None
+    finally:
+        db.put_conn(conn)
+
+
+def set_referred_by(email, referrer_email):
+    if not db.has_db():
+        return _json_set_referred_by(email, referrer_email)
+    conn = db.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE tarot_accounts SET referred_by_email=%s "
+                "WHERE email_key=%s AND referred_by_email IS NULL",
+                (referrer_email, _key(email)),
+            )
+            updated = cur.rowcount > 0
+        conn.commit()
+        return updated
+    finally:
+        db.put_conn(conn)
+
+
+def count_referrals(email):
+    if not db.has_db():
+        return _json_count_referrals(email)
+    conn = db.get_conn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT count(*) FROM tarot_accounts WHERE referred_by_email=%s", (email,))
+            return cur.fetchone()[0]
     finally:
         db.put_conn(conn)
 
@@ -156,26 +298,35 @@ def email_exists(email):
         db.put_conn(conn)
 
 
-def create_account(email, password, nickname):
+def create_account(email, password, nickname, referred_by_email=None):
     """Retourne le compte cree, ou None si l'e-mail existe deja."""
     if not db.has_db():
-        return _json_create_account(email, password, nickname)
+        return _json_create_account(email, password, nickname, referred_by_email)
     key = _key(email)
     nick = nickname.strip() or email.split("@")[0]
     password_hash = generate_password_hash(password)
     conn = db.get_conn()
     try:
-        with conn.cursor() as cur:
-            cur.execute(
-                "INSERT INTO tarot_accounts (email_key, email, password_hash, nickname) "
-                "VALUES (%s, %s, %s, %s) ON CONFLICT (email_key) DO NOTHING",
-                (key, email.strip(), password_hash, nick),
-            )
-            if cur.rowcount == 0:
-                conn.rollback()
-                return None
-        conn.commit()
-        return {"email": email.strip(), "password_hash": password_hash, "nickname": nick, "google_id": None}
+        for _ in range(5):
+            code = _new_referral_code()
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO tarot_accounts (email_key, email, password_hash, nickname, referral_code, referred_by_email) "
+                    "VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT (email_key) DO NOTHING",
+                    (key, email.strip(), password_hash, nick, code, referred_by_email),
+                )
+                if cur.rowcount == 0:
+                    conn.rollback()
+                    cur.execute("SELECT 1 FROM tarot_accounts WHERE email_key=%s", (key,))
+                    if cur.fetchone():
+                        return None
+                    continue
+            conn.commit()
+            return {
+                "email": email.strip(), "password_hash": password_hash, "nickname": nick,
+                "google_id": None, "referral_code": code, "referred_by_email": referred_by_email,
+            }
+        return None
     finally:
         db.put_conn(conn)
 
@@ -211,10 +362,7 @@ def list_accounts():
     conn = db.get_conn()
     try:
         with conn.cursor() as cur:
-            cur.execute(
-                "SELECT email, password_hash, nickname, google_id, created_at "
-                "FROM tarot_accounts ORDER BY created_at DESC"
-            )
+            cur.execute(f"SELECT {ACCOUNT_COLUMNS} FROM tarot_accounts ORDER BY created_at DESC")
             return [_row_to_account(row) for row in cur.fetchall()]
     finally:
         db.put_conn(conn)
@@ -275,14 +423,21 @@ def upsert_google_account(email, google_id, name):
     nick = (name or email.split("@")[0]).strip()
     conn = db.get_conn()
     try:
-        with conn.cursor() as cur:
-            cur.execute(
-                "INSERT INTO tarot_accounts (email_key, email, password_hash, nickname, google_id) "
-                "VALUES (%s, %s, NULL, %s, %s) "
-                "ON CONFLICT (email_key) DO UPDATE SET google_id = EXCLUDED.google_id",
-                (key, email.strip(), nick, google_id),
-            )
-        conn.commit()
+        for _ in range(5):
+            code = _new_referral_code()
+            with conn.cursor() as cur:
+                try:
+                    cur.execute(
+                        "INSERT INTO tarot_accounts (email_key, email, password_hash, nickname, google_id, referral_code) "
+                        "VALUES (%s, %s, NULL, %s, %s, %s) "
+                        "ON CONFLICT (email_key) DO UPDATE SET google_id = EXCLUDED.google_id",
+                        (key, email.strip(), nick, google_id, code),
+                    )
+                except psycopg2.IntegrityError:
+                    conn.rollback()
+                    continue
+            conn.commit()
+            return get_account(email)
         return get_account(email)
     finally:
         db.put_conn(conn)
