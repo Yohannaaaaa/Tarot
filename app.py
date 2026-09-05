@@ -83,6 +83,7 @@ ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
 COFFEE_READING_MODEL = "claude-haiku-4-5-20251001"
 COFFEE_READING_DELAY_MINUTES = 60
 REFERRAL_BONUS = 300
+META_PIXEL_ID = os.environ.get("META_PIXEL_ID", "")
 ISTANBUL_TZ = timezone(timedelta(hours=3))
 APPOINTMENT_TIME_SLOTS = ["00:00", "00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30", "04:00"]
 
@@ -125,11 +126,11 @@ def ratelimit_handler(e):
 
 CSP_POLICY = "; ".join([
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://www.paypal.com",
+    "script-src 'self' 'unsafe-inline' https://www.paypal.com https://connect.facebook.net",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https:",
     "font-src 'self'",
-    "connect-src 'self' https://www.paypal.com https://api.paypal.com",
+    "connect-src 'self' https://www.paypal.com https://api.paypal.com https://www.facebook.com https://connect.facebook.net",
     "frame-src https://www.paypal.com",
     "object-src 'none'",
     "base-uri 'self'",
@@ -1026,6 +1027,7 @@ def inject_globals():
         "canonical_url": canonical_url,
         "hreflang_fr": hreflang_fr,
         "hreflang_tr": hreflang_tr,
+        "meta_pixel_id": META_PIXEL_ID,
     }
 
 
@@ -1251,7 +1253,7 @@ def register_page():
                 )
                 session["email"] = account["email"]
                 session["nickname"] = account["nickname"]
-                return redirect(url_for("reading_page"))
+                return redirect(url_for("reading_page", fb_event="signup"))
     return render_template("register.html", ref_code=ref_code)
 
 
@@ -1450,7 +1452,7 @@ def google_callback():
         )
     session["email"] = account["email"]
     session["nickname"] = account["nickname"]
-    return redirect(url_for("reading_page"))
+    return redirect(url_for("reading_page", fb_event="signup" if is_new_account else None))
 
 
 MAJOR_CARDS = [c for c in CARDS if c["arcana"] == "major"]
@@ -1671,7 +1673,7 @@ def appointment_page():
             if category == "service:coffee" and photo_bytes and contact_email:
                 queue_coffee_reading_async(photo_bytes, photo.mimetype, name, note, lang, contact_email)
             flash("success_appointment_sent", "success")
-            return redirect(url_for("appointment_page"))
+            return redirect(url_for("appointment_page", fb_event="lead"))
 
     balance = "∞" if is_admin() else jeton_store.get_balance(user_email)
     return render_template(
