@@ -65,6 +65,13 @@ def is_admin():
     return bool(email and email.lower() in ADMIN_EMAILS)
 
 
+HONEYPOT_FIELD = "site_web"
+
+
+def is_honeypot_triggered():
+    return bool((request.form.get(HONEYPOT_FIELD) or "").strip())
+
+
 WHATSAPP_NUMBER = os.environ.get("WHATSAPP_NUMBER", "")
 INSTAGRAM_URL = "https://www.instagram.com/rituams.tarot/"
 TIKTOK_URL = "https://www.tiktok.com/@svetlanaquinn"
@@ -115,11 +122,26 @@ def ratelimit_handler(e):
     return redirect(request.referrer or url_for("index"))
 
 
+CSP_POLICY = "; ".join([
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://www.paypal.com",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https:",
+    "font-src 'self'",
+    "connect-src 'self' https://www.paypal.com https://api.paypal.com",
+    "frame-src https://www.paypal.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+])
+
+
 @app.after_request
 def set_security_headers(response):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Content-Security-Policy"] = CSP_POLICY
     if os.environ.get("RENDER"):
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     return response
@@ -1169,6 +1191,8 @@ def card_detail(card_id):
 @limiter.limit("10 per hour", methods=["POST"])
 def register_page():
     if request.method == "POST":
+        if is_honeypot_triggered():
+            return redirect(url_for("index"))
         email = (request.form.get("email") or "").strip().lower()
         password = request.form.get("password") or ""
         password2 = request.form.get("password2") or ""
@@ -1802,6 +1826,9 @@ def reviews_page():
         if not email:
             return redirect(url_for("login_page"))
         action = request.form.get("action", "add")
+
+        if action == "add" and is_honeypot_triggered():
+            return redirect(url_for("reviews_page"))
 
         if action == "add":
             name = session.get("nickname") or email.split("@")[0]
