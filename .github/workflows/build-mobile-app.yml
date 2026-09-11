@@ -38,6 +38,12 @@ jobs:
             sed -i 's/android:label="rituams_tarot"/android:label="Rituams Tarot (test)"/' android/app/src/main/AndroidManifest.xml
           fi
 
+      - name: Use a fixed debug keystore (stable signature across builds, needed
+          for Google Sign-In's Android OAuth client to keep working)
+        run: |
+          mkdir -p ~/.android
+          cp ci/debug.keystore ~/.android/debug.keystore
+
       - name: Install dependencies
         run: flutter pub get
 

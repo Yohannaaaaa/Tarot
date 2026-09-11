@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../api_client.dart';
+import '../google_config.dart';
 import '../theme.dart';
 import 'home_screen.dart';
 
@@ -22,6 +24,42 @@ class _AuthScreenState extends State<AuthScreen> {
   final _nicknameCtrl = TextEditingController();
   bool _obscure = true;
 
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email'],
+    serverClientId: googleServerClientId,
+  );
+
+  Future<void> _submitGoogle() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final account = await _googleSignIn.signIn();
+      if (account == null) {
+        // L'utilisateur a annule la selection de compte.
+        setState(() => _loading = false);
+        return;
+      }
+      final auth = await account.authentication;
+      final idToken = auth.idToken;
+      if (idToken == null) {
+        throw ApiException('error_google_not_configured', 0);
+      }
+      await widget.api.loginWithGoogle(idToken);
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => HomeScreen(api: widget.api)),
+      );
+    } on ApiException catch (e) {
+      setState(() => _error = _errorMessages[e.code] ?? "Erreur Google (${e.code}).");
+    } catch (e) {
+      setState(() => _error = "Erreur Google inattendue : $e");
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   static const Map<String, String> _errorMessages = {
     'error_email_required': "Adresse e-mail invalide.",
     'error_password_short': "Le mot de passe doit contenir au moins 6 caractères.",
@@ -29,6 +67,7 @@ class _AuthScreenState extends State<AuthScreen> {
     'error_email_taken': "Cette adresse e-mail est déjà utilisée.",
     'error_invalid_credentials': "E-mail ou mot de passe incorrect.",
     'network_error': "Impossible de contacter le serveur. Vérifie ta connexion.",
+    'unexpected_response': "Réponse inattendue du serveur (pas du JSON). Réessaie dans un instant.",
   };
 
   Future<void> _submit() async {
@@ -52,7 +91,9 @@ class _AuthScreenState extends State<AuthScreen> {
         MaterialPageRoute(builder: (_) => HomeScreen(api: widget.api)),
       );
     } on ApiException catch (e) {
-      setState(() => _error = _errorMessages[e.code] ?? "Une erreur est survenue.");
+      setState(() => _error = _errorMessages[e.code] ?? "Erreur (${e.code}, code ${e.statusCode}).");
+    } catch (e) {
+      setState(() => _error = "Erreur inattendue : $e");
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -130,6 +171,29 @@ class _AuthScreenState extends State<AuthScreen> {
                   child: Text(
                     _isRegister ? 'Déjà un compte ? Se connecter' : "Pas de compte ? S'inscrire",
                     style: const TextStyle(color: RTColors.goldSoft),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(children: const [
+                  Expanded(child: Divider(color: RTColors.border)),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    child: Text('ou', style: TextStyle(color: RTColors.textDim)),
+                  ),
+                  Expanded(child: Divider(color: RTColors.border)),
+                ]),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _loading ? null : _submitGoogle,
+                    icon: const Text('🔵'),
+                    label: const Text('Continuer avec Google'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: RTColors.text,
+                      side: const BorderSide(color: RTColors.border),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
                   ),
                 ),
               ],

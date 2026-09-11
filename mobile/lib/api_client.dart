@@ -29,11 +29,19 @@ class ApiClient {
     _cookiesReady = true;
   }
 
+  Map<String, dynamic> _asJsonMap(dynamic data) {
+    if (data is Map<String, dynamic>) return data;
+    // Le serveur a repondu avec autre chose que du JSON (page HTML, blocage
+    // reseau intermediaire, etc.) : on le signale clairement au lieu de
+    // planter silencieusement sur un cast invalide.
+    throw ApiException('unexpected_response', 0);
+  }
+
   Future<Map<String, dynamic>> _get(String path, {Map<String, dynamic>? query}) async {
     await _ensureCookieJar();
     try {
       final res = await _dio.get(path, queryParameters: query);
-      return res.data as Map<String, dynamic>;
+      return _asJsonMap(res.data);
     } on DioException catch (e) {
       throw _toApiException(e);
     }
@@ -42,8 +50,12 @@ class ApiClient {
   Future<Map<String, dynamic>> _post(String path, Map<String, dynamic> body) async {
     await _ensureCookieJar();
     try {
-      final res = await _dio.post(path, data: body);
-      return res.data as Map<String, dynamic>;
+      final res = await _dio.post(
+        path,
+        data: body,
+        options: Options(contentType: Headers.jsonContentType),
+      );
+      return _asJsonMap(res.data);
     } on DioException catch (e) {
       throw _toApiException(e);
     }
@@ -75,6 +87,10 @@ class ApiClient {
     return _post('/api/v1/login', {'email': email, 'password': password});
   }
 
+  Future<Map<String, dynamic>> loginWithGoogle(String idToken) {
+    return _post('/api/v1/auth/google', {'id_token': idToken});
+  }
+
   Future<void> logout() async {
     await _post('/api/v1/logout', {});
   }
@@ -83,9 +99,10 @@ class ApiClient {
     try {
       final res = await _get('/api/v1/me');
       return res['account'] as Map<String, dynamic>;
-    } on ApiException catch (e) {
-      if (e.statusCode == 401) return null;
-      rethrow;
+    } on ApiException {
+      // Pas connecte, ou reponse inattendue au demarrage : on retombe sur
+      // l'ecran de connexion plutot que de bloquer l'appli.
+      return null;
     }
   }
 

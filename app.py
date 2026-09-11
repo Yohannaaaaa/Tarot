@@ -1661,6 +1661,48 @@ def api_v1_me():
     return jsonify({"ok": True, "account": api_account_payload(email)})
 
 
+@app.route("/api/v1/auth/google", methods=["POST"])
+@limiter.limit("15 per minute")
+def api_v1_google_login():
+    """Connexion Google pour l'app mobile : le client envoie l'ID token obtenu
+    via google_sign_in (configure avec serverClientId=GOOGLE_CLIENT_ID pour que
+    l'audience du token corresponde a notre client OAuth web existant)."""
+    data = request.get_json(silent=True) or {}
+    id_token = (data.get("id_token") or "").strip()
+    if not id_token or not GOOGLE_CLIENT_ID:
+        return jsonify({"ok": False, "error": "error_google_not_configured"}), 400
+
+    try:
+        resp = requests.get(
+            "https://oauth2.googleapis.com/tokeninfo",
+            params={"id_token": id_token},
+            timeout=10,
+        )
+        payload = resp.json()
+    except (requests.RequestException, ValueError):
+        return jsonify({"ok": False, "error": "error_google_not_configured"}), 502
+
+    if resp.status_code != 200 or payload.get("aud") != GOOGLE_CLIENT_ID:
+        return jsonify({"ok": False, "error": "error_google_not_configured"}), 401
+
+    email = (payload.get("email") or "").strip().lower()
+    if not email or payload.get("email_verified") not in ("true", True):
+        return jsonify({"ok": False, "error": "error_google_not_configured"}), 401
+
+    name = payload.get("name") or email.split("@")[0]
+    is_new_account = not accounts_store.email_exists(email)
+    account = accounts_store.upsert_google_account(email, payload.get("sub"), name)
+    if is_new_account:
+        send_email_async(
+            GMAIL_ADDRESS,
+            "Yeni üye kaydı - Rituams Tarot",
+            f"Yeni bir kullanıcı Google ile kayıt oldu (mobil app).\n\nRumuz: {account['nickname']}\nE-posta: {account['email']}",
+        )
+    session["email"] = account["email"]
+    session["nickname"] = account["nickname"]
+    return jsonify({"ok": True, "account": api_account_payload(account["email"])})
+
+
 @app.route("/api/v1/spreads")
 def api_v1_spreads():
     lang = get_lang()

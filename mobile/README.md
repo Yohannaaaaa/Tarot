@@ -14,6 +14,25 @@ Chaque push qui touche `mobile/` déclenche une build automatique sur GitHub Act
 
 Cet APK de debug sert uniquement à tester — il n'est pas signé pour le Play Store.
 
+## Connexion Google dans l'app
+
+Le bouton "Continuer avec Google" a besoin de deux choses côté Google Cloud Console
+(même projet que celui qui a déjà `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` pour le site) :
+
+1. **Renseigner `googleServerClientId`** dans `mobile/lib/google_config.dart` avec la
+   valeur exacte de la variable d'environnement `GOOGLE_CLIENT_ID` du serveur
+   (visible dans Render → service "tarot" → Environment). C'est un identifiant
+   public, pas un secret.
+2. **Créer un client OAuth "Android"** dans Google Cloud Console → APIs & Services →
+   Identifiants → Créer des identifiants → ID client OAuth → type Android :
+   - Nom du package : `com.rituams.tarot.debug` (pour les builds de test CI)
+   - Empreinte du certificat SHA-1 : `DC:F5:3E:87:85:AC:94:7F:9A:45:E4:E9:4C:55:10:40:C8:06:2D:1E`
+     (empreinte du keystore de debug fixe `mobile/ci/debug.keystore`, committé dans
+     le dépôt pour rester stable entre les builds CI)
+
+   Plus tard, pour la vraie app signée (`com.rituams.tarot`), il faudra ajouter un
+   deuxième client Android avec le SHA-1 du vrai `signing.keystore`.
+
 ## Étapes suivantes avant publication sur le Play Store
 
 - Fournir le keystore de signature existant (`signing.keystore`, alias `my-key-alias`) en secret
