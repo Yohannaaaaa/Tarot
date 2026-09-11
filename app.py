@@ -1573,6 +1573,130 @@ def api_daily_wheel_spin():
     })
 
 
+# ===================== API v1 (application mobile native) =====================
+# Reponses JSON pures, utilisees par l'app Flutter. Authentification par cookie de
+# session Flask (le client mobile doit conserver les cookies entre les requetes),
+# comme pour le site web - aucun systeme de jeton separe n'est necessaire.
+
+def api_account_payload(email):
+    account = accounts_store.get_account(email)
+    balance = "∞" if is_admin() else jeton_store.get_balance(email)
+    referral_code = accounts_store.ensure_referral_code(email)
+    return {
+        "email": account["email"],
+        "nickname": account["nickname"],
+        "balance": balance,
+        "hasPassword": bool(account.get("password_hash")),
+        "referralCode": referral_code,
+        "referralLink": external_url("register_page", ref=referral_code) if referral_code else None,
+        "referralCount": accounts_store.count_referrals(email),
+    }
+
+
+@app.route("/api/v1/register", methods=["POST"])
+@limiter.limit("15 per minute")
+def api_v1_register():
+    data = request.get_json(silent=True) or {}
+    if is_honeypot_triggered() or (data.get(HONEYPOT_FIELD) or "").strip():
+        return jsonify({"ok": False, "error": "invalid_request"}), 400
+    email = (data.get("email") or "").strip().lower()
+    password = data.get("password") or ""
+    password2 = data.get("password2") or ""
+    nickname = (data.get("nickname") or "").strip()
+    ref_code = (data.get("ref") or "").strip()
+
+    if not email or "@" not in email:
+        return jsonify({"ok": False, "error": "error_email_required"}), 400
+    if len(password) < 6:
+        return jsonify({"ok": False, "error": "error_password_short"}), 400
+    if password != password2:
+        return jsonify({"ok": False, "error": "error_passwords_mismatch"}), 400
+    if accounts_store.email_exists(email):
+        return jsonify({"ok": False, "error": "error_email_taken"}), 409
+
+    referrer = accounts_store.get_account_by_referral_code(ref_code) if ref_code else None
+    referrer_email = referrer["email"] if referrer and referrer["email"].lower() != email else None
+    account = accounts_store.create_account(email, password, nickname, referrer_email)
+    if not account:
+        return jsonify({"ok": False, "error": "error_email_taken"}), 409
+
+    if referrer_email:
+        jeton_store.credit(account["email"], REFERRAL_BONUS)
+        jeton_store.credit(referrer_email, REFERRAL_BONUS)
+    send_email_async(
+        GMAIL_ADDRESS,
+        "Yeni üye kaydı - Rituams Tarot",
+        f"Yeni bir kullanıcı kayıt oldu.\n\nRumuz: {account['nickname']}\nE-posta: {account['email']}",
+    )
+    session["email"] = account["email"]
+    session["nickname"] = account["nickname"]
+    return jsonify({"ok": True, "account": api_account_payload(account["email"])})
+
+
+@app.route("/api/v1/login", methods=["POST"])
+@limiter.limit("15 per minute")
+def api_v1_login():
+    data = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip().lower()
+    password = data.get("password") or ""
+    if not accounts_store.verify_password(email, password):
+        return jsonify({"ok": False, "error": "error_invalid_credentials"}), 401
+    account = accounts_store.get_account(email)
+    session["email"] = account["email"]
+    session["nickname"] = account["nickname"]
+    return jsonify({"ok": True, "account": api_account_payload(account["email"])})
+
+
+@app.route("/api/v1/logout", methods=["POST"])
+def api_v1_logout():
+    session.clear()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/v1/me")
+def api_v1_me():
+    email = session.get("email")
+    if not email:
+        return jsonify({"ok": False, "error": "login_required"}), 401
+    return jsonify({"ok": True, "account": api_account_payload(email)})
+
+
+@app.route("/api/v1/spreads")
+def api_v1_spreads():
+    lang = get_lang()
+    return jsonify({
+        "ok": True,
+        "spreads": [
+            {"id": key, "name": s["name"][lang], "count": s["count"]}
+            for key, s in SPREADS.items()
+        ],
+        "spreadCost": jeton_store.SPREAD_COST,
+        "instantCost": jeton_store.INSTANT_COST,
+    })
+
+
+@app.route("/api/v1/horoscope")
+def api_v1_horoscope():
+    lang = get_lang()
+    return jsonify({"ok": True, "signs": horoscope.daily_horoscopes(lang)})
+
+
+@app.route("/api/v1/compatibility")
+def api_v1_compatibility():
+    lang = get_lang()
+    sign1 = request.args.get("sign1", "")
+    sign2 = request.args.get("sign2", "")
+    valid_ids = {s["id"] for s in horoscope.ZODIAC_SIGNS}
+    if sign1 not in valid_ids or sign2 not in valid_ids:
+        return jsonify({"ok": False, "error": "invalid_signs"}), 400
+    return jsonify({"ok": True, "result": horoscope.compatibility(sign1, sign2, lang)})
+
+
+@app.route("/api/v1/reviews")
+def api_v1_reviews():
+    return jsonify({"ok": True, "reviews": reviews_store.list_reviews()})
+
+
 MAX_PHOTO_SIZE = 5 * 1024 * 1024
 
 
