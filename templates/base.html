@@ -62,6 +62,9 @@
     </script>
     {% endif %}
     {% endif %}
+    {% if klaviyo_company_id %}
+    <script async type="text/javascript" src="https://static.klaviyo.com/onsite/js/klaviyo.js?company_id={{ klaviyo_company_id }}"></script>
+    {% endif %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
     <header class="topbar">
