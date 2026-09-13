@@ -84,6 +84,7 @@ COFFEE_READING_MODEL = "claude-haiku-4-5-20251001"
 COFFEE_READING_DELAY_MINUTES = 60
 REFERRAL_BONUS = 300
 META_PIXEL_ID = os.environ.get("META_PIXEL_ID", "")
+KLAVIYO_COMPANY_ID = os.environ.get("KLAVIYO_COMPANY_ID", "")
 ISTANBUL_TZ = timezone(timedelta(hours=3))
 APPOINTMENT_TIME_SLOTS = ["00:00", "00:30", "01:00", "01:30", "02:00", "02:30", "03:00", "03:30", "04:00"]
 
@@ -126,11 +127,11 @@ def ratelimit_handler(e):
 
 CSP_POLICY = "; ".join([
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://www.paypal.com https://connect.facebook.net",
+    "script-src 'self' 'unsafe-inline' https://www.paypal.com https://connect.facebook.net https://static.klaviyo.com",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https:",
     "font-src 'self'",
-    "connect-src 'self' https://www.paypal.com https://api.paypal.com https://www.facebook.com https://connect.facebook.net",
+    "connect-src 'self' https://www.paypal.com https://api.paypal.com https://www.facebook.com https://connect.facebook.net https://a.klaviyo.com https://static.klaviyo.com",
     "frame-src https://www.paypal.com",
     "object-src 'none'",
     "base-uri 'self'",
@@ -1028,6 +1029,7 @@ def inject_globals():
         "hreflang_fr": hreflang_fr,
         "hreflang_tr": hreflang_tr,
         "meta_pixel_id": META_PIXEL_ID,
+        "klaviyo_company_id": KLAVIYO_COMPANY_ID,
     }
 
 
