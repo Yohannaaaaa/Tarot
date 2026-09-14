@@ -28,6 +28,7 @@ import coffee_readings_store
 import db
 import horoscope
 import jeton_store
+import numerology
 import reviews_store
 
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
@@ -552,6 +553,14 @@ UI = {
         "compatibility_sign2_label": "Deuxième signe",
         "compatibility_submit": "Voir la compatibilité",
         "compatibility_score_label": "Compatibilité",
+        "zodiac_hub_numerology": "Numérologie",
+        "zodiac_hub_numerology_desc": "Découvre ton chemin de vie à partir de ta date de naissance.",
+        "numerology_title": "Numérologie du chemin de vie",
+        "numerology_subtitle": "Indique ta date de naissance pour découvrir ton nombre de chemin de vie.",
+        "numerology_birthdate_label": "Date de naissance",
+        "numerology_submit": "Découvrir mon chemin de vie",
+        "numerology_number_label": "Ton chemin de vie",
+        "numerology_error": "Merci d'indiquer une date de naissance valide.",
         "horoscope_title": "Horoscope du jour",
         "horoscope_subtitle": "Mis à jour chaque jour pour les 12 signes.",
         "horoscope_love": "💕 Amour",
@@ -817,6 +826,14 @@ UI = {
         "compatibility_sign2_label": "İkinci burç",
         "compatibility_submit": "Uyumu Göster",
         "compatibility_score_label": "Uyum",
+        "zodiac_hub_numerology": "Numeroloji",
+        "zodiac_hub_numerology_desc": "Doğum tarihinden yaşam yolu numaranı öğren.",
+        "numerology_title": "Yaşam Yolu Numeroloji",
+        "numerology_subtitle": "Yaşam yolu numaranı öğrenmek için doğum tarihini gir.",
+        "numerology_birthdate_label": "Doğum tarihi",
+        "numerology_submit": "Yaşam Yolumu Göster",
+        "numerology_number_label": "Yaşam Yolun",
+        "numerology_error": "Lütfen geçerli bir doğum tarihi gir.",
         "horoscope_title": "Günlük Burç Yorumu",
         "horoscope_subtitle": "12 burç için her gün otomatik güncellenir.",
         "horoscope_love": "💕 Aşk",
@@ -1152,7 +1169,7 @@ def asset_links():
     }])
 
 
-SITEMAP_ENDPOINTS = ["index", "about_page", "faq_page", "reviews_page", "privacy_page", "terms_page", "cards_page", "reading_page", "zodiac_hub", "horoscope_page", "zodiac_character_page", "ascendant_page", "account_deletion_info_page", "compatibility_page"]
+SITEMAP_ENDPOINTS = ["index", "about_page", "faq_page", "reviews_page", "privacy_page", "terms_page", "cards_page", "reading_page", "zodiac_hub", "horoscope_page", "zodiac_character_page", "ascendant_page", "account_deletion_info_page", "compatibility_page", "numerology_page"]
 
 
 @app.route("/sitemap.xml")
@@ -1736,6 +1753,17 @@ def api_v1_compatibility():
     return jsonify({"ok": True, "result": horoscope.compatibility(sign1, sign2, lang)})
 
 
+@app.route("/api/v1/numerology")
+def api_v1_numerology():
+    lang = get_lang()
+    birth_date_value = request.args.get("birth_date", "")
+    try:
+        birth_date = datetime.strptime(birth_date_value, "%Y-%m-%d").date()
+    except ValueError:
+        return jsonify({"ok": False, "error": "invalid_birth_date"}), 400
+    return jsonify({"ok": True, "result": numerology.numerology_reading(birth_date, lang)})
+
+
 @app.route("/api/v1/reviews")
 def api_v1_reviews():
     return jsonify({"ok": True, "reviews": reviews_store.list_reviews()})
@@ -2151,6 +2179,25 @@ def compatibility_page():
         if sign1 in valid_ids and sign2 in valid_ids:
             result = horoscope.compatibility(sign1, sign2, lang)
     return render_template("compatibility.html", signs=signs, result=result)
+
+
+@app.route("/numerologie", methods=["GET", "POST"])
+@limiter.limit("30 per hour", methods=["POST"])
+def numerology_page():
+    lang = get_lang()
+    result = None
+    error = False
+    birth_date_value = ""
+    if request.method == "POST":
+        birth_date_value = request.form.get("birth_date", "")
+        try:
+            birth_date = datetime.strptime(birth_date_value, "%Y-%m-%d").date()
+            result = numerology.numerology_reading(birth_date, lang)
+        except ValueError:
+            error = True
+    return render_template(
+        "numerology.html", result=result, error=error, birth_date_value=birth_date_value,
+    )
 
 
 @app.route("/admin/yorumlar", methods=["GET", "POST"])

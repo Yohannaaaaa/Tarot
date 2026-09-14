@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ t.numerology_title }} · {{ t.site_title }}{% endblock %}
+{% block content %}
+<section class="auth-page">
+    <div class="auth-card">
+        <h1>{{ t.numerology_title }}</h1>
+        <p class="auth-subtitle">{{ t.numerology_subtitle }}</p>
+
+        {% if result %}
+        <div class="ascendant-result">
+            <p>{{ t.numerology_number_label }} <span class="ascendant-result-sign">🔢 {{ result.number }} — {{ result.keyword }}</span></p>
+            <p class="ascendant-result-meaning">{{ result.text }}</p>
+        </div>
+        {% endif %}
+        {% if error %}
+        <p class="flash-message flash-error">{{ t.numerology_error }}</p>
+        {% endif %}
+
+        <form method="post" class="auth-form">
+            <div class="field-group">
+                <label for="numBirthDate">{{ t.numerology_birthdate_label }}</label>
+                <input type="date" name="birth_date" id="numBirthDate" value="{{ birth_date_value }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary full">{{ t.numerology_submit }}</button>
+        </form>
+    </div>
+</section>
+{% endblock %}
