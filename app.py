@@ -106,6 +106,8 @@ GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
+CANONICAL_HOST = "rituamstarot.com"
+
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 app.secret_key = os.environ.get("SECRET_KEY", "rituams-tarot-dev-secret-change-me")
@@ -173,6 +175,10 @@ def external_url(endpoint, **values):
     url = url_for(endpoint, _external=True, **values)
     if not (request.host.startswith("localhost") or request.host.startswith("127.0.0.1")):
         url = url.replace("http://", "https://", 1)
+        # Toujours pointer vers le domaine canonique, meme si la requete est
+        # arrivee via l'ancienne adresse *.onrender.com : sinon Google voit
+        # le meme contenu se declarer "canonique" sur deux domaines differents.
+        url = re.sub(r"^https://[^/]+", f"https://{CANONICAL_HOST}", url, count=1)
     return url
 
 
