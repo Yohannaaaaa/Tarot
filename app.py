@@ -1027,9 +1027,17 @@ def inject_globals():
     if request.endpoint and request.method == "GET":
         try:
             view_args = request.view_args or {}
-            canonical_url = external_url(request.endpoint, **view_args)
             hreflang_fr = external_url(request.endpoint, lang="fr", **view_args)
             hreflang_tr = external_url(request.endpoint, lang="tr", **view_args)
+            # Canonique auto-reference sur l'URL exacte demandee : sinon les
+            # pages ?lang=tr declaraient la version FR comme canonique et
+            # Google les excluait de l'index (vu dans Search Console :
+            # "Autre page avec balise canonique correcte").
+            requested_lang = request.args.get("lang")
+            if requested_lang in LANGS:
+                canonical_url = external_url(request.endpoint, lang=requested_lang, **view_args)
+            else:
+                canonical_url = external_url(request.endpoint, **view_args)
         except Exception:
             pass
     return {
