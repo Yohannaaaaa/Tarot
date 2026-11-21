@@ -87,7 +87,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
                 'Famille': 'Les secrets de famille non dits ou les émotions étouffées créent des tensions. Il manque de clarté et d\'honnêteté.'
             },
             'symbols': '- Le clair de lune: L\'intuition, le subconscient, les cycles.\n- Les colonnes B et J: Les opposés, l\'équilibre et la porte du mystère.\n- Le rouleau Torah: La connaissance secrète et la sagesse ésotérique.\n- La robe bleue: La tranquillité intérieure et la profondeur intuitive.\n- Le rideau grenadé: La frontière entre le conscient et l\'inconscient.',
-            'questions': '- "Suis-je en train de suppression ma voix intérieure ?"\n- "Est-ce que j\'ignore la vérité que je sais intuitivement ?"\n- "Dois-je faire face à la réalité que je refuse de voir ?"',
+            'questions': '- "Suis-je en train de supprimer ma voix intérieure ?"\n- "Est-ce que j\'ignore la vérité que je sais intuitivement ?"\n- "Dois-je faire face à la réalité que je refuse de voir ?"',
             'weekly': 'Cette semaine, vous pouvez sentir de la confusion intérieure. Le doute supprime vos intuitions. Créez un espace de calme pour votre âme et écoutez loin du bruit extérieur. Les réponses sont dedans.',
             'hidden': '"Parfois, la connaissance la plus puissante se cache dans l\'inexplicable."'
         }
@@ -190,7 +190,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
                 'Carrière': 'Vous faites un choix significatif dans votre carrière. Les partenariats ou collaborations deviennent importantes.',
                 'Finances': 'Les décisions financières conjointes deviennent importantes. La confiance mutuelle est essentielle dans les affaires communes.',
                 'Santé': 'L\'équilibre émotionnel-physique est crucial. Votre bien-être émotionnel affecte votre santé.',
-                'Famille': 'Les relations familiales se renforcent par l\'honnêteté et la communication. Les liens émotionnels se deepenent.'
+                'Famille': 'Les relations familiales se renforcent par l\'honnêteté et la communication. Les liens émotionnels s\'approfondissent.'
             },
             'symbols': '- L\'ange: La guidance divine et la protection.\n- Le couple nu: L\'innocence et l\'honnêteté.\n- La montagne: Surmonter les obstacles par l\'amour.\n- Le soleil: L\'illumination et l\'harmonie.',
             'questions': '- "Est-ce que j\'écoute mon cœur ?"\n- "Quel est mon vrai choix ?"\n- "Ai-je du courage pour l\'amour ?"',
@@ -225,7 +225,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
             'symbols': '- Le char: Le contrôle et le mouvement.\n- Les chevaux: La force et l\'énergie dirigées.\n- L\'armure: La protection et la force.\n- La couronne: La maîtrise et l\'autorité.',
             'questions': '- "Vers quel objectif je vais avec force ?"\n- "Suis-je vraiment en contrôle ?"\n- "Comment puis-je maintenir ma direction ?"',
             'weekly': 'Cette semaine, avancez avec confiance vers vos objectifs. Vous avez le pouvoir de surmonter les obstacles. Maintenez votre focus et votre détermination.',
-            'hidden': '"La victoire appartient aux déteminés."'
+            'hidden': '"La victoire appartient aux déterminés."'
         },
         'Ters': {
             'intro': 'Le Char inversé montre le manque de contrôle, l\'indirection ou l\'arrêt non voulu du progrès. Vous pouvez vous sentir impuissant ou sans direction. Les obstacles semblent insurmontables. Vous devez retrouver votre sens de la direction et du contrôle.',
@@ -326,7 +326,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
                 'Santé': 'Les cycles de santé sont négatifs. Une intervention est nécessaire pour briser le cycle.',
                 'Famille': 'Les cycles familiaux négatifs se répètent. Le changement est nécessaire.'
             },
-            'symbols': '- La roue qui tombe: Desttin négatif.\n- Les créatures oppressées: Pouvoir limité.',
+            'symbols': '- La roue qui tombe: Destin négatif.\n- Les créatures oppressées: Pouvoir limité.',
             'questions': '- "Quel cycle négatif dois-je briser ?"\n- "Comment puis-je changer mon destinée ?"\n- "Qu\'est-ce qui me bloque ?"',
             'weekly': 'Cette semaine, les cycles négatifs peuvent persister. Cherchez le moyen de briser le cycle. Le changement est possible même si difficult.',
             'hidden': '"La roue qui descend monte toujours à nouveau."'
@@ -426,7 +426,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
         'Düz': {
             'intro': 'Le Diable est la carte de la captivité, de l\'addiction ou de la vibration basse. Vous pouvez être lié par vos propres pensées négatives, vos addictions ou vos chaînes auto-créées. C\'est une invitation à examiner ce qui vous retient captif. La liberté vient en reconnaissant ces chaînes.',
             'life_areas': {
-                'Relation': 'Une relation peut être domptée par la jalousie, la possessivité ou les addictions. Les liens deviennent limttants.',
+                'Relation': 'Une relation peut être domptée par la jalousie, la possessivité ou les addictions. Les liens deviennent limitants.',
                 'Carrière': 'Vous pouvez vous sentir piégé dans un emploi ou une situation. L\'ambition est entravée.',
                 'Finances': 'Les dépenses compulsives, l\'endettement ou l\'avarice peuvent créer une captivité financière.',
                 'Santé': 'Les addictions, les habitudes négatives ou les peur de changer créent une captivité de santé.',
@@ -454,7 +454,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
     },
     'KULE': {
         'Düz': {
-            'intro': 'La Tour est la carte de la destruction soudaine et du changement radical. Une structure s\'effondre, mais c\'est nécessaire. C\'est une période difficile mais libératrice. L\'illusion se shattering et la vérité émerge. Après la destruction vient la clarté.',
+            'intro': 'La Tour est la carte de la destruction soudaine et du changement radical. Une structure s\'effondre, mais c\'est nécessaire. C\'est une période difficile mais libératrice. L\'illusion vole en éclats et la vérité émerge. Après la destruction vient la clarté.',
             'life_areas': {
                 'Relation': 'Une relation s\'effondre ou passe par une crise majeure. La fondation était fragile.',
                 'Carrière': 'Un changement radical ou une perte professionnelle arrive. C\'est un point de rupture important.',
@@ -468,7 +468,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
             'hidden': '"De la destruction vient la renaissance."'
         },
         'Ters': {
-            'intro': 'La Tour inversée montre une crise évitée ou retardée, ou vous vivez les retombées. Le changement arrive mais peut être plus lent. Vous pouvez ainda être dans le déni.',
+            'intro': 'La Tour inversée montre une crise évitée ou retardée, ou vous vivez les retombées. Le changement arrive mais peut être plus lent. Vous pouvez encore être dans le déni.',
             'life_areas': {
                 'Relation': 'Une crise est retardée mais pas évitée. Vous vivez dans l\'expectative.',
                 'Carrière': 'Un changement professionnel est retardé. L\'implosion lente plutôt que l\'effondrement soudain.',
@@ -498,7 +498,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
             'hidden': '"L\'espoir est la lueur qui illumine le plus sombre des chemins."'
         },
         'Ters': {
-            'intro': 'L\'Étoile inversée montre la perte d\'espoir, le doute ou la désillustion. Vos rêves semblent éloignés. L\'inspiration a disparu. Vous vous sentez perdu et sans direction.',
+            'intro': 'L\'Étoile inversée montre la perte d\'espoir, le doute ou la désillusion. Vos rêves semblent éloignés. L\'inspiration a disparu. Vous vous sentez perdu et sans direction.',
             'life_areas': {
                 'Relation': 'L\'espoir dans les relations a disparu. Le désenchantement règne.',
                 'Carrière': 'Votre vision professionnelle s\'est assombrie. Vous avez perdu votre direction.',
@@ -518,7 +518,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
             'life_areas': {
                 'Relation': 'Les émotions cachées peuvent émerger. La passion créée par le mystère. Écoutez votre intuition.',
                 'Carrière': 'Des opportunités cachées ou des communications non dites. Soyez attentif aux signes.',
-                'Finances': 'Il y a des éléments cachés ou des possibilités secrètes. Attention aux ofertas trop belles.',
+                'Finances': 'Il y a des éléments cachés ou des possibilités secrètes. Attention aux offres trop belles.',
                 'Santé': 'Les cycles émotionnels affectent la santé. L\'intuition guide la guérison.',
                 'Famille': 'Les secrets peuvent émerger. Les intuitions sont importantes.'
             },
@@ -574,12 +574,12 @@ CARD_CONTENT_TRANSLATIONS_FR = {
     },
     'MAHKEME (Yargı)': {
         'Düz': {
-            'intro': 'Le Jugement est la carte de l\'appel à la transformation, du réveil ou de la reckoning spirituelle. Vous êtes appelé à un nouveau niveau de conscience. C\'est une période de renouvellement et de nouvelle direction de vie. Vous répondez à un appel supérieur.',
+            'intro': 'Le Jugement est la carte de l\'appel à la transformation, du réveil ou de la remise en question spirituelle. Vous êtes appelé à un nouveau niveau de conscience. C\'est une période de renouvellement et de nouvelle direction de vie. Vous répondez à un appel supérieur.',
             'life_areas': {
-                'Relation': 'Un appel à transformer une relation ou un engagement important. Vous êtes ressucité émotionnellement.',
+                'Relation': 'Un appel à transformer une relation ou un engagement important. Vous êtes ressuscité émotionnellement.',
                 'Carrière': 'Un appel à une nouvelle direction ou une nouvelle responsabilité professionnelle. C\'est un moment de renouvellement.',
                 'Finances': 'Un appel à une nouvelle approche financière ou à une transformation monétaire importante.',
-                'Santé': 'Une transformation de santé importante. Vous êtes ressucité ou renaissez physiquement.',
+                'Santé': 'Une transformation de santé importante. Vous êtes ressuscité ou renaissez physiquement.',
                 'Famille': 'Un appel à une transformation familiale ou une nouvelle compréhension.'
             },
             'symbols': '- L\'ange: L\'appel divin et la transformation.\n- Les trompettes: L\'appel à la resurrection.\n- Les tombes: Le renouvellement après le sommeil.\n- L\'eau: La purification et la transformation.',
@@ -591,7 +591,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
             'intro': 'Le Jugement inversé montre l\'ignor de l\'appel, la stagnation ou la résistance à la transformation. Vous pouvez repousser votre réveil ou vous sentir inaperçu. Il y a une hésitation à répondre au changement.',
             'life_areas': {
                 'Relation': 'Vous ignorez un appel relatoire ou retardez une transformation importante.',
-                'Carrière': 'Vous ignez un appel professionnel ou vous stagnez dans votre rôle actuel.',
+                'Carrière': 'Vous ignorez un appel professionnel ou vous stagnez dans votre rôle actuel.',
                 'Finances': 'Vous ignorez une transformation financière ou vous résistez au changement de trajectoire.',
                 'Santé': 'Vous ignorez les avertissements de santé ou vous retardez une transformation.',
                 'Famille': 'Vous ignorez un changement familial important.'
