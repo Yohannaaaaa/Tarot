@@ -8,13 +8,13 @@ CARD_CONTENT_TRANSLATIONS_FR = {
             'life_areas': {
                 'Relation': 'Le Fou en amour signifie des débuts soudains et des attractions inattendues. Rencontrer quelqu\'un de nouveau, chercher la nouveauté dans une relation ou la porter à un niveau extraordinaire est possible. Une romance excitante peut frapper à votre porte. Cependant, il faut être prudent avec les décisions émotionnelles hâtives.',
                 'Carrière': 'Dans le parcours professionnel, le Fou signifie changer de secteur, commencer un nouveau projet ou faire un pas audacieux. L\'énergie entrepreneuriale est haute. Il faut avoir du courage, mais agir sans plan peut créer des risques.',
-                'Finances': 'Le Fou annonce de nouvelles portes de revenus, des gains surprises ou des opportunités soudaines. Cependant, agir sans bien peser les risques financiers peut mener à des fluctuations. L\'optimisme est bon mais ne pas negliger la prudence est important.',
+                'Finances': 'Le Fou annonce de nouvelles portes de revenus, des gains surprises ou des opportunités soudaines. Cependant, agir sans bien peser les risques financiers peut mener à des fluctuations. L\'optimisme est bon mais ne pas négliger la prudence est important.',
                 'Santé': 'Une période où votre énergie physique et mentale est haute. C\'est un bon moment pour essayer un nouveau sport, un régime ou un style de vie. Cependant, les mouvements hâtifs ou l\'inattention peuvent causer de petites blessures.',
                 'Famille': 'Des décisions spontanées, des activités amusantes et des nouveautés surgissent dans la famille. Un voyage, une décision de déménagement ou un développement surprise concernant la famille peut arriver. La flexibilité et la tolérance sont importantes dans ce processus.'
             },
             'symbols': '- L\'abîme: L\'incertitude offerte par la vie et l\'appel à faire un pas courageux.\n- Le chien blanc: La loyauté, les instincts, les avertissements du subconscient contre les dangers.\n- La rose blanche: La pureté, l\'innocence et l\'intention pure.\n- Le baluchon sur l\'épaule: Le voyage léger, voyager sans bagages, le poids minimal des expériences.\n- Le soleil brillant: L\'espoir, l\'optimisme et le début d\'une nouvelle journée.\n- Le chapeau plumé: La légèreté, la liberté et la flexibilité mentale. Il révèle l\'enfant joyeux en vous et vous donne un sentiment de liberté.',
             'questions': '- "Quel nouveau chemin veux-je emprunter dans ma vie ?"\n- "Qu\'est-ce qui me retient de faire un pas vers l\'inconnu ?"\n- "Ai-je le courage d\'écouter la voix de mon cœur ?"',
-            'weekly': 'Cette semaine, soyez ouvert aux développements spontanés. Vous êtes dans une période où vous pouvez dire "pourquoi pas ?" aux nouvelles offres. Des voyages soudains, rencontrer de nouvelles personnes ou des opportunités inattendues peuvent surgir. Soyez courageux, mais gardez votre logique. La chance favore les audacieux.',
+            'weekly': 'Cette semaine, soyez ouvert aux développements spontanés. Vous êtes dans une période où vous pouvez dire "pourquoi pas ?" aux nouvelles offres. Des voyages soudains, rencontrer de nouvelles personnes ou des opportunités inattendues peuvent surgir. Soyez courageux, mais gardez votre logique. La chance favorise les audacieux.',
             'hidden': '"La vie est un jeu. La clé pour gagner est d\'avoir le courage de jouer."'
         },
         'Ters': {
@@ -57,7 +57,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
                 'Famille': 'Communication insuffisante ou malhonnête dans la famille. Votre influence est affaiblie ou utilisée de manière négative.'
             },
             'symbols': '- La baguette cassée ou faible: Perte de pouvoir.\n- Les symboles confus: Manque de direction.\n- La tête baissée: Manque de confiance.\n- La rose flétrie: Intégrité compromise.',
-            'questions': '- "Pourquoi je doute de mes capacités ?"\n- "Suis-je honnête avec moi-même et avec les autres ?"\n- "Quel outil ignoro-je d\'utiliser ?"',
+            'questions': '- "Pourquoi je doute de mes capacités ?"\n- "Suis-je honnête avec moi-même et avec les autres ?"\n- "Quel outil est-ce que j\'ignore d\'utiliser ?"',
             'weekly': 'Cette semaine, retrouvez votre confiance. Utilisez vos talents honnêtement et efficacement. Ne vous sabotez pas avec le doute. Vous avez le pouvoir – vous devez simplement y croire.',
             'hidden': '"Le pouvoir vrai vient de l\'honnêteté et de la confiance en soi."'
         }
@@ -94,7 +94,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
     },
     'İMPARATORİÇE': {
         'Düz': {
-            'intro': 'L\'Impératrice est la carte de l\'abondance, de la créativité et du pouvoir créateur féminin. Vous êtes dans une période d\'épanouissement et de fertilité - que ce soit dans vos projets, vos relations ou votre vie personnelle. La compassion, la beauté et la nurturance sont vos forces. Créez quelque chose de magnifique.',
+            'intro': 'L\'Impératrice est la carte de l\'abondance, de la créativité et du pouvoir créateur féminin. Vous êtes dans une période d\'épanouissement et de fertilité - que ce soit dans vos projets, vos relations ou votre vie personnelle. La compassion, la beauté et le maternage sont vos forces. Créez quelque chose de magnifique.',
             'life_areas': {
                 'Relation': 'L\'amour s\'épanouit. Passion, romance et liens profonds caractérisent cette période. Si vous cherchez l\'amour, c\'est un bon moment. La communication est fluide et tendre.',
                 'Carrière': 'Votre créativité est à son apogée. Lancez ce projet créatif que vous repoussiez. Les projets prospèrent grâce à votre énergie fertile.',
@@ -206,7 +206,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
                 'Santé': 'Les tensions émotionnelles affectent votre bien-être physique. Vous devez résoudre les conflits internes.',
                 'Famille': 'Les relations familiales souffrent de manque de communication honnête. Les malentendus créent de la distance.'
             },
-            'symbols': '- L\'ange: Guidance abandonnée.\n- Le couple en conflit: Désharmonie.\n- La séparation: Distance et conflit.\n- Le soleil voilé: Confusion et incertitude.',
+            'symbols': '- L\'ange: Guidance abandonnée.\n- Le couple en conflit: Disharmonie.\n- La séparation: Distance et conflit.\n- Le soleil voilé: Confusion et incertitude.',
             'questions': '- "Écoutez-je vraiment mon cœur ou les attentes extérieures ?"\n- "Suis-je authentique dans cette relation ?"\n- "Quels conflits de valeurs existent ?"',
             'weekly': 'Cette semaine, il peut y avoir de l\'indécision ou du conflit dans les questions du cœur. Prendre du recul pour clarifier vos sentiments réels est nécessaire. L\'honnêteté émotionnelle est la clé.',
             'hidden': '"Le conflit entre le cœur et la raison se résout rarement par la force."'
@@ -228,7 +228,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
             'hidden': '"La victoire appartient aux déterminés."'
         },
         'Ters': {
-            'intro': 'Le Char inversé montre le manque de contrôle, l\'indirection ou l\'arrêt non voulu du progrès. Vous pouvez vous sentir impuissant ou sans direction. Les obstacles semblent insurmontables. Vous devez retrouver votre sens de la direction et du contrôle.',
+            'intro': 'Le Char inversé montre le manque de contrôle, la désorientation ou l\'arrêt non voulu du progrès. Vous pouvez vous sentir impuissant ou sans direction. Les obstacles semblent insurmontables. Vous devez retrouver votre sens de la direction et du contrôle.',
             'life_areas': {
                 'Relation': 'Les relations stagnent ou reculent. Il y a un manque de mouvement vers l\'engagement ou le progrès.',
                 'Carrière': 'Le manque de progression ou les obstacles empêchent votre avancement. Vous pouvez sentir une perte de contrôle sur votre parcours professionnel.',
@@ -328,7 +328,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
             },
             'symbols': '- La roue qui tombe: Destin négatif.\n- Les créatures oppressées: Pouvoir limité.',
             'questions': '- "Quel cycle négatif dois-je briser ?"\n- "Comment puis-je changer mon destinée ?"\n- "Qu\'est-ce qui me bloque ?"',
-            'weekly': 'Cette semaine, les cycles négatifs peuvent persister. Cherchez le moyen de briser le cycle. Le changement est possible même si difficult.',
+            'weekly': 'Cette semaine, les cycles négatifs peuvent persister. Cherchez le moyen de briser le cycle. Le changement est possible même si c\'est difficile.',
             'hidden': '"La roue qui descend monte toujours à nouveau."'
         }
     },
@@ -374,7 +374,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
             },
             'symbols': '- L\'Archange Michel: La transformation et la transition.\n- Le squelette blanc: Purification et renouveau.\n- La rose: La beauté dans la transformation.\n- Le lever/coucher du soleil: Fin et début.',
             'questions': '- "Qu\'ai-je besoin de laisser mourir en moi ?"\n- "Qu\'est-ce qui renaît de cette transformation ?"\n- "Comment puis-je accepter ce changement ?"',
-            'weekly': 'Cette semaine, une importante fin arrive. C\'est naturel et nécessaire. Acceptez la transformation. Quelque chose de mieux nait de cette mort.',
+            'weekly': 'Cette semaine, une importante fin arrive. C\'est naturel et nécessaire. Acceptez la transformation. Quelque chose de mieux naît de cette mort.',
             'hidden': '"Pour renaître, il faut d\'abord accepter la mort de l\'ancien soi."'
         },
         'Ters': {
@@ -382,7 +382,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
             'life_areas': {
                 'Relation': 'Vous restez dans une relation qui devrait se terminer. La transformation est résistée.',
                 'Carrière': 'Vous restez dans une situation professionnelle stagnante. Le changement de carrière est retardé.',
-                'Finances': 'Vous vous accrochéz à des approches financières obsolètes. Le renouveau est bloqué.',
+                'Finances': 'Vous vous accrochez à des approches financières obsolètes. Le renouveau est bloqué.',
                 'Santé': 'Vous résistez au changement de style de vie nécessaire. La transformation de santé est bloquée.',
                 'Famille': 'Les dynamiques familiales sont figées. Le besoin de transformation est ignoré.'
             },
@@ -440,7 +440,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
         'Ters': {
             'intro': 'Le Diable inversé montre la libération, la prise de conscience ou l\'évasion de la captivité. Vous reconnaissez les chaînes et commencez à vous libérer. C\'est une période de délivrance et de transformation.',
             'life_areas': {
-                'Relation': 'Vous vous libérez d\'une relation malsaine ou vous commencez à voir les patterns toxiques.',
+                'Relation': 'Vous vous libérez d\'une relation malsaine ou vous commencez à voir les schémas toxiques.',
                 'Carrière': 'Vous trouvez un moyen de vous échapper d\'une situation professionnelle limitante.',
                 'Finances': 'Vous commencez à vous libérer de l\'endettement ou des dépenses compulsives.',
                 'Santé': 'Vous surpassez une addiction ou une habitude négative.',
@@ -463,7 +463,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
                 'Famille': 'Une crise familiale majeure arrive. Les illusions s\'effondrent.'
             },
             'symbols': '- La tour: L\'édifice et ses fondations.\n- L\'éclair: La destruction soudaine.\n- Les personnes tombant: La chute de l\'illusion.',
-            'questions': '- "Quelle illusion s\'effondre ?"\n- "Qu\'était fragile dans ma fondation ?"\n- "Qu\'emergerez de cette destruction ?"',
+            'questions': '- "Quelle illusion s\'effondre ?"\n- "Qu\'était fragile dans ma fondation ?"\n- "Qu\'est-ce qui émergera de cette destruction ?"',
             'weekly': 'Cette semaine, préparez-vous à un changement radical. Bien que difficile, il apporte la clarté. Acceptez la destruction pour la reconstruction.',
             'hidden': '"De la destruction vient la renaissance."'
         },
@@ -478,7 +478,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
             },
             'symbols': '- La tour stable: Danger retardé.\n- L\'éclair contenu: Destruction retardée.',
             'questions': '- "Pourquoi je repousse l\'inévitable ?"\n- "Quand la crise finale arrivera-t-elle ?"\n- "Comment puis-je me préparer ?"',
-            'weekly': 'Cette semaine, la tempête peut être temporairement retardée, mais elle approche. La préparation est key. Acceptez que le changement est inévitable.',
+            'weekly': 'Cette semaine, la tempête peut être temporairement retardée, mais elle approche. La préparation est essentielle. Acceptez que le changement est inévitable.',
             'hidden': '"Retarder l\'inévitable ne fait que prolonger la souffrance."'
         }
     },
@@ -493,7 +493,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
                 'Famille': 'L\'harmonie et l\'espoir reviennent aux relations familiales.'
             },
             'symbols': '- L\'étoile: L\'espoir et la guidance.\n- L\'eau: La purification et le renouveau.\n- La nudité: La vulnérabilité et l\'honnêteté.',
-            'questions': '- "Quel est mon rêve véritable ?"\n- "Comment puis-je retrouver mon inspiration ?"\n- "Où vais-je chercher la clarité ?"',
+            'questions': '- "Quel est mon rêve véritable ?"\n- "Comment puis-je retrouver mon inspiration ?"\n- "Où vais-je chercher la clarté ?"',
             'weekly': 'Cette semaine, l\'espoir et l\'inspiration vous guident. Vos rêves semblent plus proches. Suivez votre étoile.',
             'hidden': '"L\'espoir est la lueur qui illumine le plus sombre des chemins."'
         },
@@ -528,7 +528,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
             'hidden': '"Les intuitions les plus puissantes sont souvent celles qui échappent à la logique."'
         },
         'Ters': {
-            'intro': 'La Lune inversée montre la clarté émergente, la dissipation des illusions ou l\'ignor de l\'intuition. Vous pouvez enfin voir clair dans une situation confuse. Ou vous ignorez les avertissements de votre inconscient.',
+            'intro': 'La Lune inversée montre la clarté émergente, la dissipation des illusions ou l\'ignorance de l\'intuition. Vous pouvez enfin voir clair dans une situation confuse. Ou vous ignorez les avertissements de votre inconscient.',
             'life_areas': {
                 'Relation': 'La clarté émerge des mystères relationnels. Ou vous ignorez les avertissements.',
                 'Carrière': 'Les secrets professionnels sont révélés. La clarté arrive.',
@@ -536,7 +536,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
                 'Santé': 'Les diagnostics deviennent clairs. La confusion de santé se dissipe.',
                 'Famille': 'Les secrets de famille sont révélés. La clarté arrive enfin.'
             },
-            'symbols': '- La lune brillante: Clarté émergeante.\n- Les loups silencieux: Instincts maîtrisés.',
+            'symbols': '- La lune brillante: Clarté émergente.\n- Les loups silencieux: Instincts maîtrisés.',
             'questions': '- "Quels secrets sont en train d\'être révélés ?"\n- "Comment puis-je voir plus clairement ?"',
             'weekly': 'Cette semaine, les illusions se dissipent. Vous voyez plus clairement. La vérité émerge.',
             'hidden': '"La lune peut être voilée, mais la vérité brille toujours."'
@@ -546,13 +546,13 @@ CARD_CONTENT_TRANSLATIONS_FR = {
         'Düz': {
             'intro': 'Le Soleil est la carte du bonheur, de la clarté et du succès. Vous êtes entré dans une période radieuse. C\'est une période de succès, de joie et de clarté complète. Tout s\'illumine. La vie coule facilement et naturellement.',
             'life_areas': {
-                'Relation': 'L\'amour brille avec clarté et chaleur. C\'est une période heureuse et engagée. La passion et l\'amour sont radiants.',
-                'Carrière': 'Le succès est manifest. Vos efforts sont reconnus. C\'est votre moment de gloire professionnelle.',
+                'Relation': 'L\'amour brille avec clarté et chaleur. C\'est une période heureuse et engagée. La passion et l\'amour sont rayonnants.',
+                'Carrière': 'Le succès est manifeste. Vos efforts sont reconnus. C\'est votre moment de gloire professionnelle.',
                 'Finances': 'La prospérité est assurée. Vos investissements portent fruit. L\'abondance est manifeste.',
                 'Santé': 'Votre bien-être physique et mental est optimal. La vitalité est élevée. La guérison est complète.',
-                'Famille': 'La joie et l\'harmonie règnent. Les relations familiales sont saines et supportives.'
+                'Famille': 'La joie et l\'harmonie règnent. Les relations familiales sont saines et bienveillantes.'
             },
-            'symbols': '- Le soleil: La clarité et la joie.\n- L\'enfant: L\'innocence et la joie de vivre.\n- Le cheval: La force et la liberté.\n- Le mur: La sécurité et la protection.',
+            'symbols': '- Le soleil: La clarté et la joie.\n- L\'enfant: L\'innocence et la joie de vivre.\n- Le cheval: La force et la liberté.\n- Le mur: La sécurité et la protection.',
             'questions': '- "Comment puis-je célébrer ce succès ?"\n- "Où brille ma lumière la plus forte ?"\n- "Comment puis-je maintenir cette joie ?"',
             'weekly': 'Cette semaine, la vie brille. Le bonheur et le succès vous entourent. Célébrez cette énergie positive. Tout va bien.',
             'hidden': '"Quand le soleil brille, il illumine chaque recoin de votre vie."'
@@ -582,15 +582,15 @@ CARD_CONTENT_TRANSLATIONS_FR = {
                 'Santé': 'Une transformation de santé importante. Vous êtes ressuscité ou renaissez physiquement.',
                 'Famille': 'Un appel à une transformation familiale ou une nouvelle compréhension.'
             },
-            'symbols': '- L\'ange: L\'appel divin et la transformation.\n- Les trompettes: L\'appel à la resurrection.\n- Les tombes: Le renouvellement après le sommeil.\n- L\'eau: La purification et la transformation.',
+            'symbols': '- L\'ange: L\'appel divin et la transformation.\n- Les trompettes: L\'appel à la résurrection.\n- Les tombes: Le renouvellement après le sommeil.\n- L\'eau: La purification et la transformation.',
             'questions': '- "À quel appel supérieur dois-je répondre ?"\n- "Comment suis-je en train de renaître ?"\n- "Quelle transformation m\'attend ?"',
             'weekly': 'Cette semaine, répondez à votre appel supérieur. C\'est une période de réveil et de transformation. Vous renaissez à un niveau supérieur.',
             'hidden': '"Quand vous répondez à l\'appel, vous commencez votre vrai voyage."'
         },
         'Ters': {
-            'intro': 'Le Jugement inversé montre l\'ignor de l\'appel, la stagnation ou la résistance à la transformation. Vous pouvez repousser votre réveil ou vous sentir inaperçu. Il y a une hésitation à répondre au changement.',
+            'intro': 'Le Jugement inversé montre l\'ignorance de l\'appel, la stagnation ou la résistance à la transformation. Vous pouvez repousser votre réveil ou vous sentir inaperçu. Il y a une hésitation à répondre au changement.',
             'life_areas': {
-                'Relation': 'Vous ignorez un appel relatoire ou retardez une transformation importante.',
+                'Relation': 'Vous ignorez un appel relationnel ou retardez une transformation importante.',
                 'Carrière': 'Vous ignorez un appel professionnel ou vous stagnez dans votre rôle actuel.',
                 'Finances': 'Vous ignorez une transformation financière ou vous résistez au changement de trajectoire.',
                 'Santé': 'Vous ignorez les avertissements de santé ou vous retardez une transformation.',
@@ -628,7 +628,7 @@ CARD_CONTENT_TRANSLATIONS_FR = {
             },
             'symbols': '- La danseuse immobile: Stagnation.\n- La guirlande brisée: Victoire inachevée.',
             'questions': '- "Qu\'est-ce que je refuse de terminer ?"\n- "Pourquoi suis-je collé dans ce cycle ?"\n- "Comment puis-je avancer ?"',
-            'weekly': 'Cette semaine, vous pouvez sentir une incomplétion ou une stagnation. Il est temps de terminer ce qui doit être terminé et de passer à la phase suivante.',
+            'weekly': 'Cette semaine, vous pouvez sentir une incomplétude ou une stagnation. Il est temps de terminer ce qui doit être terminé et de passer à la phase suivante.',
             'hidden': '"L\'inachèvement est plus douloureux que la fin."'
         }
     },
